@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,5 +16,14 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('user/wishlist');
+    return view('user/index');
 });
+Route::get('/auth/google', [UserController::class, 'redirectToGoogle']);
+Route::get('/auth/google/callback', [UserController::class, 'handleGoogleCallback']);
+Route::get('logout', function () {
+    session()->flush();
+    return redirect('/');
+});
+
+Route::post('/register', [UserController::class, 'register']);
+Route::post('/login', [UserController::class, 'login']);

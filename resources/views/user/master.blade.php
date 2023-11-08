@@ -37,7 +37,19 @@
 	<link rel="stylesheet" type="text/css" href="{{asset('user/css/main.css')}}">
 <!--===============================================================================================-->
 
+<!--===============================================================================================-->	
+<script src="{{asset('user/vendor/jquery/jquery-3.2.1.min.js')}}"></script>
+<!--===============================================================================================-->
+	<script src="{{asset('user/vendor/animsition/js/animsition.min.js')}}"></script>
+<!--===============================================================================================-->
+	<script src="{{asset('user/vendor/bootstrap/js/popper.js')}}"></script>
+	<script src="{{asset('user/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
+
     <style>
+        .swal2-container {
+            z-index: 10500 !important; /* Adjust the value as needed, higher than the form's z-index */
+        }
+
         /* Style for the notifications popup container */
         .notifications-popup {
         position: absolute;
@@ -160,13 +172,6 @@
     </script>
     <script src="{{asset('user/js/chatbot/chatbot.js')}}"></script>
 
-	<!--===============================================================================================-->	
-	<script src="{{asset('user/vendor/jquery/jquery-3.2.1.min.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{asset('user/vendor/animsition/js/animsition.min.js')}}"></script>
-<!--===============================================================================================-->
-	<script src="{{asset('user/vendor/bootstrap/js/popper.js')}}"></script>
-	<script src="{{asset('user/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
 <!--===============================================================================================-->
 	<script src="{{asset('user/vendor/select2/select2.min.js')}}"></script>
 	<script>
@@ -205,7 +210,13 @@
 <!--===============================================================================================-->
 	<script src="{{asset('user/vendor/isotope/isotope.pkgd.min.js')}}"></script>
 <!--===============================================================================================-->
-	<script src="{{asset('user/vendor/sweetalert/sweetalert.min.js')}}"></script>
+	{{-- <script src="{{asset('user/vendor/sweetalert/sweetalert.min.js')}}"></script> --}}
+    <!-- Include SweetAlert2 CSS -->
+    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"> --}}
+    <!-- Include SweetAlert2 JS -->
+    {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 	<script>
 		$('.js-addwish-b2').on('click', function(e){
 			e.preventDefault();

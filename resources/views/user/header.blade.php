@@ -45,11 +45,28 @@
 
                 <!-- Icon header -->
                 <div class="wrap-icon-header flex-w flex-r-m h-full">
-                    <div class="flex-c-m h-full p-r-24">
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 user-icon">
-                            <i class="zmdi zmdi-account"></i>
+                    @if(auth()->check())
+                        <div class="flex-c-m h-full p-r-24">
+                            <ul class="main-menu">
+                                <li>
+                                    <a>
+                                        <img src="{{asset('user/images/gallery-01.jpg')}}" width="40" height="40" class="rounded-circle">
+                                    </a>
+                                    <ul class="sub-menu">
+                                        <li><a href="index.html">Homepage 1</a></li>
+                                        <li><a href="home-02.html">Homepage 2</a></li>
+                                        <li><a href="/logout">Logout</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
                         </div>
-                    </div>
+                    @else
+                        <div class="flex-c-m h-full p-r-24">
+                            <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 user-icon">
+                                <i class="zmdi zmdi-account"></i>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="flex-c-m h-full p-r-24">
                         <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11" id="notificationBell">
@@ -183,18 +200,20 @@
               <div class="top">
                 <p>
                   Not a member?
-                  <span data-id="#ff0066">Register now</span>
+                  <span data-id="#ff0066" id="register_now">Register now</span>
                 </p>
               </div>
-              <form action="">
+              
+              <form action="/login" method="POST" id="loginForm">
                 <div class="form-control">
+                  @csrf
                   <h2>Hello Again!</h2>
                   <p>Welcome back you've been missed.</p>
-                  <input type="text" placeholder="Enter Username" />
+                  <input type="text" placeholder="Email" name="email"/>
                   <div>
-                    <input type="password" placeholder="Password" />
+                    <input type="password" placeholder="Password" name="password"/>
                     <div class="icon form-icon">
-                      <!-- <img src="./images/eye.svg" alt="" /> -->
+                      <img src="{{asset('user/images/eye.svg')}}" alt="" />
                     </div>
                   </div>
                   <span>Recovery Password</span>
@@ -204,10 +223,10 @@
                   <p>Or continue with</p>
                   <div class="icons">
                     <div class="icon">
-                      <img src="{{asset('user/images/search.svg')}}" alt="" />
+                        <a href="/auth/google"><img src="{{asset('user/images/search.svg')}}" alt="" /></a>
                     </div>
                     <div class="icon">
-                      <img src="{{asset('user/images/facebook.svg')}}" alt="" />
+                        <a href=""><img src="{{asset('user/images/facebook.svg')}}" alt="" /></a>
                     </div>
                   </div>
                 </div>
@@ -221,22 +240,24 @@
               <div class="top">
                 <p>
                   Already a member?
-                  <span data-id="#1a1aff">Login now</span>
+                  <span data-id="#1a1aff" id="login_now">Login now</span>
                 </p>
               </div>
-              <form action="">
+              <form action="/register" method="POST" id="registrationForm">
                 <div class="form-control">
-                  <h2>Welcome Codevo!</h2>
+                  @csrf
+                  <h2>Welcome to Signal!</h2>
                   <p>It's good to have you.</p>
-                  <input type="email" placeholder="Enter Email" />
+                  <input type="text" placeholder="Enter Name" name="name"/>
+                  <input type="email" placeholder="Enter Email" name="email"/>
                   <div>
-                    <input type="password" placeholder="Password" />
+                    <input type="password" placeholder="Password" name="password" id="password"/>
                     <div class="icon form-icon">
-                      <img src="{{asset('user/images/eye.svg')}}" alt="" />
+                        <img src="{{asset('user/images/eye.svg')}}" alt="" />
                     </div>
                   </div>
                   <div>
-                    <input type="password" placeholder="Confirm Password" />
+                    <input type="password" placeholder="Confirm Password" name="password_confirmation" id="password_confirmation"/>
                     <div class="icon form-icon">
                       <img src="{{asset('user/images/eye.svg')}}" alt="" />
                     </div>
@@ -247,16 +268,10 @@
                   <p>Or continue with</p>
                   <div class="icons">
                     <div class="icon">
-                      <img src="{{asset('user/images/search.svg')}}" alt="" />
+                        <a href="/auth/google"><img src="{{asset('user/images/search.svg')}}" alt="" /></a>
                     </div>
                     <div class="icon">
-                      <img src="{{asset('user/images/apple.svg')}}" alt="" />
-                    </div>
-                    <div class="icon">
-                      <img src="{{asset('user/images/facebook.svg')}}" alt="" />
-                    </div>
-                    <div class="icon">
-                      <img src="{{asset('user/images/github.svg')}}" alt="" />
+                      <a href=""><img src="{{asset('user/images/facebook.svg')}}" alt="" /></a>
                     </div>
                   </div>
                 </div>
@@ -496,3 +511,116 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#registrationForm').submit(function(event) {
+            event.preventDefault(); // Prevent the default form submit
+            var url = $(this).attr("action");
+            let formData = new FormData(this);
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    $('#login_now').click();
+                    swal({
+                        title: "Success!",
+                        text: response.register_success,
+                        icon: "success",
+                        button: "OK"
+                    });
+                },
+                error: function(xhr) {
+                    // Handle errors
+                    var errorMessageElement = document.createElement("ul");
+                    errorMessageElement.style.listStyleType = "none";
+                    errorMessageElement.style.padding = "0";
+                    errorMessageElement.style.margin = "0";
+
+                    if (xhr.responseJSON && xhr.responseJSON.errors) {
+                        $.each(xhr.responseJSON.errors, function(key, values) { // The value could be an array of messages
+                            values.forEach(function(value) { // Iterate through each message
+                                var li = document.createElement("li");
+                                li.style.margin = "5px 0";
+                                li.style.paddingLeft = "20px";
+                                li.style.position = "relative";
+
+                                var span = document.createElement("span");
+                                span.style.width = "6px";
+                                span.style.height = "6px";
+                                span.style.backgroundColor = "black";
+                                span.style.borderRadius = "50%";
+                                span.style.display = "inline-block";
+                                span.style.position = "absolute";
+                                span.style.left = "5px";
+                                span.style.top = "50%";
+                                span.style.transform = "translateY(-50%)";
+
+                                li.appendChild(span);
+                                li.appendChild(document.createTextNode(value)); // Append the text node to the li
+                                errorMessageElement.appendChild(li); // Append the li to the ul
+                            });
+                        });
+                    } else {
+                        var li = document.createElement("li");
+                        li.style.margin = "5px 0";
+                        li.style.paddingLeft = "20px";
+                        li.style.position = "relative";
+
+                        var span = document.createElement("span");
+                        span.style.width = "6px";
+                        span.style.height = "6px";
+                        span.style.backgroundColor = "black";
+                        span.style.borderRadius = "50%";
+                        span.style.display = "inline-block";
+                        span.style.position = "absolute";
+                        span.style.left = "5px";
+                        span.style.top = "50%";
+                        span.style.transform = "translateY(-50%)";
+
+                        li.appendChild(span);
+                        li.appendChild(document.createTextNode(xhr.statusText));
+                        errorMessageElement.appendChild(li);
+                    }
+
+                    swal({
+                        title: "Error!",
+                        content: errorMessageElement, // Pass the DOM element, not the string
+                        icon: "error",
+                        button: "OK"
+                    });
+                }
+            });
+        });
+
+        $('#loginForm').submit(function(event) {
+            event.preventDefault(); // Prevent the default form submit
+            var url = $(this).attr("action");
+            let formData = new FormData(this);
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function(response) {
+                    window.location.href = '/'
+                },
+                error: function(xhr) {
+                    var errorMessage = xhr.responseJSON.error
+                    swal({
+                        title: "Error!",
+                        text: errorMessage, // Pass the DOM element, not the string
+                        icon: "error",
+                        button: "OK"
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+    

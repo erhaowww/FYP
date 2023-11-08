@@ -304,23 +304,22 @@
     });
     });
 
-    Array.from(inputs).map((input) => {
-    icons.map((icon) => {
-        icon.innerHTML = `<img src="./images/eye.svg" alt="" />`;
-
-        icon.addEventListener("click", () => {
-        const type = input.getAttribute("type");
-        if (type === "password") {
-            input.setAttribute("type", "text");
-            icon.innerHTML = `<img src="./images/hide.svg" alt="" />`;
-        } else if (type === "text") {
-            input.setAttribute("type", "password");
-            icon.innerHTML = `<img src="./images/eye.svg" alt="" />`;
-        }
+    document.addEventListener('DOMContentLoaded', (event) => {
+        const icons = document.querySelectorAll('.form-icon');
+    
+        icons.forEach((icon) => {
+            icon.addEventListener("click", () => {
+                const input = icon.previousElementSibling; // assuming the input is right before the icon
+                const type = input.getAttribute("type");
+                if (type === "password") {
+                    input.setAttribute("type", "text");
+                    icon.innerHTML = `<img src="./user/images/hide.svg" alt="" />`;
+                } else if (type === "text") {
+                    input.setAttribute("type", "password");
+                    icon.innerHTML = `<img src="./user/images/eye.svg" alt="" />`;
+                }
+            });
         });
     });
-    });
-
-
 
 })(jQuery);
