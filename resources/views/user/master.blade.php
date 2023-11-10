@@ -47,10 +47,6 @@
 	<script src="{{asset('user/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
 
     <style>
-        .swal2-container {
-            z-index: 10500 !important; /* Adjust the value as needed, higher than the form's z-index */
-        }
-
         /* Style for the notifications popup container */
         .notifications-popup {
         position: absolute;
