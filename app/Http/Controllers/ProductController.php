@@ -31,7 +31,7 @@ class ProductController extends Controller
     public function showDetail($id)
     {
         $mainProduct = $this->productRepository->find($id);
-        $relatedProducts = $this->productRepository->findRelatedProducts($mainProduct->category, $id);
+        $relatedProducts = $this->productRepository->findRelatedProducts($mainProduct->productType,$mainProduct->category, $id);
 
         // Return the view with the main product and related products
         return view('user/product-detail', [

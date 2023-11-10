@@ -34,6 +34,8 @@ use App\Enums\ProductColor;
 	</style>
 	<div class="bg0 m-t-23 p-b-140">
 		<div class="container">
+		<form action="{{ route('products.show') }}" method="GET" width="100%">
+
 			<div class="flex-w flex-sb-m p-b-52">
 				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
 					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1" data-filter="*">
@@ -41,12 +43,11 @@ use App\Enums\ProductColor;
 					</button>
 					
 					@foreach ($types as $type)
-						<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".{{ strtolower($type->value) }}">
+						<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".{{ strtolower($type->value) }}" data-type="{{ strtolower($type->value) }}">
 							{{ $type->label() }}
 						</button>
 					@endforeach
 				</div>
-
 
 				<div class="flex-w flex-c-m m-tb-10">
 					<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
@@ -69,13 +70,13 @@ use App\Enums\ProductColor;
 							<i class="zmdi zmdi-search"></i>
 						</button>
 
-						<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" placeholder="Search">
+						<input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" id="search-product" placeholder="Search">
 					</div>	
 				</div>
 
 				<!-- Filter -->
 				<div class="dis-none panel-filter w-full p-t-10">
-				<form action="{{ route('products.show') }}" method="GET">
+				
 					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
 						<div class="filter-col1 p-r-15 p-b-27">
 							<div class="mtext-102 cl2 p-b-15">
@@ -95,7 +96,7 @@ use App\Enums\ProductColor;
 									<input type="radio" id="sort_popularity" name="sort" value="popularity" class="hidden" >
 									<label for="sort_popularity">
 										<span onclick="toggleSortingActive(this)" class="filter-link stext-106 trans-04 sorting">
-										Popularity
+										Popularity (coming soon)
 										</span>
 									</label>
 								</li>
@@ -104,7 +105,7 @@ use App\Enums\ProductColor;
 									<input type="radio" id="sort_rating" name="sort" value="rating" class="hidden">
 									<label for="sort_rating">
 										<span onclick="toggleSortingActive(this)" class="filter-link stext-106 trans-04 sorting">
-										Average Rating
+										Average Rating (coming soon)
 										</span>
 									</label>
 								</li>
@@ -255,11 +256,6 @@ use App\Enums\ProductColor;
                         <div class="block2">
                             <div class="block2-pic hov-img0">
 							<img src="{{ asset('user/images/product/' . explode('|', $product->productImage)[0]) }}" alt="{{ $product->productImage }}">
-
-							<a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" data-id="{{ $product->id }}">
-								Quick View
-							</a>
-
                             </div>
 
                             <div class="block2-txt flex-w flex-t p-t-14">
@@ -442,5 +438,22 @@ function clearPriceFilter() {
         radio.checked = false;
     });
 }
+    document.addEventListener('DOMContentLoaded', function() {
+        var typeFromHash = window.location.hash.replace('#', '');
+        if (typeFromHash) {
+            var activeButton = document.querySelector('button[data-type="' + typeFromHash + '"]');
+            if (activeButton) {
+                activeButton.click();
+            }
+        }
+    });
+
+	$(document).ready(function() {
+        var searchQuery = new URLSearchParams(window.location.search).get('search-product');
+        if (searchQuery) {
+            $('#search-product').val(searchQuery);
+        }
+    });
+</script>
 
 @endsection

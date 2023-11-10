@@ -6,5 +6,5 @@ interface ProductRepositoryInterface
     public function getAll();
     public function allWithFilters(Request $request);
     public function find($id);
-    public function findRelatedProducts($category, $excludeId);
+    public function findRelatedProducts($type, $category, $excludeId);
 }

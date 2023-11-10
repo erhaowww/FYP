@@ -8,21 +8,21 @@ class ProductRepository implements ProductRepositoryInterface
 {
     public function getAll()
     {
-        return Product::all();
+        return Product::available();
     }
 
     public function allWithFilters(Request $request)
     {
-        $query = Product::query();
+        $query = Product::available();
 
         // Apply sorting based on the provided criteria
         $sort = $request->query('sort');
         switch ($sort) {
             case 'popularity':
-                $query->orderBy('popularity', 'desc');
+                // $query->orderBy('popularity', 'desc');
                 break;
             case 'rating':
-                $query->orderBy('average_rating', 'desc');
+                // $query->orderBy('average_rating', 'desc');
                 break;
             case 'newness':
                 $query->orderBy('created_at', 'desc');
@@ -60,19 +60,32 @@ class ProductRepository implements ProductRepositoryInterface
         if ($category) {
             $query->where('category', $category);
         }
+        
+        $searchTerm = $request->query('search-product');
+        if ($searchTerm) {
+            $query->where('productName', 'LIKE', "%{$searchTerm}%")
+                ->orWhere('productDesc', 'LIKE', "%{$searchTerm}%");
+            }
 
         return $query->get();
     }
 
     public function find($id)
     {
-        return Product::findOrFail($id);
+        return Product::available()->findOrFail($id);
     }
 
-    public function findRelatedProducts($category, $excludeId)
+    public function findRelatedProducts($type,$category, $excludeId)
     {
-        return Product::where('category', $category)
-                      ->where('id', '!=', $excludeId)
-                      ->get();
+        
+        $query = Product::available()
+                ->where(function ($query) use ($category, $type) {
+                    $query->where('category', $category)
+                          ->orWhere('productType', $type);
+                })
+                ->where('id', '!=', $excludeId);
+
+        return $query->get();         
     }
+
 }
