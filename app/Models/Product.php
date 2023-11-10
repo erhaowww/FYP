@@ -29,4 +29,9 @@ class Product extends Model
         'price',
         'deleted'
     ];
+
+    public function scopeAvailable($query)
+    {
+        return $query->where('deleted', 0);
+    }
 }

@@ -9,7 +9,7 @@
 				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 			</a>
 
-			<a href="/product" class="stext-109 cl8 hov-cl1 trans-04">
+			<a href="/product#{{ $mainProduct->productType }}" class="stext-109 cl8 hov-cl1 trans-04">
 			{{ $mainProduct->productType->label() }}
 				<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
 			</a>
@@ -133,6 +133,11 @@
 								}
 							}
 						@endphp
+						<form action="/add-to-cart" method="POST">
+    					@csrf
+						<input type="hidden" name="productId" value="{{ $mainProduct->id }}">
+						<input type="hidden" name="maxProductQuantity" type="num" id="maxProductQuantity" value="0"/>
+
 						<div class="p-t-33">
 							<div class="flex-w flex-r-m p-b-10">
 								<div class="size-203 flex-c-m respon6">
@@ -159,7 +164,7 @@
 								<div class="size-204 respon6-next">
 									<div class="rs1-select2 bor8 bg0">
 										<select class="js-select2" name="size" id="sizeSelect" disabled onchange="updateQuantity()">
-											<option>--Please Select a Color--</option>
+											<option value="">--Please Select a Color--</option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -174,20 +179,20 @@
 											<i class="fs-16 zmdi zmdi-minus"></i>
 										</div>
 
-										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" id="quantityInput" value="0" min="0" max="20">
+										<input class="mtext-104 cl3 txt-center num-product" type="number" name="num-product" id="quantityInput" value="0" min="0" max="0" required>
 
 										<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
 											<i class="fs-16 zmdi zmdi-plus"></i>
 										</div>
 									</div>
 
-									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail">
+									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail" type="submit">
 										Add to cart
 									</button>
 								</div>
 							</div>	
 						</div>
-
+						</form>
 						<!--  -->
 						<div class="flex-w flex-m p-l-100 p-t-40 respon7">
 							<div class="flex-m bor9 p-r-10 m-r-11">
@@ -242,6 +247,7 @@
 						</div>
 
 						<!-- - -->
+						
 						<div class="tab-pane fade" id="information" role="tabpanel">
 							<div class="row">
 								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
@@ -274,7 +280,7 @@
 								</div>
 							</div>
 						</div>
-
+						
 						<!-- - -->
 						<div class="tab-pane fade" id="reviews" role="tabpanel">
 							<div class="row">
@@ -364,11 +370,14 @@
 
 		<div class="bg6 flex-c-m flex-w size-302 m-t-73 p-tb-15">
 			<span class="stext-107 cl6 p-lr-25">
-				SKU: JAK-01
+				Type: 
+				<a href="/product#{{ $mainProduct->productType }}"> {{ucwords($mainProduct->productType->value)}}</a>
 			</span>
 
 			<span class="stext-107 cl6 p-lr-25">
-				Categories: Jacket, Men
+				Categories: 
+				<a href="/product?category[]={{ $mainProduct->category }}"> {{ucwords($mainProduct->category->value)}}</a>
+				
 			</span>
 		</div>
 	</section>
@@ -386,21 +395,23 @@
 			<!-- Slide2 -->
 			<div class="wrap-slick2">
 				<div class="slick2">
+				@foreach ($relatedProducts as $product)
 					<div class="item-slick2 p-l-15 p-r-15 p-t-15 p-b-15">
 						<!-- Block2 -->
+						
 						<div class="block2">
 							<div class="block2-pic hov-img0">
-								<img src="{{asset('user/images/product-01.jpg')}}" alt="IMG-PRODUCT">
+							<img src="{{ asset('user/images/product/' . explode('|', $product->productImage)[0]) }}" alt="{{ $product->productImage }}">
 							</div>
 
 							<div class="block2-txt flex-w flex-t p-t-14">
 								<div class="block2-txt-child1 flex-col-l ">
-									<a href="product-detail.html" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
-										Esprit Ruffle Shirt
+									<a href="{{ route('product.detail', $product->id) }}" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
+										{{$product->productName}}
 									</a>
 
 									<span class="stext-105 cl3">
-										$16.64
+										RM {{$product->price}}
 									</span>
 								</div>
 
@@ -412,7 +423,9 @@
 								</div>
 							</div>
 						</div>
+						
 					</div>
+					@endforeach
 				</div>
 			</div>
 		</div>
@@ -427,16 +440,18 @@ function updateSizes() {
 	var sizeSelect = document.getElementById('sizeSelect');
 	var selectedSize = sizeSelect.value;
 	var quantityInput = document.getElementById('quantityInput');
-	if (selectedColor!== '') {
+	var maxProductQuantity = document.getElementById('maxProductQuantity');
+	if (selectedColor!== "") {
         sizeSelect.disabled = false;
-        sizeSelect.innerHTML = '<option>Choose a size</option>';
+        sizeSelect.innerHTML = '<option value="">Choose a size</option>';
         $(sizeSelect).trigger('change'); // If using Select2
     } else {
-        sizeSelect.innerHTML = '<option>--Please Select a Color--</option>';
+        sizeSelect.innerHTML = '<option value="">--Please Select a Color--</option>';
         sizeSelect.disabled = true;
         $(sizeSelect).trigger('change');
 		quantityInput.max = 0;
-            quantityInput.value = 0;
+        quantityInput.value = 0;
+		maxProductQuantity.value = 0;
     }
 
 	// Check if the selected color is in the colorSizeMap
@@ -462,10 +477,12 @@ function updateQuantity() {
         if (maxQuantityMap.hasOwnProperty(selectedSize)) {
             var maxQuantity = maxQuantityMap[selectedSize];
             quantityInput.max = maxQuantity; // Set the max attribute
+			maxProductQuantity.value = maxQuantity;
             quantityInput.value = maxQuantity > 0 ? 1 : 0; // Reset the quantity input to 1 or 0 depending on availability
         } else {
             quantityInput.max = 0; // No size selected, or no quantity available
             quantityInput.value = 0;
+			maxProductQuantity.value = 0;
         }
     }
 

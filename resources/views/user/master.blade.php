@@ -248,12 +248,62 @@
 
 		/*---------------------------------------------*/
 
-		$('.js-addcart-detail').each(function(){
-			var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-			$(this).on('click', function(){
-				swal(nameProduct, "is added to cart !", "success");
-			});
-		});
+            $('.js-addcart-detail').on('click', function(e) {
+                e.preventDefault(); // Prevent the default form submission
+                var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
+
+                // Collect form data
+                var color = $('#colorSelect').val();
+                var size = $('#sizeSelect').val();
+                var quantity = $('#quantityInput').val();
+                var errors = [];
+
+                // Validation checks
+                if (!color) {
+                    errors.push("Please select a color.");
+                }
+                if (!size) {
+                    errors.push("Please select a size.");
+                }
+                if (quantity <= 0 || isNaN(quantity)) {
+                    errors.push("Please enter a valid quantity.");
+                }
+
+                // Display errors using SweetAlert, if any
+                if (errors.length > 0) {
+                    var errorMessage = errors.join("\n");
+                    swal("Error", errorMessage, "error");
+                    return; // Stop further execution
+                }
+
+                // If validation passes, proceed with AJAX request
+                var formData = {
+                    '_token': $('input[name="_token"]').val(),
+                    'productId': $('input[name="productId"]').val(),
+                    'color': color,
+                    'size': size,
+                    'num-product': quantity,
+                    'maxProductQuantity': $('input[name="maxProductQuantity"]').val(),
+                };
+
+                $.ajax({
+                    url: '/add-to-cart',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        swal(nameProduct, "is added to cart!", "success");
+                    },
+                    error: function(xhr) {
+                        if (xhr.responseJSON && xhr.responseJSON.error) {
+                            swal("Error", xhr.responseJSON.error, "error");
+                        } else {
+                            swal("Error", "An error occurred while adding the product to the cart.", "error");
+                        }
+                    }
+                });
+            });
+
+
 	</script>
 <!--===============================================================================================-->
 	<script src="{{asset('user/vendor/perfect-scrollbar/perfect-scrollbar.min.js')}}"></script>
