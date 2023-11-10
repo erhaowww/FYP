@@ -174,13 +174,16 @@
     <script src="{{asset('user/js/chatbot/chatbot.js')}}"></script>
 
 <!--===============================================================================================-->
-	<script src="{{asset('user/vendor/select2/select2.min.js')}}"></script>
+<script src="{{asset('user/vendor/select2/select2.min.js')}}"></script>
 	<script>
 		$(".js-select2").each(function(){
 			$(this).select2({
 				minimumResultsForSearch: 20,
 				dropdownParent: $(this).next('.dropDownSelect2')
 			});
+            $(this).on('select2:selecting', function (e) {
+                $(this).select2('close');
+            });
 		})
 	</script>
 <!--===============================================================================================-->
