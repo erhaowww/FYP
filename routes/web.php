@@ -18,9 +18,6 @@ use App\Http\Controllers\ProductController;
 Route::get('/', function () {
     return view('user/index');
 });
-Route::get('product', function () {
-    return view('user/product');
-});
 Route::get('/auth/google', [UserController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [UserController::class, 'handleGoogleCallback']);
 Route::get('logout', function () {
