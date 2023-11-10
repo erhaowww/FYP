@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <title>Signal</title>
     <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{asset('user/css/chatbot/chat.css')}}">
     <link rel="stylesheet" href="{{asset('user/css/chatbot/chatbot.css')}}">
@@ -219,6 +220,17 @@
     <!-- Include SweetAlert2 JS -->
     {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
+    @if ($message = Session::get('success'))
+        <script>
+                swal({
+                    title: "Success!",
+                    text: "{{ $message }}",
+                    icon: "success",
+                    button: "OK",
+                });
+        </script>
+    @endif
 
 	<script>
 		$('.js-addwish-b2').on('click', function(e){

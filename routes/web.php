@@ -25,6 +25,12 @@ Route::get('logout', function () {
     session()->flush();
     return redirect('/');
 });
+Route::get('/forget_password', function () {
+    return view('user/forgetPassword');
+});
+Route::post('/forget_password', [UserController::class, 'forgetPassword']);
+Route::post('/submitResetPasswordForm', [UserController::class, 'submitResetPasswordForm']);
+Route::get('user/reset_password/{token}/{email}', [UserController::class, 'verify_reset_password'])->name('reset_password');
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
@@ -32,3 +38,18 @@ Route::post('/login', [UserController::class, 'login']);
 Route::get('/product', [ProductController::class, 'show'])->name('products.show');
 Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
 Route::post('/add-to-cart', [CartItemController::class, 'addToCart']);
+// user
+Route::prefix('user')->middleware(['auth'])->group(function(){
+    Route::get('/edit-profile', [UserController::class, 'edit_profile'])->name('profile');
+    Route::post('/submitEditProfileForm/{id}', [UserController::class, 'submitEditProfileForm'])->name('submitEditProfileForm');
+    Route::get('/sendOTP/{phoneNumber}', [UserController::class, 'sendOTP']);
+    Route::get('/validateOTP/{otp}', [UserController::class, 'validateOTP']);
+});
+
+
+// admin
+Route::prefix('admin')->middleware(['auth'])->group(function(){
+    Route::resource('customers', UserController::class);
+});
+
+

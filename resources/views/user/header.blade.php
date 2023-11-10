@@ -5,20 +5,15 @@
             <nav class="limiter-menu-desktop p-l-45">
                 
                 <!-- Logo desktop -->		
-                <a href="#" class="logo">
+                <a href="/" class="logo">
                     <img src="{{asset('user/images/icons/signal.png')}}" alt="IMG-LOGO">
                 </a>
 
                 <!-- Menu desktop -->
                 <div class="menu-desktop">
                     <ul class="main-menu">
-                        <li class="active-menu">
-                            <a href="index.html">Home</a>
-                            <ul class="sub-menu">
-                                <li><a href="index.html">Homepage 1</a></li>
-                                <li><a href="home-02.html">Homepage 2</a></li>
-                                <li><a href="home-03.html">Homepage 3</a></li>
-                            </ul>
+                        <li class="{{ Request::is('/') ? 'active-menu' : '' }}">
+                            <a href="/">Home</a>
                         </li>
 
                         <li>
@@ -50,10 +45,10 @@
                             <ul class="main-menu">
                                 <li>
                                     <a>
-                                        <img src="{{asset('user/images/gallery-01.jpg')}}" width="40" height="40" class="rounded-circle">
+                                        <img src="{{asset('user/images/profile_image/'.auth()->user()->image)}}" width="40" height="40" class="rounded-circle">
                                     </a>
                                     <ul class="sub-menu">
-                                        <li><a href="index.html">Homepage 1</a></li>
+                                        <li><a href="{{route('profile')}}">Profile</a></li>
                                         <li><a href="home-02.html">Homepage 2</a></li>
                                         <li><a href="/logout">Logout</a></li>
                                     </ul>
@@ -216,7 +211,7 @@
                       <img src="{{asset('user/images/eye.svg')}}" alt="" />
                     </div>
                   </div>
-                  <span>Recovery Password</span>
+                  <a href="/forget_password"><span>Recovery Password</span></a>
                   <input type="Submit" value="Login" />
                 </div>
                 <div class="form-control">
