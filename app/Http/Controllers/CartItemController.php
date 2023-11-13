@@ -18,7 +18,6 @@ class CartItemController extends Controller
 
     public function addToCart(Request $request)
     {
-
         $validatedData = $request->validate([
             'productId' => 'required|exists:product,id',
             'color' => 'required',
@@ -47,7 +46,6 @@ class CartItemController extends Controller
             $totalQuantity = $existingCartItem->quantity + $newQuantity;
             
             $maxQuantityAllowed = $request->maxProductQuantity;
-            \Log::info("Total Quantity: {$totalQuantity}, Max Allowed: {$request->maxProductQuantity}");
 
             if ($totalQuantity > $maxQuantityAllowed) {
                 return response()->json(['error' => 'The item in your cart already reaches the maximum of stock.'], 422);
@@ -55,7 +53,6 @@ class CartItemController extends Controller
                 $subPrice = number_format($product->price * $totalQuantity, 2, '.', '');
                 // Update existing cart item quantity
                 $existingCartItem->quantity = $totalQuantity;
-                $existingCartItem->subPrice = $subPrice;
                 $existingCartItem->save();
             }
         } else {
@@ -68,13 +65,71 @@ class CartItemController extends Controller
                 'color' => $validatedData['color'],
                 'size' => $validatedData['size'],
                 'quantity' => $newQuantity,
-                'subPrice' => $subPrice,
             ];
     
             $this->cartItemRepository->addToCart($data);
         }
-    
-        return back()->with('success', 'Product added to cart.');
+        $cartItems = $this->cartItemRepository->getByUserId(Auth::id());
+        $totalPrice =  $this->cartItemRepository->updateTotal(Auth::id());
+
+        // Render the cart items view with the necessary data
+        $cartItemsHtml = view('user.partials.cart_items', [
+            'cartItems' => $cartItems,
+            'totalPrice' => number_format($totalPrice, 2)
+        ])->render();
+
+        return response()->json([
+            'cartItemsHtml' => $cartItemsHtml,
+            'newTotalPrice' => number_format($totalPrice, 2)
+        ]);
     }
+
+    public function removeItem(Request $request)
+    {
+        $itemId = $request->input('itemId');
+        $userId = auth()->id(); // Or however you get the user's ID
+
+        $newTotal = $this->cartItemRepository->removeItemAndUpdateTotal($itemId, $userId);
+
+        return response()->json(['success' => 'Item removed successfully', 'newTotal' => $newTotal]);
+    }
+    
+    public function showCart()
+    {
+        // Assuming the user is authenticated and cart items are associated with the user.
+        $userId = Auth::id();
+
+        // Fetch cart items for the user
+        $cartItems = $this->cartItemRepository->getByUserId($userId);
+        // Calculate the total price
+        $totalPrice = $cartItems->reduce(function ($total, $cartItem) {
+            return $total + ($cartItem->quantity * $cartItem->product->price);
+        }, 0);
+
+        // Return the cart view with cart items and total price
+        return view('/user/cart', [
+            'cartItems' => $cartItems,
+            'totalPrice' => number_format($totalPrice, 2)
+        ]);
+    }
+
+    public function updateItem(Request $request)
+    {
+        $cartItem = $this->cartItemRepository->updateQuantity($request->itemId, $request->quantity);
+        $newSubPrice = number_format($cartItem->quantity * $cartItem->product->price, 2);
+        $itemTotalPrice =  $this->cartItemRepository->updateTotal(Auth::id());
+        $shippingCost = 5;
+        $discount = 10;
+        $totalPrice = $itemTotalPrice + $shippingCost - $discount;
+        return response()->json([
+            'success' => true,
+            'newSubPrice' => number_format($newSubPrice, 2),
+            'itemTotalPrice' => number_format($itemTotalPrice, 2),
+            'shippingCost' => number_format($shippingCost, 2),
+            'discount' => number_format($discount, 2),
+            'totalPrice' => number_format($totalPrice, 2)
+        ]);
+    }
+
 }
 

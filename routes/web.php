@@ -37,13 +37,18 @@ Route::post('/login', [UserController::class, 'login']);
 
 Route::get('/product', [ProductController::class, 'show'])->name('products.show');
 Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
-Route::post('/add-to-cart', [CartItemController::class, 'addToCart']);
+
 // user
 Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::get('/edit-profile', [UserController::class, 'edit_profile'])->name('profile');
     Route::post('/submitEditProfileForm/{id}', [UserController::class, 'submitEditProfileForm'])->name('submitEditProfileForm');
     Route::get('/sendOTP/{phoneNumber}', [UserController::class, 'sendOTP']);
     Route::get('/validateOTP/{otp}', [UserController::class, 'validateOTP']);
+    Route::post('/add-to-cart', [CartItemController::class, 'addToCart']);
+    Route::post('/remove-from-cart', [CartItemController::class, 'removeItem']);
+    Route::get('/cart', [CartItemController::class, 'showCart']);
+    Route::post('/update-cart-item', [CartItemController::class, 'updateItem']);
+
 });
 
 
@@ -51,5 +56,3 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
 Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::resource('customers', UserController::class);
 });
-
-

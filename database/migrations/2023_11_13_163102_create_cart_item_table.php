@@ -15,7 +15,6 @@ class CreateCartItemTable extends Migration
             $table->string('color');
             $table->string('size');
             $table->integer('quantity');
-            $table->double('subPrice');
             $table->timestamps();
 
             // Foreign key constraints

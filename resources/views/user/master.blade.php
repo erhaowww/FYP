@@ -256,7 +256,7 @@
 
 		/*---------------------------------------------*/
 
-            $('.js-addcart-detail').on('click', function(e) {
+        $('.js-addcart-detail').on('click', function(e) {
                 e.preventDefault(); // Prevent the default form submission
                 var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
 
@@ -295,12 +295,30 @@
                 };
 
                 $.ajax({
-                    url: '/add-to-cart',
+                    url: '../user/add-to-cart',
                     type: 'POST',
                     data: formData,
                     success: function(response) {
-                        swal(nameProduct, "is added to cart!", "success");
-                    },
+                    if ($('.header-cart-wrapitem').length === 0) {
+                        // If the cart was initially empty, create the structure
+                        var cartContentHtml = '<ul class="header-cart-wrapitem w-full">' + 
+                                            response.cartItemsHtml + 
+                                            '</ul><div class="w-full">' +
+                                            '<div class="header-cart-total w-full p-tb-40" id="totalPrice">' +
+                                            'Total: RM' + response.newTotalPrice + '</div>' +
+                                            '<div class="header-cart-buttons flex-w w-full">' +
+                                            '<a href="/cart" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">View Cart</a>' +
+                                            '<a href="#" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">Check Out</a>' +
+                                            '</div></div>';
+                        $('.header-cart-content').html(cartContentHtml);
+                    } else {
+                        // If the cart already has items, just update the list and total
+                        $('.header-cart-wrapitem').html(response.cartItemsHtml);
+                        $('#totalPrice').text('Total: RM' + response.newTotalPrice);
+                    }
+
+                    swal(nameProduct, "is added to cart!", "success");
+                },
                     error: function(xhr) {
                         if (xhr.responseJSON && xhr.responseJSON.error) {
                             swal("Error", xhr.responseJSON.error, "error");

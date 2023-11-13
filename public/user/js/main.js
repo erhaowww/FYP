@@ -218,7 +218,7 @@
         var $input = $(this).next();
         var numProduct = Number($input.val());
         if (numProduct > parseInt($input.attr('min'))) {
-            $input.val(numProduct - 1);
+            $input.val(numProduct - 1).change();
         }
     });
     
@@ -226,7 +226,7 @@
         var $input = $(this).prev();
         var numProduct = Number($input.val());
         if (numProduct < parseInt($input.attr('max'))) {
-            $input.val(numProduct + 1);
+            $input.val(numProduct + 1).change();
         }
     });
 
