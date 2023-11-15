@@ -43,7 +43,7 @@ use App\Enums\ProductColor;
 					</button>
 					
 					@foreach ($types as $type)
-						<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".{{ strtolower($type->value) }}" data-type="{{ strtolower($type->value) }}">
+						<button type="button" class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".{{ strtolower($type->value) }}" data-type="{{ strtolower($type->value) }}">
 							{{ $type->label() }}
 						</button>
 					@endforeach
@@ -265,7 +265,7 @@ use App\Enums\ProductColor;
                                     </a>
 
                                     <span class="stext-105 cl3">
-                                        RM{{ $product->price }}
+                                        RM {{number_format($product->price, 2)}}
                                     </span>
                                 </div>
 

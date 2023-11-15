@@ -105,7 +105,7 @@
 						</h4>
 
 						<span class="mtext-106 cl2">
-						RM {{ $mainProduct->price}}
+						RM {{ number_format($mainProduct->price, 2)}}
 						</span>
 
 						<p class="stext-102 cl3 p-t-23">
@@ -133,7 +133,7 @@
 								}
 							}
 						@endphp
-						<form action="/add-to-cart" method="POST">
+						<form action="/user/add-to-cart" method="POST">
     					@csrf
 						<input type="hidden" name="productId" value="{{ $mainProduct->id }}">
 						<input type="hidden" name="maxProductQuantity" type="num" id="maxProductQuantity" value="0"/>
@@ -411,7 +411,7 @@
 									</a>
 
 									<span class="stext-105 cl3">
-										RM {{$product->price}}
+										RM {{number_format($product->price, 2)}}
 									</span>
 								</div>
 

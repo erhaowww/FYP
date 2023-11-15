@@ -436,73 +436,34 @@
                 <i class="zmdi zmdi-close"></i>
             </div>
         </div>
-        
+
         <div class="header-cart-content flex-w js-pscroll">
-            <ul class="header-cart-wrapitem w-full">
-                <li class="header-cart-item flex-w flex-t m-b-12">
-                    <div class="header-cart-item-img">
-                        <img src="{{asset('user/images/item-cart-01.jpg')}}" alt="IMG">
+        @php
+            $cartItems = $cartItems ?? collect();
+        @endphp
+            @if ($cartItems->isNotEmpty())
+                <ul class="header-cart-wrapitem w-full">
+                @include('user.partials.cart_items', ['cartItems' => $cartItems])
+                </ul>
+
+                    <div class="w-full">
+                        <div class="header-cart-total w-full p-tb-40" id="totalPrice">
+                            Total: RM{{ $totalPrice }}
+                        </div>
+
+                        <div class="header-cart-buttons flex-w w-full">
+                            <a href="/user/cart" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
+                                View Cart
+                            </a>
+
+                            <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
+                                Check Out
+                            </a>
+                        </div>
                     </div>
-
-                    <div class="header-cart-item-txt p-t-8">
-                        <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                            White Shirt Pleat
-                        </a>
-
-                        <span class="header-cart-item-info">
-                            1 x $19.00
-                        </span>
-                    </div>
-                </li>
-
-                <li class="header-cart-item flex-w flex-t m-b-12">
-                    <div class="header-cart-item-img">
-                        <img src="{{asset('user/images/item-cart-02.jpg')}}" alt="IMG">
-                    </div>
-
-                    <div class="header-cart-item-txt p-t-8">
-                        <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                            Converse All Star
-                        </a>
-
-                        <span class="header-cart-item-info">
-                            1 x $39.00
-                        </span>
-                    </div>
-                </li>
-
-                <li class="header-cart-item flex-w flex-t m-b-12">
-                    <div class="header-cart-item-img">
-                        <img src="{{asset('user/images/item-cart-03.jpg')}}" alt="IMG">
-                    </div>
-
-                    <div class="header-cart-item-txt p-t-8">
-                        <a href="#" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                            Nixon Porter Leather
-                        </a>
-
-                        <span class="header-cart-item-info">
-                            1 x $17.00
-                        </span>
-                    </div>
-                </li>
-            </ul>
-            
-            <div class="w-full">
-                <div class="header-cart-total w-full p-tb-40">
-                    Total: $75.00
-                </div>
-
-                <div class="header-cart-buttons flex-w w-full">
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-                        View Cart
-                    </a>
-
-                    <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                        Check Out
-                    </a>
-                </div>
-            </div>
+                @else
+                    <p>Your cart is empty.</p>
+                @endif
         </div>
     </div>
 </div>
@@ -615,6 +576,48 @@
                 }
             });
         });
+        $('.cart-item-image').on('click', function(event) {
+            event.preventDefault(); 
+            var itemId = $(this).data('item-id');
+            swal({
+                title: "Are you sure?",
+                text: "Do you want to remove this item from your cart?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '../user/remove-from-cart', // Update with your URL
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            itemId: itemId
+                        },
+                        success: function(response) {
+                            $('#cartItem-' + itemId).remove();
+                            if(response.newTotal !== undefined) {
+                                $('#totalPrice').text('Total: RM' + response.newTotal);
+                            }
+                            if ($('.header-cart-item').length === 0) {
+                                $('.header-cart-content').html('<p>Your cart is empty</p>');
+                            }
+                            
+                            swal("The item has been removed from your cart!", {
+                                icon: "success",
+                            });
+                        },
+                        error: function(xhr) {
+                            console.error("Error removing item:", xhr.responseText);
+                            var errorMessage = xhr.responseJSON.error;
+                            swal("Error!", errorMessage, "error");
+                        }
+                    });
+                }
+            });
+        });
+
     });
 </script>
 

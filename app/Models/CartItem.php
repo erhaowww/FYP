@@ -14,7 +14,10 @@ class CartItem extends Model
         'userId',
         'color',
         'size',
-        'quantity',
-        'subPrice'
+        'quantity'
     ];
+    public function product()
+    {
+        return $this->belongsTo(Product::class, 'productId');
+    }
 }
