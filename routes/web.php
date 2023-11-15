@@ -44,6 +44,8 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/submitEditProfileForm/{id}', [UserController::class, 'submitEditProfileForm'])->name('submitEditProfileForm');
     Route::get('/sendOTP/{phoneNumber}', [UserController::class, 'sendOTP']);
     Route::get('/validateOTP/{otp}', [UserController::class, 'validateOTP']);
+    Route::get('/payment-history', [UserController::class, 'displayPaymentHistory'])->name('paymentHistory');
+
 });
 
 

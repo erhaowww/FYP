@@ -49,7 +49,7 @@
                                     </a>
                                     <ul class="sub-menu">
                                         <li><a href="{{route('profile')}}">Profile</a></li>
-                                        <li><a href="home-02.html">Homepage 2</a></li>
+                                        <li><a href="{{route('paymentHistory')}}">Payment History</a></li>
                                         <li><a href="/logout">Logout</a></li>
                                     </ul>
                                 </li>

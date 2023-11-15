@@ -242,7 +242,6 @@ class UserController extends Controller
         $existingUser = $this->userRepository->findUserByEmail($user->getEmail());
 
         if ($existingUser) {
-            $req->session()->put('user', $existingUser);
             // If the user exists, log them in
             Auth::login($existingUser);
         } else {
@@ -296,4 +295,5 @@ class UserController extends Controller
         }
         return json_encode($response);
     }
+
 }
