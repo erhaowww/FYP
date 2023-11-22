@@ -2,7 +2,7 @@
 namespace App\Repositories;
 
 use App\Models\CartItem;
-use Illuminate\Http\Request;
+use App\Enums\CartItemStatus;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
 class CartItemRepository implements CartItemRepositoryInterface
 {
@@ -12,21 +12,61 @@ class CartItemRepository implements CartItemRepositoryInterface
         return CartItem::create($data);
     }
 
-    public function findExistingCartItem($productId, $userId, $color, $size)
+    public function findExistingCartItem($productId, $userId, $color, $size, $status)
     {
         return CartItem::where([
             'productId' => $productId,
             'userId' => $userId,
             'color' => $color,
-            'size' => $size
+            'size' => $size,
+            'status' => $status,
+
         ])->first();
     }
     
+    public function getAllByUserId($userId)
+    {
+        return CartItem::where('userId', $userId)
+                   ->where('status', CartItemStatus::inCart->value)
+                   ->get();
+
+    }
+
     public function getByUserId($userId)
     {
-        return CartItem::with('product')
-                   ->where('userId', $userId)
-                   ->get();
+        $cartItems = CartItem::with('product')
+        ->where('userId', $userId)
+        ->where('status', CartItemStatus::inCart->value)
+        ->whereHas('product', function($query) {
+            $query->where('deleted', 0);
+        })
+        ->get()
+        ->filter(function ($cartItem) {
+            // Explode the product's color, size, and stock strings into arrays
+            $productColors = explode('|', $cartItem->product->color);
+            $productSizes = explode('|', $cartItem->product->size);
+            $productStocks = explode('|', $cartItem->product->stock);
+
+            // Find the index of the cart item's color in the product's colors
+            $colorIndex = array_search($cartItem->color, $productColors);
+
+            // Ensure the color exists for the product
+            if ($colorIndex === false) {
+                return false;
+            }
+
+            // Get the sizes and stocks associated with this color
+            $sizesForColor = isset($productSizes[$colorIndex]) ? explode(',', $productSizes[$colorIndex]) : [];
+            $stocksForColor = isset($productStocks[$colorIndex]) ? explode(',', $productStocks[$colorIndex]) : [];
+
+            // Find the index of the cart item's size in the sizes for this color
+            $sizeIndex = array_search($cartItem->size, $sizesForColor);
+
+            // Ensure the size exists and there is stock available
+            return $sizeIndex !== false && isset($stocksForColor[$sizeIndex]) && $stocksForColor[$sizeIndex] > 0;
+        });
+        return $cartItems;
+
     }
 
     public function deleteById($itemId)
@@ -41,9 +81,12 @@ class CartItemRepository implements CartItemRepositoryInterface
         return $this->updateTotal($userId);
     }
     public function updateTotal($userId){
-        $newTotal = CartItem::where('userId', $userId)
-                            ->join('product', 'cart_item.productId', '=', 'product.id')
-                            ->sum(\DB::raw('cart_item.quantity * product.price'));
+        $cartItems = $this->getByUserId($userId);
+        $newTotal = 0;
+
+        foreach ($cartItems as $item) {
+            $newTotal += $item->quantity * $item->product->price;
+        }
 
         return $newTotal;
     }
@@ -54,5 +97,19 @@ class CartItemRepository implements CartItemRepositoryInterface
         $cartItem->save();
 
         return $cartItem;
+    }
+
+    public function getTotalQuantityByUserId($userId)
+    {
+        $cartItems = $this->getByUserId($userId); 
+        $totalQuantity = $cartItems->sum('quantity'); 
+        return $totalQuantity;
+    }
+
+    public function getByIds(array $ids) {
+        return CartItem::with('product')
+                ->whereIn('id', $ids)
+                ->where('status', CartItemStatus::inCart->value)
+                ->get();
     }
 }

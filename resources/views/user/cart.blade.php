@@ -11,8 +11,21 @@
   font-weight: 700;
   font-size: 1.1em;
 }
-.product-checkbox {
+.product-checkbox, .all-product-checkbox{
     margin: 10px;
+}
+.disabled {
+    pointer-events: none;
+}
+
+.unavailable {
+    background-color: #cccccc;
+    color: #666666;
+    opacity: 0.4;
+}
+.unavailable .product-unavailable-message {
+    color: red;
+    font-weight: bold;
 }
 	</style>
     <!-- breadcrumb -->
@@ -31,36 +44,38 @@
 		
 
 	<!-- Shoping Cart -->
-	<form class="bg0 p-t-75 p-b-85">
+	<form id="checkoutForm" class="bg0 p-t-75 p-b-85" action="/user/make-order" method="POST">
+		@csrf
+		<input type="hidden" name="shippingCostHidden" id="shippingCostHidden" value="undefined">
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
 					<div class="m-l-25 m-r--38 m-lr-0-xl">
 						<div class="wrap-table-shopping-cart">
 							<table class="table-shopping-cart">
-								<tr class="table_head">
-									<th><input class="product-checkbox" type="checkbox" name="all" value="all" id="toggleAll"></th>
-									<th class="column-1">Product</th>
-									<th class="column-2"></th>
-									<th class="column-3">Price</th>
-									<th class="column-4">Quantity</th>
-									<th class="column-5">Total</th>
-								</tr>
 								@php
-								$itemTotalPrice = 0;
-								foreach ($cartItems as $item) {
-									$itemTotalPrice += $item->quantity * $item->product->price;
-								}
-								$shippingCost = 5; // Example shipping cost
-								$discount = 10; // Example discount
-								$totalPrice = $itemTotalPrice + $shippingCost - $discount;
+									$itemTotalPrice = 0;
+									foreach ($cartItems as $item) {
+										$itemTotalPrice += $item->quantity * $item->product->price;
+									}
+									$discount = 10; // Example discount
 								@endphp
-								@foreach ($cartItems as $item)
+								@if ($cartItems->isNotEmpty())
+									<tr class="table_head">
+										<th><input class="all-product-checkbox" type="checkbox" id="toggleAll" name="all"></th>
+										<th class="column-1">Product</th>
+										<th class="column-2"></th>
+										<th class="column-3">Price</th>
+										<th class="column-4">Quantity</th>
+										<th class="column-5">Total</th>
+									</tr>
+								@endif
+								@forelse ($cartItems as $item)
 								@php
-								$colors = explode('|', $item->product->color);//Blue|Red
-								$sizes = explode('|', $item->product->size);//S,M,L|S,L
-								$stocks = explode('|', $item->product->stock);//20,30,40|20,50
-
+								$colors = explode('|', $item->product->color);
+								$sizes = explode('|', $item->product->size);
+								$stocks = explode('|', $item->product->stock);
+								$isProductDeleted = $item->product->deleted == 1;
 								$stockData = [];
 								foreach ($colors as $colorIndex => $color) {
 									$sizeList = explode(',', $sizes[$colorIndex]);
@@ -77,14 +92,25 @@
 								
 								@endphp
 								
-								<tr class="table_row">
-									<td><input type="checkbox" class="product-checkbox" name="1" value="1" id="1"></td>
+								<tr class="table_row {{ $isProductDeleted ? 'unavailable' : '' }}" id="cart-item-{{ $item->id }}">
+									<td>
+										@if($isProductDeleted)
+										<input type="checkbox" class="product-checkbox" name="selectedItems[]" value="{{ $item->id }}" id="checkbox-{{ $item->id }}" disabled>
+										@else
+											<input type="checkbox" class="product-checkbox" name="selectedItems[]" value="{{ $item->id }}" id="checkbox-{{ $item->id }}">
+										@endif
+									</td>
 									<td class="column-1">
-										<div class="how-itemcart1">
-											<img src="{{ asset('user/images/product/' . explode('|', $item->product->productImage)[0]) }}" alt="IMG">
+										<div class="how-itemcart1 cart-item-image" data-item-id="{{ $item->id }}">
+											<img src="{{ asset('user/images/product/' . explode('|', $item->product->productImgObj)[0]) }}" alt="IMG">
 										</div>
 									</td>
-									<td class="column-2">{{ $item->product->productName }} <br/> {{ $item->color }}, {{ $item->size}}</td>
+									<td class="column-2">
+										{{ $item->product->productName }} <br/> {{ $item->color }}, {{ $item->size}}
+									</td>
+									@if($isProductDeleted)
+										<td class="column-3" colspan=5><div class="product-unavailable-message">Not Available</div></td>
+									@else
 									<td class="column-3">RM{{ number_format($item->product->price, 2) }}</td>
 									<input type="hidden" class="selected-color" data-item-id="{{ $item->id }}" value="{{ $item->color }}">
     								<input type="hidden" class="selected-size" data-item-id="{{ $item->id }}" value="{{ $item->size }}">
@@ -102,6 +128,7 @@
 										</div>
 									</td>
 									<td class="column-5" id="subPrice-{{ $item->id }}">RM{{ number_format($subPrice, 2) }}</td>
+									@endif
 								</tr>
 								<script>
 									window.stockData = window.stockData || {};
@@ -113,19 +140,36 @@
 											var stockDataForItem = window.stockData[itemId];
 											var selectedColor = $('.selected-color[data-item-id="' + itemId + '"]').val();
 											var selectedSize = $('.selected-size[data-item-id="' + itemId + '"]').val();
+											var $tableRow = $('#cart-item-' + itemId);
 
 											if(stockDataForItem[selectedColor] && stockDataForItem[selectedColor][selectedSize]) {
 												var maxStock = stockDataForItem[selectedColor][selectedSize];
+												if (!$tableRow.hasClass('unavailable') && maxStock === '0') {
+													$tableRow.addClass('unavailable');
+													$tableRow.find('.column-2').append('<div class="product-unavailable-message">Out of Stock</div>');
+													$tableRow.find('.product-checkbox').prop('disabled', true);
+													$tableRow.find('.btn-num-product-down, .btn-num-product-up').prop('disabled', true).addClass('disabled');
+                        							$input.prop('disabled', true);
+												}
 												$input.attr('max', maxStock); // Use $input here
 											} else {
-												console.error("Stock data not found for", selectedColor, selectedSize);
+												if (!$tableRow.hasClass('unavailable')) {
+													$tableRow.addClass('unavailable');
+													$tableRow.find('.column-3').html('<div class="product-unavailable-message ">This Color is Removed</div>').attr('colspan', '5');
+													$tableRow.find('.column-4, .column-5').remove();
+													$tableRow.find('.product-checkbox').prop('disabled', true);
+                        							$input.prop('disabled', true);
+													console.error("Stock data not found for", selectedColor, selectedSize);
+												}
 											}
 										});
 										
 									});
 
 								</script>
-								@endforeach
+								@empty
+									<tr><td colspan="6" class="text-center">Your cart is empty.</td></tr>
+								@endforelse
 							</table>
 						</div>
 					</div>
@@ -136,7 +180,7 @@
 						<h4 class="mtext-109 cl2 p-b-30">
 							<span style="font-size: 30px;">Cart Totals</span>
 							<span class="cart-info--count">
-								2
+								0
 							</span>
 						</h4>
 						
@@ -149,7 +193,7 @@
 
 							<div class="size-209">
 								<span class="mtext-110 cl2" id="subItemPrice">
-									RM{{ number_format($itemTotalPrice, 2) }}
+									RM{{ $itemTotalPrice }}
 								</span>
 							</div>
 						</div>
@@ -164,7 +208,7 @@
 							<div class="size-209 p-r-18 p-r-0-sm w-full-ssm">
 								<div class="size-209">
 									<span class="mtext-110 cl2" id="shippingCost">
-										RM{{ number_format($shippingCost, 2) }}
+										undefined
 									</span>
 								</div>
 								
@@ -181,17 +225,31 @@
 									</div>
 
 									<div class="rs1-select2 rs2-select2 bor8 bg0 m-b-12 m-t-9">
-										<select class="js-select2" name="time">
-											<option>Select a state...</option>
-											<option>MYR</option>
+										<select class="js-select2" name="state" id="stateSelect">
+											<option value="">Select a state...</option>
+											<option value="Johor">Johor</option>
+											<option value="Kedah">Kedah</option>
+											<option value="Kelantan">Kelantan</option>
+											<option value="Kuala Lumpur">Kuala Lumpur</option>
+											<option value="Labuan">Labuan</option>
+											<option value="Malacca">Malacca</option>
+											<option value="Negeri Sembilan">Negeri Sembilan</option>
+											<option value="Pahang">Pahang</option>
+											<option value="Penang">Penang</option>
+											<option value="Perak">Perak</option>
+											<option value="Perlis">Perlis</option>
+											<option value="Putrajaya">Putrajaya</option>
+											<option value="Sabah">Sabah</option>
+											<option value="Sarawak">Sarawak</option>
+											<option value="Selangor">Selangor</option>
+											<option value="Terengganu">Terengganu</option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
 
 									<div class="rs1-select2 rs2-select2 bor8 bg0 m-b-22 m-t-9">
 										<select class="js-select2" name="time">
-											<option>Select a country...</option>
-											<option>MYR</option>
+											<option value="Malaysia">Malaysia</option>
 										</select>
 										<div class="dropDownSelect2"></div>
 									</div>
@@ -205,14 +263,19 @@
 								<span class="stext-110 cl2" >
 									Discount:
 								</span>
+								<span class="mtext-110 cl2" id="discountRate"> 
+									<b>{{$discountRate}}%</b>
+								</span>
 							</div>
 
 							<div class="size-209 p-r-18 p-r-0-sm w-full-ssm">
 								<div class="size-209">
 									<span class="mtext-110 cl2" style="color: green;" id="discount"> 
-										<b>RM{{ number_format($discount, 2) }}</b>
+										<b>RM0</b>
 									</span>
+									
 								</div>
+								
 							</div>
 						</div>
 
@@ -225,20 +288,21 @@
 
 							<div class="size-209 p-t-1">
 								<span class="mtext-110 cl2" id="finalTotalPrice">
-									RM{{ number_format($totalPrice, 2) }}
+									RM{{ $totalPrice }}
 								</span>
 							</div>
 						</div>
 
-						<a href="payment.html" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+						<button type="submit" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
 							Proceed to Checkout
-						  </a>
+						</button>
 						  
 					</div>
 				</div>
 			</div>
 		</div>
 	</form>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 	<script>
     var isCartPage = true;
 	$(document).ready(function() {
@@ -250,11 +314,81 @@
             $('.show-header-cart').hide(); // Replace with the actual selector for your cart pop-up
         });
     }
-	
-	
-});
+	function checkAllCheckboxes() {
+		var enabledCheckboxes = $('.product-checkbox').not(':disabled');
+		var checkedEnabledCheckboxes = enabledCheckboxes.filter(':checked');
+		var allChecked = enabledCheckboxes.length === checkedEnabledCheckboxes.length;
+		if (enabledCheckboxes.length !== 0){
+			$('#toggleAll').prop('checked', allChecked);
+		}
+	}
+	function updateTotal() {
+		var subtotal = 0;
+		var totalCount = 0;
+		$('.product-checkbox:checked').each(function() {
+			const itemId = $(this).val();
+			console.log("Item ID: " + itemId); // Debugging
+			const quantity = parseInt($(`#quantityInput-${itemId}`).val());
+			const price = parseFloat($(`#subPrice-${itemId}`).text().replace('RM', '').replace(',',''));
+			subtotal += price;
+			totalCount += quantity;
+		});
 
+		$('#subItemPrice').text(`RM${subtotal.toFixed(2)}`);
+		$('.cart-info--count').text(totalCount);
 
+		const shippingCost = parseFloat($('#shippingCost').text().replace('RM', ''));
+		const discountRate = parseFloat($('#discountRate').text().replace('%', '').replace('<b>', '').replace('</b>', ''));
+		const discount = subtotal * discountRate/100;
+		// Calculate and update the final total
+		let finalTotal = subtotal + shippingCost - discount;
+		if (subtotal === 0) {
+			finalTotal = 0;
+		}
+		$('#finalTotalPrice').text(`RM${finalTotal.toFixed(2)}`);
+		$('#discount').html(`<b>RM${discount.toFixed(2)}</b>`);
+		checkAllCheckboxes();
+	}
+
+// Event listener for checkbox changes
+$('.product-checkbox').on('change', function() {
+        updateTotal();
+    });
+
+    // Event listener for the "Toggle All" checkbox
+    $('#toggleAll').on('change', function() {
+		$('.product-checkbox').each(function() {
+			if (!$(this).is(':disabled')) {
+				$(this).prop('checked', $('#toggleAll').is(':checked'));
+			}
+		});
+		checkAllCheckboxes();
+		updateTotal();
+	});
+    var shippingCost = 0;
+	$('#stateSelect').on('change', function() {
+		if (this.value === "") {
+        	$('#shippingCost').text(`undefined`);
+			$('#shippingCostHidden').val(`undefined`);
+		} else {
+			updateShippingCost(this.value);
+		}
+		updateTotal();
+    });
+	function updateShippingCost(selectedState) {
+		// List of East Malaysia states
+		var eastMalaysiaStates = ['Sabah', 'Sarawak', 'Labuan'];
+
+		// Check if the selected state is in East Malaysia
+		shippingCost = eastMalaysiaStates.includes(selectedState) ? 10 : 5;
+		
+		// Update the shipping cost display
+		$('#shippingCost').text(`RM${shippingCost.toFixed(2)}`);
+		$('#shippingCostHidden').val(shippingCost.toFixed(2));
+	}
+
+updateTotal();
+	
 document.querySelectorAll('.num-product').forEach(function(quantityInput) {
     quantityInput.addEventListener('input', function() {
         var value = parseInt(this.value);
@@ -285,10 +419,9 @@ document.querySelectorAll('.num-product').forEach(function(quantityInput) {
         },
         success: function(response) {
             document.querySelector(`#subPrice-${itemId}`).textContent = `RM${response.newSubPrice}`;
-            document.querySelector('#subItemPrice').textContent = `RM${response.itemTotalPrice}`;
-			document.querySelector('#shippingCost').textContent = `RM${response.shippingCost}`;
-			document.querySelector('#finalTotalPrice').textContent = `RM${response.totalPrice}`;
 			document.querySelector('#discount').textContent = `RM${response.discount}`;
+			updateTotal();
+			updateCartTotalQuantity();
         },
         error: function(xhr) {
             console.error('Error updating cart:', xhr.responseText);
@@ -296,9 +429,102 @@ document.querySelectorAll('.num-product').forEach(function(quantityInput) {
     });
 });
 });
+function updateCartTotalQuantity() {
+    $.ajax({
+        url: '../user/update-cart-header-quantity', // URL to the route that returns total quantity
+        type: 'GET',
+        success: function(response) {
+            $('.icon-header-noti').attr('data-notify', response.totalQuantity);
+        },
+        error: function(xhr) {
+            // Handle error
+        }
+    });
+}
+
+                $(document).ready(function() {
+                 $('.cart-item-image').on('click', function(event) {
+            event.preventDefault(); 
+            var itemId = $(this).data('item-id');
+            swal({
+                title: "Are you sure?",
+                text: "Do you want to remove this item from your cart?",
+                icon: "warning",
+                buttons: true,
+                dangerMode: true,
+            })
+            .then((willDelete) => {
+                if (willDelete) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '../user/remove-from-cart', // Update with your URL
+                        data: {
+                            _token: '{{ csrf_token() }}',
+                            itemId: itemId
+                        },
+                        success: function(response) {        
+							$('#cart-item-' + itemId).remove();
+
+                        // Check if all items are removed
+                        if ($('.table_row').length === 0) {
+                            $('.table-shopping-cart').html('<tr><td colspan="6" class="text-center">Your cart is empty.</td></tr>');
+                        }
+						$('.icon-header-noti').attr('data-notify', response.totalQuantity);
+                        swal("The item has been removed from your cart!", {
+                            icon: "success",
+                        });
+						updateCartTotalQuantity()
+                        },
+                        error: function(xhr) {
+                            console.error("Error removing item:", xhr.responseText);
+                            var errorMessage = xhr.responseJSON.error;
+                            swal("Error!", errorMessage, "error");
+                        }
+                    });
+                }
+            });
+        });});
+});
+
+$(document).ready(function() {
+    $('#checkoutForm').on('submit', function(e) {
+        var errorMessages = [];
+        var selectedItems = $("input[name='selectedItems[]']:checked").length;
+        var address = $("input[name='postcode'][placeholder='Address']").val().trim();
+        var postcode = $("input[name='postcode'][placeholder='Postcode / Zip']").val().trim();
+        var state = $("#stateSelect").val();
+        var country = $("select[name='time']").val();
+
+        if (selectedItems === 0) {
+            errorMessages.push('Please select at least one item to proceed.');
+        }
+        if (!address) {
+            errorMessages.push('Please enter your delivery address.');
+        }
+        if (!postcode) {
+            errorMessages.push('Please enter your postcode or zip code.');
+        }
+        if (!state) {
+            errorMessages.push('Please select a state.');
+        }
+        if (!country) {
+            errorMessages.push('Please select your country.');
+        }
+
+        if (errorMessages.length > 0) {
+            e.preventDefault(); // Prevent form submission
+            Swal.fire({
+                title: 'Error!',
+                html: errorMessages.join('<br>'),
+                icon: 'error',
+                confirmButtonText: 'OK'
+            });
+            return false; // Stop the form from submitting
+        }
+    });
+});
 
 
 
-
-</script>
+        </script>
 @endsection

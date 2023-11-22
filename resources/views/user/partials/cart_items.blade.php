@@ -2,7 +2,7 @@
                 @foreach ($cartItems as $item)
                     <li class="header-cart-item flex-w flex-t m-b-12" id="cartItem-{{ $item->id }}">
                         <div class="header-cart-item-img cart-item-image" data-item-id="{{ $item->id }}">
-                            <img src="{{ asset('user/images/product/' . explode('|', $item->product->productImage)[0]) }}" alt="Product Image" >
+                            <img src="{{ asset('user/images/product/' . explode('|', $item->product->productImgObj)[0]) }}" alt="Product Image" >
                         </div>
 
                         <div class="header-cart-item-txt p-t-2">
@@ -41,13 +41,14 @@
                         },
                         success: function(response) {
                             $('#cartItem-' + itemId).remove();
+
                             if(response.newTotal !== undefined) {
                                 $('#totalPrice').text('Total: RM' + response.newTotal);
                             }
                             if ($('.header-cart-item').length === 0) {
                                 $('.header-cart-content').html('<p>Your cart is empty</p>');
                             }
-                            
+                            $('.icon-header-noti').attr('data-notify', response.totalQuantity);
                             swal("The item has been removed from your cart!", {
                                 icon: "success",
                             });

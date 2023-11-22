@@ -16,7 +16,8 @@ return new class extends Migration
             $table->string('productName');
             $table->string('productType');
             $table->string('productDesc');
-            $table->string('productImage');
+            $table->string('productImgObj');
+            $table->string('productTryOnQR');
             $table->string('category');
             $table->string('color');
             $table->string('size');

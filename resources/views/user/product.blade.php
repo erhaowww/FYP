@@ -255,7 +255,7 @@ use App\Enums\ProductColor;
                         <!-- Block2 -->
                         <div class="block2">
                             <div class="block2-pic hov-img0">
-							<img src="{{ asset('user/images/product/' . explode('|', $product->productImage)[0]) }}" alt="{{ $product->productImage }}">
+							<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
                             </div>
 
                             <div class="block2-txt flex-w flex-t p-t-14">
