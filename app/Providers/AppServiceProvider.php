@@ -32,18 +32,20 @@ class AppServiceProvider extends ServiceProvider
     {
         View::composer('user/header', function ($view) use ($cartItemRepository) {
             try {
+                $totalQuantity = 0;
                 if (Auth::check()) {
                     $userId = Auth::id();
                     $cartItems = $cartItemRepository->getByUserId($userId);
                     $totalPrice = $cartItems->reduce(function ($total, $item) {
                         return $total + ($item->quantity * $item->product->price);
                     }, 0);
+                    $totalQuantity = $cartItems->sum('quantity');
                 } else {
                     $cartItems = collect();
                     $totalPrice = 0;
                 }
         
-                $view->with('cartItems', $cartItems)->with('totalPrice', $totalPrice);
+                $view->with('cartItems', $cartItems)->with('totalPrice', $totalPrice)->with('totalQuantity', $totalQuantity);
             } catch (\Exception $e) {
                 \Log::error('Error in View Composer: ' . $e->getMessage());
             }

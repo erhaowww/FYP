@@ -6,6 +6,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartItemController;
+use App\Http\Controllers\PaymentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -53,12 +54,15 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/remove-from-cart', [CartItemController::class, 'removeItem']);
     Route::get('/cart', [CartItemController::class, 'showCart']);
     Route::post('/update-cart-item', [CartItemController::class, 'updateItem']);
+    Route::get('/update-cart-header-quantity', [CartItemController::class, 'getTotalQuantity']);
+    Route::post('/make-order', [CartItemController::class, 'makeOrder']);
 
     Route::get('/payment-history', [UserController::class, 'displayPaymentHistory'])->name('paymentHistory');
     Route::get('/change-password', [UserController::class, 'changePassword'])->name('changePassword');
     Route::post('/edit_password/{id}', [UserController::class, 'edit_password'])->name('submitChangePassword');
 
-
+    Route::post('/process-payment', [PaymentController::class, 'processPayment']);
+    Route::get('/payment/token', [PaymentController::class, 'clientToken']);
 });
 
 

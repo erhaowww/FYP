@@ -101,7 +101,7 @@
                     </div>
                         
                     <div class="flex-c-m h-full p-r-24">
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 icon-header-noti js-show-cart" data-notify="2">
+                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 icon-header-noti js-show-cart" data-notify="{{ $totalQuantity }}">
                             <i class="zmdi zmdi-shopping-cart"></i>
                         </div>
                     </div>
@@ -132,7 +132,7 @@
             </div>
 
             <div class="flex-c-m h-full p-lr-10 bor5">
-                <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 icon-header-noti js-show-cart" data-notify="2">
+                <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 icon-header-noti js-show-cart" data-notify="{{ $totalQuantity }}">
                     <i class="zmdi zmdi-shopping-cart"></i>
                 </div>
             </div>
@@ -604,7 +604,7 @@
                             if ($('.header-cart-item').length === 0) {
                                 $('.header-cart-content').html('<p>Your cart is empty</p>');
                             }
-                            
+                            $('.icon-header-noti').attr('data-notify', response.totalQuantity);
                             swal("The item has been removed from your cart!", {
                                 icon: "success",
                             });

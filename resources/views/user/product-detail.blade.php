@@ -1,5 +1,32 @@
 @extends('user/master')
 @section('content')
+<style>
+	.bg4{
+		background-color:#9A9A9A;
+	}
+	.wrap-modal1 {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		position: fixed; 
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		background: rgba(0, 0, 0, 0.3); 
+		z-index: 1000;
+	}
+	.wrap-modal1 img {
+		object-fit: contain;
+		width: 320px;
+		height: 320px;
+	}
+	.select2-container--default .select2-results__option[aria-disabled=true] {
+	color: #999;
+	padding-top: 10px;
+	padding-bottom: 10px;
+	padding-left: 20px; }
+	</style>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
    <!-- breadcrumb -->
 	<div class="container">
@@ -31,7 +58,7 @@
 							<div class="wrap-slick3-dots"></div>
 							<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
 							@php
-							$imageFiles = explode('|', $mainProduct->productImage);
+							$imageFiles = explode('|', $mainProduct->productImgObj);
 							@endphp
 							<div class="slick3 gallery-lb">
 							@php
@@ -189,6 +216,12 @@
 									<button class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04 js-addcart-detail" type="submit">
 										Add to cart
 									</button>
+
+									@if (!empty($mainProduct->productTryOnQR))
+										<button class="flex-c-m stext-101 cl0 size-101 bg4 bor1 hov-btn1 p-lr-15 trans-04 js-show-modal1" id="tryOnBtn" type="button" style="margin-top:50px">
+											Try It Now
+										</button>
+									@endif
 								</div>
 							</div>	
 						</div>
@@ -401,7 +434,7 @@
 						
 						<div class="block2">
 							<div class="block2-pic hov-img0">
-							<img src="{{ asset('user/images/product/' . explode('|', $product->productImage)[0]) }}" alt="{{ $product->productImage }}">
+							<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
 							</div>
 
 							<div class="block2-txt flex-w flex-t p-t-14">
@@ -430,7 +463,23 @@
 			</div>
 		</div>
 	</section>
+	<div class="wrap-modal1 js-modal1 p-t-60 p-b-20">
+		<div class="overlay-modal1 js-hide-modal1"></div>
+
+		<img src="{{ asset('user/images/product/' . $mainProduct->productTryOnQR) }}"/>
+	</div>
+
+
 	<script>
+
+		$('.js-show-modal1').on('click',function(e){
+        e.preventDefault();
+        $('.js-modal1').addClass('show-modal1');
+    });
+
+    $('.js-hide-modal1').on('click',function(){
+        $('.js-modal1').removeClass('show-modal1');
+    });
     var colorSizeMap = @json($colorSizeMap); 
 	var maxQuantityMap = @json($maxQuantityMap);
 function updateSizes() {
@@ -461,6 +510,9 @@ function updateSizes() {
 			var option = document.createElement('option');
 			option.value = size.trim(); // Ensure we don't have leading/trailing whitespace
 			option.text = 'Size ' + size.trim();
+			if (maxQuantityMap.hasOwnProperty(size.trim()) && maxQuantityMap[size.trim()] === 0) {
+                option.disabled = true;
+            }
 			sizeSelect.appendChild(option);
 		});
 
