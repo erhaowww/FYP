@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartItemController;
 /*
@@ -38,18 +39,25 @@ Route::post('/login', [UserController::class, 'login']);
 Route::get('/product', [ProductController::class, 'show'])->name('products.show');
 Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
 
+Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
+
+
 // user
 Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::get('/edit-profile', [UserController::class, 'edit_profile'])->name('profile');
     Route::post('/submitEditProfileForm/{id}', [UserController::class, 'submitEditProfileForm'])->name('submitEditProfileForm');
     Route::get('/sendOTP/{phoneNumber}', [UserController::class, 'sendOTP']);
     Route::get('/validateOTP/{otp}', [UserController::class, 'validateOTP']);
+
     Route::post('/add-to-cart', [CartItemController::class, 'addToCart']);
     Route::post('/remove-from-cart', [CartItemController::class, 'removeItem']);
     Route::get('/cart', [CartItemController::class, 'showCart']);
     Route::post('/update-cart-item', [CartItemController::class, 'updateItem']);
 
     Route::get('/payment-history', [UserController::class, 'displayPaymentHistory'])->name('paymentHistory');
+    Route::get('/change-password', [UserController::class, 'changePassword'])->name('changePassword');
+    Route::post('/edit_password/{id}', [UserController::class, 'edit_password'])->name('submitChangePassword');
+
 
 });
 

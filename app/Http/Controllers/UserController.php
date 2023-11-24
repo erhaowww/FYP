@@ -296,4 +296,32 @@ class UserController extends Controller
         return json_encode($response);
     }
 
+    public function changePassword(){
+        $user_id = auth()->user()->id;
+        $data = $this->userRepository->findUser($user_id);
+        return view('user/changePassword', compact('data'));
+    }
+
+    public function edit_password(Request $req, $id){
+        $user = $this->userRepository->findUser($id);
+        if(!$req->has('password')){
+            if(!Hash::check($req->current_password, $user->password))
+            {
+                return back()->with('error', 'Invalid current password');
+            }
+            else
+            {
+                return back()->with('appendFields', true);
+            }
+        } else {
+            $req->validate([
+                'password' => 'required|string|regex:/^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{}:"<>?;\',.\/\\`~])[A-Za-z0-9!@#$%^&*()_+\-=\[\]{}:"<>?;\',.\/\\`~]{8,16}$/|confirmed',
+            ], [
+                'password.regex' => 'The password must be 8-16 characters long and contain at least one letter, one number, and one special character.'
+            ]);
+            $this->userRepository->edit_password($req, $id);
+            return back()->with('success', 'Password changed successfully');
+        }
+    }
+
 }

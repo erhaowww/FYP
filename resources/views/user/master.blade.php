@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="{{asset('user/css/chatbot/chat.css')}}">
     <link rel="stylesheet" href="{{asset('user/css/chatbot/chatbot.css')}}">
     <link rel="stylesheet" href="{{asset('user/css/chatbot/typing.css')}}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
 <!--===============================================================================================-->	
 	<link rel="icon" type="image/png" href="{{asset('user/images/icons/signal.png')}}"/>
@@ -39,12 +40,13 @@
 <!--===============================================================================================-->
 
 <!--===============================================================================================-->	
-<script src="{{asset('user/vendor/jquery/jquery-3.2.1.min.js')}}"></script>
+    <script src="{{asset('user/vendor/jquery/jquery-3.2.1.min.js')}}"></script>
 <!--===============================================================================================-->
 	<script src="{{asset('user/vendor/animsition/js/animsition.min.js')}}"></script>
 <!--===============================================================================================-->
 	<script src="{{asset('user/vendor/bootstrap/js/popper.js')}}"></script>
 	<script src="{{asset('user/vendor/bootstrap/js/bootstrap.min.js')}}"></script>
+<!--===============================================================================================-->
 
     <style>
         /* Style for the notifications popup container */
@@ -100,6 +102,34 @@
         background-color: #f5f5f5;
         cursor: pointer;
         }
+
+        .emoji-picker-container {
+            position: relative;
+        }
+
+        emoji-picker {
+            position: absolute;
+            bottom: 100%; /* This will make it pop out above the chatbox footer */
+            right: 0; /* Adjust this as needed to align with the emoji icon */
+            z-index: 1000; /* Ensure it's above other elements */
+        }
+
+        .chatbox__microphone-icon.listening {
+            /* style change when listening */
+            opacity: 0.5;
+        }
+
+        .chatbox__send--footer {
+            cursor: pointer;
+        }
+
+        .chatbox__microphone-icon {
+            cursor: pointer;
+        }
+
+        .chatbox__emoji-icon {
+            cursor: pointer;
+        }
     </style>
 </head>
 <body class="animsition">
@@ -122,7 +152,7 @@
                 </div>
                 <div class="chatbox__messages">
                     <div>
-                        <div class="messages__item--visitor">
+                        <div class="messages__item--operator">
                             <!-- Frequently Asked Question buttons -->
                             <div class="faq-buttons">
                                 <button type="button" class="faq-button">How can I contact support?</button>
@@ -130,31 +160,18 @@
                                 <button type="button" class="faq-button">Do you offer refunds?</button>
                             </div>
                         </div>
-                        <div class="messages__item messages__item--visitor">
-                            Can you let me talk to the support?
-                        </div>
-                        <div class="messages__item messages__item--operator">
-                            Sure!
-                        </div>
-                        <div class="messages__item messages__item--visitor">
-                            Need your help, I need a developer in my site.
-                        </div>
-                        <div class="messages__item messages__item--operator">
-                            Hi... What is it? I'm a front-end developer, yay!
-                        </div>
-                        <div class="messages__item messages__item--typing">
-                            <span class="messages__dot"></span>
-                            <span class="messages__dot"></span>
-                            <span class="messages__dot"></span>
-                        </div>
+                        
+                        
                     </div>
                 </div>
                 <div class="chatbox__footer">
-                    <img src="{{asset('user/images/icons/emojis.svg')}}" alt="">
-                    <img src="{{asset('user/images/icons/microphone.svg')}}" alt="">
-                    <input type="text" placeholder="Write a message...">
+                    <div class="emoji-picker-container" style="position: relative;">
+                        <emoji-picker style="display: none; position: absolute; bottom: 100%;"></emoji-picker>
+                    </div>
+                    <img src="{{asset('user/images/icons/emojis.svg')}}" class="chatbox__emoji-icon" alt="">
+                    <img src="{{asset('user/images/icons/microphone.svg')}}" class="chatbox__microphone-icon" alt="">
+                    <input type="text" class="chatbox__userQuery" placeholder="Write a message..." name="chatbox__userQuery">
                     <p class="chatbox__send--footer">Send</p>
-                    <img src="{{asset('user/images/icons/attachment.svg')}}" alt="">
                 </div>
             </div>
             <div class="chatbox__button">
@@ -162,6 +179,7 @@
             </div>
         </div>
     </div>
+    {{-- end chatbot --}}
 
     <script src="{{asset('user/js/chatbot/Chat.js')}}"></script>
     <script type="text/javascript">
@@ -366,6 +384,159 @@
 	</script>
 <!--===============================================================================================-->
 	<script src="{{asset('user/js/main.js')}}"></script>
+
+    <script>
+        // Check for browser support
+        var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+
+        if (SpeechRecognition) {
+            let recognition = new SpeechRecognition();
+            let isListening = false;
+            const microphoneButton = document.querySelector('.chatbox__microphone-icon');
+            const chatInput = document.querySelector('.chatbox__userQuery');
+
+            microphoneButton.addEventListener('click', () => {
+                if (isListening) {
+                    recognition.stop();
+                    return;
+                }
+
+                recognition.lang = 'en-US'; // Set the language of the recognition
+                recognition.start(); // Start the recognition
+                isListening = true;
+                microphoneButton.classList.add('listening'); // Optional: change the icon style when listening
+            });
+
+            recognition.onresult = (event) => {
+                const transcript = Array.from(event.results)
+                    .map(result => result[0])
+                    .map(result => result.transcript)
+                    .join('');
+
+                chatInput.value += transcript; // Append the transcript to the input field
+            };
+
+            recognition.onend = () => {
+                isListening = false;
+                microphoneButton.classList.remove('listening'); // Optional: revert the icon style when not listening
+            };
+
+            recognition.onerror = (event) => {
+                console.error('Speech recognition error', event.error);
+                isListening = false;
+                microphoneButton.classList.remove('listening'); // Optional: revert the icon style when not listening
+            };
+        } else {
+            console.log('Speech Recognition Not Available');
+            // Hide or disable the microphone button as speech recognition is not supported in the browser
+        }
+    </script>
+
+    <script type="module">
+        import 'https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/index.js'
+    </script>
+      
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const emojiPicker = document.querySelector('.emoji-picker-container emoji-picker');
+            const emojiButton = document.querySelector('.chatbox__emoji-icon');
+            const chatInput = document.querySelector('.chatbox__userQuery');
+
+            emojiButton.addEventListener('click', () => {
+                const isDisplayed = window.getComputedStyle(emojiPicker).display !== 'none';
+                emojiPicker.style.display = isDisplayed ? 'none' : 'block';
+                emojiButton.style.opacity = isDisplayed ? '1' : '0.5';
+            });
+
+            emojiPicker.addEventListener('emoji-click', event => {
+                chatInput.value += event.detail.unicode;
+                chatInput.focus(); // Brings focus back to the input after selecting an emoji
+            });
+        });
+    </script>
+
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+
+        function sendMessage() {
+            $value = $('.chatbox__userQuery').val();
+            var $messages = $(".chatbox__messages");
+
+            //avoid sending empty messages
+            if ($value.trim() === '') {
+                swal({
+                    title: "Error!",
+                    text: "Please don't send empty query messages",
+                    icon: "error",
+                    buttons: false,
+                    timer: 3000
+                });
+                return;
+            }
+
+            // Create a new message element
+            var $newMessage = $('<div class="messages__item messages__item--visitor">' + $value + '</div>');
+
+            // Append the new message at the beginning of the container, which appears at the bottom due to flex-reverse
+            $messages.append($newMessage);
+
+            // Scroll to the new message
+            $messages.scrollTop($messages.prop("scrollHeight"));
+
+            // Clear the input field
+            $('.chatbox__userQuery').val('');
+
+            // Show a loading message
+            var $loadingMessage = $('<div class="messages__item messages__item--typing"><span class="messages__dot"></span><span class="messages__dot"></span><span class="messages__dot"></span></div>');
+            $messages.append($loadingMessage);
+            $messages.scrollTop($messages.prop("scrollHeight"));
+
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('sendChat') }}",
+                data: {
+                    'input': $value
+                },
+                success: function(response) {
+                    // Remove the loading message
+                    $loadingMessage.remove();
+                    $responseMessage = $('<div class="messages__item messages__item--operator">' + response.choices[0].message.content + '</div>');
+                    $messages.append($responseMessage);
+                    $messages.scrollTop($messages.prop("scrollHeight"));
+                },
+                error: function(xhr) {
+                    // Remove the loading message
+                    $loadingMessage.remove();
+
+                    // Check if the response is in JSON format
+                    var errorResponse = xhr.responseJSON;
+                    
+                    // Check if an error message is provided
+                    var errorMessage = errorResponse && errorResponse.error ? errorResponse.error : "An unknown error occurred.";
+
+                    // Display the error message
+                    var $errorMessage = $('<div class="messages__item messages__item--operator">' + errorMessage + '</div>');
+                    $messages.append($errorMessage);
+                    $messages.scrollTop($messages.prop("scrollHeight"));
+                }
+            })
+        }
+            
+        // Send button click event
+        $(".chatbox__send--footer").on('click', sendMessage);
+
+        // Keypress event for Enter key on the input field
+        $('.chatbox__userQuery').on('keypress', function (e) {
+            if (e.which == 13) { // 13 is the Enter key's keycode
+                sendMessage();
+                return false; // Prevents the default action of the Enter key
+            }
+        });
+    </script>
 </body>
 
 </html>

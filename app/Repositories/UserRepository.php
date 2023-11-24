@@ -58,4 +58,11 @@ class UserRepository implements UserRepositoryInterface
         $user->password = Hash::make($data['password']);
         $user->save();
     }
+
+    public function edit_password($data, $id)
+    {
+        $user = User::find($id);
+        $user->password = Hash::make($data['password']);
+        $user->save();
+    }
 }

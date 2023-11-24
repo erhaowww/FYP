@@ -43,11 +43,12 @@
 
 /* MESSAGES */
 .chatbox__messages {
-    margin-top: auto;
     display: flex;
     flex-direction: column;
-    overflow-y: scroll;
-    flex-direction: column-reverse;
+    overflow-y: auto;
+    pointer-events: auto;
+    justify-content: flex-start;
+    height: 100%;
 }
 
 .messages__item {
@@ -56,11 +57,11 @@
     width: fit-content;
 }
 
-.messages__item--operator {
+.messages__item--visitor {
     margin-left: auto;
 }
 
-.messages__item--visitor {
+.messages__item--operator {
     margin-right: auto;
 }
 
@@ -68,6 +69,8 @@
 .chatbox__footer {
     position: sticky;
     bottom: 0;
+    pointer-events: auto;
+
 }
 
 
