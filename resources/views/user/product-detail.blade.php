@@ -147,16 +147,23 @@
 
 							$colorSizeMap = [];
 							$maxQuantityMap = [];
+
 							foreach ($colors as $index => $color) {
+								$colorTrimmed = trim($color);
 								$sizes = isset($sizePairs[$index]) ? explode(',', $sizePairs[$index]) : [];
 								$quantities = isset($quantityPairs[$index]) ? explode(',', $quantityPairs[$index]) : [];
 
-								$colorSizeMap[trim($color)] = $sizes;
+								$colorSizeMap[$colorTrimmed] = $sizes;
 
 								foreach ($sizes as $sizeIndex => $size) {
 									$sizeTrimmed = trim($size);
 									$maxQuantity = isset($quantities[$sizeIndex]) ? (int)$quantities[$sizeIndex] : 0;
-									$maxQuantityMap[$sizeTrimmed] = $maxQuantity;
+
+									// Update maxQuantityMap to include color as a key
+									if (!isset($maxQuantityMap[$colorTrimmed])) {
+										$maxQuantityMap[$colorTrimmed] = [];
+									}
+									$maxQuantityMap[$colorTrimmed][$sizeTrimmed] = $maxQuantity;
 								}
 							}
 						@endphp
@@ -508,11 +515,11 @@ function updateSizes() {
 		// Iterate over the sizes for the selected color
 		colorSizeMap[selectedColor].forEach(function(size) {
 			var option = document.createElement('option');
-			option.value = size.trim(); // Ensure we don't have leading/trailing whitespace
+			option.value = size.trim();
 			option.text = 'Size ' + size.trim();
-			if (maxQuantityMap.hasOwnProperty(size.trim()) && maxQuantityMap[size.trim()] === 0) {
-                option.disabled = true;
-            }
+			if (selectedColor in maxQuantityMap && maxQuantityMap[selectedColor].hasOwnProperty(size.trim()) && maxQuantityMap[selectedColor][size.trim()] === 0) {
+				option.disabled = true;
+			}
 			sizeSelect.appendChild(option);
 		});
 
@@ -522,21 +529,26 @@ function updateSizes() {
 }
 
 function updateQuantity() {
-        var sizeSelect = document.getElementById('sizeSelect');
-        var selectedSize = sizeSelect.options[sizeSelect.selectedIndex].value; // Get the selected size value
-        var quantityInput = document.getElementById('quantityInput'); // Get the quantity input element
+    var colorSelect = document.getElementById('colorSelect');
+    var selectedColor = colorSelect.value; // Get the selected color value
+    var sizeSelect = document.getElementById('sizeSelect');
+    var selectedSize = sizeSelect.value; // Get the selected size value from the dropdown
+    var quantityInput = document.getElementById('quantityInput'); // Get the quantity input element
+    var maxProductQuantity = document.getElementById('maxProductQuantity'); // Ensure this element exists in your HTML
 
-        if (maxQuantityMap.hasOwnProperty(selectedSize)) {
-            var maxQuantity = maxQuantityMap[selectedSize];
-            quantityInput.max = maxQuantity; // Set the max attribute
-			maxProductQuantity.value = maxQuantity;
-            quantityInput.value = maxQuantity > 0 ? 1 : 0; // Reset the quantity input to 1 or 0 depending on availability
-        } else {
-            quantityInput.max = 0; // No size selected, or no quantity available
-            quantityInput.value = 0;
-			maxProductQuantity.value = 0;
-        }
+    // Correctly access the max quantity using both color and size
+    if (selectedColor in maxQuantityMap && selectedSize in maxQuantityMap[selectedColor]) {
+        var maxQuantity = maxQuantityMap[selectedColor][selectedSize];
+
+        quantityInput.max = maxQuantity; // Set the max attribute
+        maxProductQuantity.value = maxQuantity;
+        quantityInput.value = maxQuantity > 0 ? 1 : 0; // Reset the quantity input to 1 or 0 depending on availability
+    } else {
+        quantityInput.max = 0; // No size selected, or no quantity available
+        quantityInput.value = 0;
+        maxProductQuantity.value = 0;
     }
+}
 
 	var quantityInput = document.getElementById('quantityInput');
 

@@ -5,13 +5,16 @@ use Auth;
 use Braintree\Gateway;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Repositories\Interfaces\PaymentRepositoryInterface;
 
 class PaymentController extends Controller
 {
     protected $gateway;
+    protected $paymentRepository;
+    
+    public function __construct(PaymentRepositoryInterface $paymentRepository) {
+        $this->paymentRepository = $paymentRepository;
 
-    public function __construct()
-    {
         $this->gateway = new Gateway([
             'environment' => config('braintree.environment'),
             'merchantId' => config('braintree.merchantId'),
@@ -23,11 +26,11 @@ class PaymentController extends Controller
 
     public function processPayment(Request $request)
     {
-        \Log::info('Request: ' . json_encode($request->all()));
-        if (empty($request->payment_method_nonce)) {
+        \Log::info('transactionId: ' . $request->transactionId);
+        if (empty($request->transactionId)) {
             return response()->json(['success' => false, 'message' => 'Payment method nonce is missing.']);
         }
-        $amount = 10.00; // Or any other logic to determine the amount
+        $amount = $request->totalPrice;
 
         // Determine the card type
         $cardType = $this->determineCardType($request->cardNumber);
@@ -35,18 +38,21 @@ class PaymentController extends Controller
         // Proceed with the payment transaction
         $result = $this->gateway->transaction()->sale([
             'amount' => $amount,
-            'paymentMethodNonce' => $request->payment_method_nonce,
+            'paymentMethodNonce' => $request->transactionId,
             'options' => ['submitForSettlement' => true]
         ]);
 
         if ($result->success) {
-            // Transaction successful
-            Log::info('Transaction successful: ', ['transaction' => $result->transaction, 'cardType' => $cardType]);
-            return response()->json(['success' => true, 'transaction' => $result->transaction, 'cardType' => $cardType]);
+            return response()->json([
+                'success' => true,
+                'transactionId' => $result->transaction->id,  // Get the transaction ID
+                'cardType' => $cardType
+            ]);
         } else {
-            // Transaction failed
-            Log::error('Transaction failed: ', ['message' => $result->message, 'cardType' => $cardType]);
-            return response()->json(['success' => false, 'message' => $result->message, 'cardType' => $cardType]);
+            return response()->json([
+                'success' => false,
+                'message' => $result->message
+            ]);
         }
     }
 
@@ -64,7 +70,6 @@ class PaymentController extends Controller
             'amex' => '/^3[47][0-9]{13}$/',
             'discover' => '/^6(?:011|5[0-9]{2})[0-9]{12}$/',
             'troy' => '/^9792[0-9]{12}$/',
-            // Add more card types here if needed
         ];
 
         foreach ($cardPatterns as $type => $pattern) {

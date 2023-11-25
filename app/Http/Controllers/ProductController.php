@@ -5,14 +5,17 @@ use Illuminate\Http\Request;
 use App\Enums\ProductCategory;
 use App\Enums\ProductType;
 use App\Enums\ProductColor;
+use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
-
+use App\Repositories\Interfaces\CartItemRepositoryInterface;
 class ProductController extends Controller
 {
     protected $productRepository;
-    public function __construct(ProductRepositoryInterface $productRepository)
+    protected $cartItemRepository;
+    public function __construct(ProductRepositoryInterface $productRepository,CartItemRepositoryInterface $cartItemRepository)
     {
         $this->productRepository = $productRepository;
+        $this->cartItemRepository = $cartItemRepository;
     }
     public function show(Request $request)
     {
@@ -39,7 +42,62 @@ class ProductController extends Controller
             'relatedProducts' => $relatedProducts,
         ]);
     }
-
+    public function checkStock(Request $request) {
+        Log::info('Checking stock with request data:', $request->all());
+    
+        // Split cartItemIds string into an array
+        $cartItemIds = explode('|', $request->input('cartItemIds', ''));
+        $isInStock = true;
+    
+        // Retrieve cart items including associated products
+        $cartItems = $this->cartItemRepository->getByIds($cartItemIds);
+        Log::info('Retrieved cart items:', ['cartItems' => $cartItems]);
+    
+        foreach ($cartItems as $cartItem) {
+            // Log each cart item and its associated product
+            Log::info('Cart Item:', ['cartItem' => $cartItem]);
+    
+            // Check if product is deleted
+            if ($cartItem->product->deleted) {
+                Log::info('Product is deleted', ['productId' => $cartItem->productId]);
+                $isInStock = false;
+                break;
+            }
+    
+            // Parse and log the stock information
+            $stockInfo = $this->parseStockInfo($cartItem->product->color, $cartItem->product->size, $cartItem->product->stock);
+            Log::info('Parsed stock info', ['stockInfo' => $stockInfo]);
+    
+            // Check if stock is sufficient
+            if (!$this->isStockSufficient($stockInfo, $cartItem->color, $cartItem->size, $cartItem->quantity)) {
+                Log::info('Stock insufficient', ['product' => $cartItem->product->id, 'requested' => ['color' => $cartItem->color, 'size' => $cartItem->size, 'quantity' => $cartItem->quantity]]);
+                $isInStock = false;
+                break;
+            }
+        }
+    
+        // Log the final result of the stock check
+        Log::info('Stock check result', ['inStock' => $isInStock]);
+        return response()->json(['success' => true, 'inStock' => $isInStock]);
+    }
+    
+    protected function parseStockInfo($colors, $sizes, $stocks) {
+        $colorArray = explode('|', $colors);
+        $sizeArray = array_map('explode', array_fill(0, count($colorArray), ','), explode('|', $sizes));
+        $stockArray = array_map('explode', array_fill(0, count($colorArray), ','), explode('|', $stocks));
+    
+        $stockInfo = [];
+        foreach ($colorArray as $colorIndex => $color) {
+            foreach ($sizeArray[$colorIndex] as $sizeIndex => $size) {
+                $stockInfo[$color][$size] = $stockArray[$colorIndex][$sizeIndex];
+            }
+        }
+        return $stockInfo;
+    }
+    
+    protected function isStockSufficient($stockInfo, $color, $size, $quantity) {
+        return isset($stockInfo[$color][$size]) && $stockInfo[$color][$size] >= $quantity;
+    }
 
 }
 

@@ -7,6 +7,7 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatController;
 /*
@@ -66,6 +67,9 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
 
     Route::post('/process-payment', [PaymentController::class, 'processPayment']);
     Route::get('/payment/token', [PaymentController::class, 'clientToken']);
+    Route::post('/store-transaction', [OrderController::class, 'store']);
+    Route::get('/tracking/{orderId}', [OrderController::class, 'track']);
+    Route::post('/check-stock', [ProductController::class, 'checkStock']);
 });
 
 

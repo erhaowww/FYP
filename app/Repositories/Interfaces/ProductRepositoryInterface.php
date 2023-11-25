@@ -7,4 +7,5 @@ interface ProductRepositoryInterface
     public function allWithFilters(Request $request);
     public function find($id);
     public function findRelatedProducts($type, $category, $excludeId);
+    public function updateStock($productId, $color, $size, $quantity);
 }

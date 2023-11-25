@@ -12,4 +12,6 @@ interface CartItemRepositoryInterface
     public function updateQuantity($itemId, $quantity);
     public function getTotalQuantityByUserId($userId);
     public function getByIds(array $ids);
+    public function getById($cartItemId);
+    public function updateStatus($cartItemId, $status);
 }

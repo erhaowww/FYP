@@ -140,7 +140,7 @@ class CartItemController extends Controller
     public function makeOrder(Request $request) {
         $selectedItemIds = $request->input('selectedItems', []);
         $cartItems = $this->cartItemRepository->getByIds($selectedItemIds);
-
+        
         $groupedItems = [];
         $overallSubtotal = 0; // This will hold the subtotal for all selected items
 
@@ -161,20 +161,29 @@ class CartItemController extends Controller
             $groupedItems[$productId]['details'][] = $productDetails . ' ' . $item->quantity;
             $groupedItems[$productId]['subtotal'] += $itemSubtotal;
         }
-
+        $cartItemIds = implode('|', $selectedItemIds);
         $discountRate = 10; // 10%
         $discount = $overallSubtotal * ($discountRate / 100);
         $shippingCost = $request->input('shippingCostHidden',0);
         $finalTotalPrice = $overallSubtotal + $shippingCost - $discount;
         $finalTotalPrice = floatval(str_replace(',', '', $finalTotalPrice));
         $discount = floatval(str_replace(',', '', $discount));
+
+        $address = $request->input('address');
+        $postcode = $request->input('postcode');
+        $state = $request->input('state');
+        $country = $request->input('country');
+        $fullAddress = "{$address}, {$postcode}, {$state}, {$country}";
+
         return view('/user/payment', [
             'groupedItems' => $groupedItems,
             'discountRate' => $discountRate,
             'discount' => number_format($discount, 2),
             'shippingCost' => $shippingCost,
             'finalTotalPrice' => number_format($finalTotalPrice, 2),
-            'cartItems' => $cartItems
+            'cartItemIds' => $cartItemIds,
+            'fullAddress' => $fullAddress,
+            'state' => $state,
         ]);
     }
 }

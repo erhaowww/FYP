@@ -9,6 +9,12 @@ use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\ProductRepository;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
 use App\Repositories\CartItemRepository;
+use App\Repositories\Interfaces\OrderRepositoryInterface;
+use App\Repositories\OrderRepository;
+use App\Repositories\Interfaces\PaymentRepositoryInterface;
+use App\Repositories\PaymentRepository;
+use App\Repositories\Interfaces\DeliveryRepositoryInterface;
+use App\Repositories\DeliveryRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -22,7 +28,9 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, UserRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, ProductRepository::class);
         $this->app->bind(CartItemRepositoryInterface::class, CartItemRepository::class);
-
+        $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
+        $this->app->bind(DeliveryRepositoryInterface::class, DeliveryRepository::class);
+        $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
     }
 
     /**
