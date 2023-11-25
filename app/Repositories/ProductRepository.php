@@ -4,6 +4,7 @@ namespace App\Repositories;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
+use Illuminate\Support\Facades\Log;
 class ProductRepository implements ProductRepositoryInterface
 {
     public function getAll()
@@ -88,4 +89,47 @@ class ProductRepository implements ProductRepositoryInterface
         return $query->get();         
     }
 
+    public function updateStock($productId, $color, $size, $quantity)
+    {
+        $product = Product::find($productId);
+        if ($product) {
+            // Parsing existing stock information
+            $colorArray = explode('|', $product->color);
+            $sizeArray = array_map(function ($sizes) {
+                return explode(',', $sizes);
+            }, explode('|', $product->size));
+            $stockArray = array_map(function ($stocks) {
+                return explode(',', $stocks);
+            }, explode('|', $product->stock));
+
+            // Finding the index of the specified color
+            $colorIndex = array_search($color, $colorArray);
+            if ($colorIndex === false) {
+                // Color not found
+                return;
+            }
+
+            // Finding the index of the specified size within the specified color
+            $sizeIndex = array_search($size, $sizeArray[$colorIndex]);
+            if ($sizeIndex === false) {
+                // Size not found
+                return;
+            }
+
+            // Reducing the stock
+            $currentStock = $stockArray[$colorIndex][$sizeIndex];
+            $newStock = max(0, $currentStock - $quantity); // Ensure stock doesn't go below zero
+            $stockArray[$colorIndex][$sizeIndex] = $newStock;
+
+            // Formatting the updated stock back to a string
+            $updatedStock = implode('|', array_map(function ($stocks) {
+                return implode(',', $stocks);
+            }, $stockArray));
+
+            // Saving updated stock
+            $product->stock = $updatedStock;
+            $product->save();
+        }
+    }
+    
 }

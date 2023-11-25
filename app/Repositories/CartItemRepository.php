@@ -112,4 +112,17 @@ class CartItemRepository implements CartItemRepositoryInterface
                 ->where('status', CartItemStatus::inCart->value)
                 ->get();
     }
+
+    public function getById($cartItemId) {
+        return CartItem::find($cartItemId);
+    }
+
+    public function updateStatus($cartItemId, $status)
+    {
+        $cartItem = CartItem::find($cartItemId);
+        if ($cartItem) {
+            $cartItem->status = $status;
+            $cartItem->save();
+        }
+    }
 }

@@ -100,7 +100,6 @@
 		  font-size: 22px;
 		  font-weight: 500;
 		  font-family: "Source Sans Pro", sans-serif;
-		  box-shadow: 3px 10px 20px 0px rgba(35, 100, 210, 0.3);
 		  color: #fff;
 		  margin-top: 20px;
 		  cursor: pointer;
@@ -642,7 +641,10 @@
 			<form class="needs-validation" novalidate method="post" action="/user/process-payment">
 			@csrf
 			<input type="hidden" id="payment_method_nonce" name="payment_method_nonce">
-
+			<input type="hidden" id="totalPrice" name="totalPrice" value="{{$finalTotalPrice}}">
+			<input type="hidden" id="cartItemIds" name="cartItemIds" value="{{ $cartItemIds }}">
+    		<input type="hidden" id="deliveryAddress" name="deliveryAddress" value="{{ $fullAddress }}">
+			<input type="hidden" id="state" name="state" value="{{ $state }}">
 			  <h4 class="mb-3">Payment</h4>
 			  <div class="wrapper" id="app">
 				<div class="card-form">
@@ -796,13 +798,14 @@
 <script src="https://js.braintreegateway.com/web/3.76.0/js/client.min.js"></script>
 <script src="https://js.braintreegateway.com/web/3.76.0/js/hosted-fields.min.js"></script>
 		<script>
-			var totalPrice = parseFloat("{{$finalTotalPrice}}");
+			var totalPrice = parseFloat("{{ $finalTotalPrice }}".replace(/,/g, ''));
+			var cartItemIds = {{ $cartItemIds }};
 		new Vue({
 		  el: "#app",
           delimiters: ['${', '}'],
 		  data() {
 			return {
-			  currentCardBackground: Math.floor(Math.random() * 25 + 1), // just for fun :D
+			  currentCardBackground: Math.floor(Math.random() * 25 + 1),
 			  cardName: "",
 			  cardNumber: "",
 			  cardMonth: "",
@@ -884,26 +887,53 @@
 		  }
 		});
 		
-	paypal.Buttons({
-		fundingSource: paypal.FUNDING.PAYPAL,
+		paypal.Buttons({
+    fundingSource: paypal.FUNDING.PAYPAL,
     createOrder: function(data, actions) {
-        return actions.order.create({
-            purchase_units: [{
-                amount: {
-                    value: totalPrice
-                }
-            }]
+        return checkStock().then(stockData => {
+            if (stockData.success && stockData.inStock) {
+                return actions.order.create({
+                    purchase_units: [{
+                        amount: {
+                            value: totalPrice
+                        }
+                    }]
+                });
+            } else {
+                Swal.fire({
+                    title: 'Out of Stock',
+                    html: 'Some items in your cart are out of stock.',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+                throw new Error('Out of stock');
+            }
         });
     },
     onApprove: function(data, actions) {
         return actions.order.capture().then(function(details) {
-            alert('Transaction completed by ' + details.payer.name.given_name);
+            submitOrderDetails(data.orderID, 'paypal');
         });
     },
     style: {
-        layout: 'vertical' // Layout of PayPal buttons
+        layout: 'vertical'
     }
 }).render('#paypal-button-container');
+
+function checkStock() {
+	console.log("Checking stock for cart items:", cartItemIds);
+    return fetch('/user/check-stock', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            cartItemIds: cartItemIds
+        })
+    })
+    .then(response => response.json());
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/user/payment/token')
@@ -916,44 +946,55 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('Error creating Braintree instance:', clientErr);
                     return;
                 }
-
                 document.getElementById('customCardButton').addEventListener('click', function(event) {
                     event.preventDefault();
+                    checkStock().then(stockData => {
+                        if (stockData.success && stockData.inStock) {
+                            var errors = [];
+                            var cardNumber = document.getElementById('cardNumber').value.replace(/\s+/g, '');
+                            var cardName = document.getElementById('cardName').value;
+                            var cardCvv = document.getElementById('cardCvv').value;
+                            var cardMonth = document.getElementById('cardMonth').value;
+                            var cardYear = document.getElementById('cardYear').value;
 
-                    var errors = [];
-                    var cardNumber = document.getElementById('cardNumber').value.replace(/\s+/g, '');
-                    var cardName = document.getElementById('cardName').value;
-                    var cardCvv = document.getElementById('cardCvv').value;
-                    var cardMonth = document.getElementById('cardMonth').value;
-                    var cardYear = document.getElementById('cardYear').value;
+                            // Validation
+                            if (!cardName.match(/^[a-zA-Z\s]*$/)) errors.push("Name must be alphabetic.");
+                            if (!cardNumber.match(/^\d{15,16}$/)) errors.push("Card number must be 15 or 16 digits.");
+                            if (!cardCvv.match(/^\d{3,4}$/)) errors.push("CVV must be 3 or 4 digits.");
+                            if (cardMonth === '' || cardYear === '') errors.push("Expiration date is required.");
 
-                    // Validation
-                    if (!cardName.match(/^[a-zA-Z\s]*$/)) errors.push("Name must be alphabetic.");
-                    if (!cardNumber.match(/^\d{16}$/)) errors.push("Card number must be 16 digits.");
-                    if (!cardCvv.match(/^\d{3,4}$/)) errors.push("CVV must be 3 or 4 digits.");
-                    if (cardMonth === '' || cardYear === '') errors.push("Expiration date is required.");
-
-                    if (errors.length > 0) {
-                        Swal.fire({
-                            title: 'Error!',
-                            html: errors.join('<br>'),
-                            icon: 'error',
-                            confirmButtonText: 'OK'
-                        });
-                    } else {
-                        tokenizeCard(clientInstance, {
-                            number: cardNumber,
-                            cvv: cardCvv,
-                            expirationMonth: cardMonth,
-                            expirationYear: cardYear
-                        });
-                    }
+                            if (errors.length > 0) {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    html: errors.join('<br>'),
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                tokenizeCard(clientInstance, {
+                                    number: cardNumber,
+                                    cvv: cardCvv,
+                                    expirationMonth: cardMonth,
+                                    expirationYear: cardYear
+                                });
+                            }
+                        } else {
+                            Swal.fire({
+                                title: 'Out of Stock',
+                                text: 'Some items in your cart are no longer available.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error during stock check:', error);
+                    });
                 });
             });
         })
         .catch(error => console.error('Error fetching client token:', error));
 });
-
 function tokenizeCard(clientInstance, cardData) {
     clientInstance.request({
         endpoint: 'payment_methods/credit_cards',
@@ -976,15 +1017,40 @@ function tokenizeCard(clientInstance, cardData) {
         }
 
         if (response.creditCards && response.creditCards[0]) {
-            document.getElementById('payment_method_nonce').value = response.creditCards[0].nonce;
-            document.querySelector('form.needs-validation').submit();
+            var nonce = response.creditCards[0].nonce;
+			
+            submitOrderDetails(nonce, 'creditCard'); // Nonce used as transactionId for Braintree
         } else {
             console.error('No credit card tokenization response');
         }
     });
 }
-
-
+function submitOrderDetails(transactionId, paymentType) {
+    fetch('/user/store-transaction', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            transactionId: transactionId,
+			paymentType: paymentType,
+            cartItemIds: document.getElementById('cartItemIds').value,
+            deliveryAddress: document.getElementById('deliveryAddress').value,
+            totalPrice: totalPrice,
+            state: document.getElementById('state').value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '/user/tracking/' + data.orderId; // Redirect to tracking page
+        } else {
+            console.error('Error storing transaction:', data.message);
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
 
 
 </script>

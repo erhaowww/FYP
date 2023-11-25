@@ -151,7 +151,8 @@
 													$tableRow.find('.btn-num-product-down, .btn-num-product-up').prop('disabled', true).addClass('disabled');
                         							$input.prop('disabled', true);
 												}
-												$input.attr('max', maxStock); // Use $input here
+												$input.attr('max', maxStock);
+												
 											} else {
 												if (!$tableRow.hasClass('unavailable')) {
 													$tableRow.addClass('unavailable');
@@ -217,7 +218,7 @@
 										Delivery Address
 									</span>
 									<div class="bor8 bg0 m-b-12">
-										<input class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="postcode" placeholder="Address">
+										<input class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="address" placeholder="Address">
 									</div>
 									
 									<div class="bor8 bg0 m-b-12">
@@ -248,7 +249,7 @@
 									</div>
 
 									<div class="rs1-select2 rs2-select2 bor8 bg0 m-b-22 m-t-9">
-										<select class="js-select2" name="time">
+										<select class="js-select2" name="country">
 											<option value="Malaysia">Malaysia</option>
 										</select>
 										<div class="dropDownSelect2"></div>
@@ -306,6 +307,12 @@
 	<script>
     var isCartPage = true;
 	$(document).ready(function() {
+		$('form').on('keypress', function(e) {
+        if (e.keyCode === 13) {
+            e.preventDefault();
+        }
+    });
+
     if (window.isCartPage) {
         $('.js-show-cart').on('click', function(e) {
             e.preventDefault();
@@ -388,7 +395,19 @@ $('.product-checkbox').on('change', function() {
 	}
 
 updateTotal();
-	
+
+window.onload = function() {
+    document.querySelectorAll('.num-product').forEach(function(quantityInput) {
+        var value = parseInt(quantityInput.value);
+        var max = parseInt(quantityInput.getAttribute('max'));
+
+        if (value > max) {
+            quantityInput.value = max;
+            $(quantityInput).trigger('change'); // Trigger the change event manually
+        }
+    });
+};
+
 document.querySelectorAll('.num-product').forEach(function(quantityInput) {
     quantityInput.addEventListener('input', function() {
         var value = parseInt(this.value);
@@ -490,29 +509,37 @@ $(document).ready(function() {
     $('#checkoutForm').on('submit', function(e) {
         var errorMessages = [];
         var selectedItems = $("input[name='selectedItems[]']:checked").length;
-        var address = $("input[name='postcode'][placeholder='Address']").val().trim();
-        var postcode = $("input[name='postcode'][placeholder='Postcode / Zip']").val().trim();
+        var address = $("input[name='address'][placeholder='Address']").val();
+        var postcode = $("input[name='postcode'][placeholder='Postcode / Zip']").val();
         var state = $("#stateSelect").val();
-        var country = $("select[name='time']").val();
+        var country = $("select[name='country']").val();
 
         if (selectedItems === 0) {
             errorMessages.push('Please select at least one item to proceed.');
         }
+
         if (!address) {
-            errorMessages.push('Please enter your delivery address.');
-        }
-        if (!postcode) {
-            errorMessages.push('Please enter your postcode or zip code.');
-        }
+    		errorMessages.push('Please enter your delivery address.');
+		} else if (address.length < 3) {
+			errorMessages.push('The address must be at least 3 characters long.');
+		}
+
+		if (!postcode) {
+			errorMessages.push('Please enter your postcode or zip code.');
+		} else if (!/^\d{5}$/.test(postcode)) {
+			errorMessages.push('The postcode must be a 5-digit number.');
+		}
+
         if (!state) {
             errorMessages.push('Please select a state.');
         }
+
         if (!country) {
             errorMessages.push('Please select your country.');
         }
 
         if (errorMessages.length > 0) {
-            e.preventDefault(); // Prevent form submission
+			e.preventDefault();
             Swal.fire({
                 title: 'Error!',
                 html: errorMessages.join('<br>'),
