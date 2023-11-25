@@ -17,6 +17,8 @@
     height: 350px;
     z-index: -123456;
     opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
     transition: all .5s ease-in-out;
 }
 
@@ -25,7 +27,8 @@
     transform: translateY(-40px);
     z-index: 123456;
     opacity: 1;
-    
+    visibility: visible;
+    pointer-events: auto;
 }
 
 /* BUTTON */
@@ -73,4 +76,31 @@
 
 }
 
+.messages__item--waiting {
+    background-color: #f2f2f2;
+    border-radius: 5px;
+    padding: 10px 15px;
+    margin: 8px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: grey;
+    font-size: 0.9rem;
+    position: relative;
+}
 
+.loader {
+    border: 4px solid #f3f3f3; /* Light grey border */
+    border-top: 4px solid #3498db; /* Blue border */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 2s linear infinite;
+    margin-right: 10px;
+}
+
+/* Animation for the loader */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

@@ -157,7 +157,7 @@
                             <div class="faq-buttons">
                                 <button type="button" class="faq-button">How can I contact support?</button>
                                 <button type="button" class="faq-button">What are your business hours?</button>
-                                <button type="button" class="faq-button">Do you offer refunds?</button>
+                                <button type="button" class="faq-button" id="human-handover">Live Agent</button>
                             </div>
                         </div>
                         
@@ -234,6 +234,7 @@
     <!-- Include SweetAlert2 JS -->
     {{-- <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 
     @if ($message = Session::get('success'))
         <script>
@@ -386,6 +387,72 @@
 	<script src="{{asset('user/js/main.js')}}"></script>
 
     <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
+
+    <script>
+        // Function to handle click on 'Human Handover' button
+        document.querySelector('#human-handover').addEventListener('click', function() {
+            // Display waiting message to user
+            displayWaitingMessage();
+
+            // Make an AJAX request to server to initiate the handover process
+            initiateHandoverToHuman();
+        });
+
+        function displayWaitingMessage() {
+            var $messages = $(".chatbox__messages");
+            $messages.append('<div class="messages__item--waiting"><div class="loader"></div>Please wait for an available agent.</div>');
+            $messages.scrollTop($messages.prop("scrollHeight"));
+
+        }
+
+        function initiateHandoverToHuman() {
+            // Implement AJAX request to backend to add user to queue and wait for an agent
+            // On success, call displayAgentJoinedMessage when an agent is available
+            $.ajax({
+                type: 'POST',
+                url: "{{ route('requestLiveChat') }}",
+                success: function(response) {
+                   
+                },
+                error: function(xhr) {
+                    
+                }
+            })
+        }
+
+        function displayAgentJoinedMessage(agentName) {
+            var messagesContainer = document.querySelector('.chatbox__messages');
+            var agentMessage = document.createElement('div');
+            agentMessage.classList.add('messages__item', 'messages__item--agent');
+            agentMessage.innerText = agentName + ' has joined the chat to help you.';
+            messagesContainer.appendChild(agentMessage);
+            
+            // Remove the waiting message
+            var waitingMessage = document.querySelector('.messages__item--waiting');
+            if (waitingMessage) {
+                waitingMessage.remove();
+            }
+        }
+    </script>
+
+    <script>
+        var pusher = new Pusher('b0e7d97da0709c62519f', {
+            cluster: 'ap1'
+        });
+
+        var channel = pusher.subscribe('my-channel');
+            channel.bind('my-event', function(data) {
+            alert(JSON.stringify(data));
+        });
+    </script>
+
+    <script>
         // Check for browser support
         var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
 
@@ -456,12 +523,6 @@
     </script>
 
     <script>
-        $.ajaxSetup({
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            }
-        });
-
         function sendMessage() {
             $value = $('.chatbox__userQuery').val();
             var $messages = $(".chatbox__messages");

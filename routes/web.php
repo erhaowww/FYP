@@ -7,6 +7,8 @@ use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CartItemController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ChatController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -41,6 +43,7 @@ Route::get('/product', [ProductController::class, 'show'])->name('products.show'
 Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
 
 Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
+Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
 
 
 // user
@@ -68,5 +71,7 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
 
 // admin
 Route::prefix('admin')->middleware(['auth'])->group(function(){
+    Route::get('/admin_portal', [DashboardController::class, 'index'])->name('adminDashboard');
+    Route::get('/chat', [ChatController::class, 'index'])->name('livechat');
     Route::resource('customers', UserController::class);
 });

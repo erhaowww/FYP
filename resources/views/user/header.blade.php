@@ -48,6 +48,9 @@
                                         <img src="{{asset('user/images/profile_image/'.auth()->user()->image)}}" width="40" height="40" class="rounded-circle">
                                     </a>
                                     <ul class="sub-menu">
+                                        @if(auth()->user()->role == 'staff' || auth()->user()->role == 'admin')
+                                            <li><a href="{{route('adminDashboard')}}">Dashboard</a></li>
+                                        @endif
                                         <li><a href="{{route('profile')}}">Profile</a></li>
                                         <li><a href="{{route('paymentHistory')}}">Payment History</a></li>
                                         <li><a href="{{route('changePassword')}}">Change Password</a></li>

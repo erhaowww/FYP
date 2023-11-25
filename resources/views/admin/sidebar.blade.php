@@ -19,7 +19,7 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/admin_portal">
+        <a class="nav-link" href="{{route('adminDashboard')}}">
           <span class="menu-title">Dashboard</span>
           <i class="mdi mdi-home menu-icon"></i>
         </a>
@@ -58,6 +58,12 @@ use Illuminate\Foundation\Auth;
         <a class="nav-link" href="/admin/delivery">
           <span class="menu-title">Delivery</span>
           <i class="mdi mdi-truck-fast menu-icon"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{route('livechat')}}">
+          <span class="menu-title">Chat</span>
+          <i class="mdi mdi-message-reply-text menu-icon"></i>
         </a>
       </li>
       <li class="nav-item">
