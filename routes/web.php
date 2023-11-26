@@ -73,6 +73,8 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/store-transaction', [OrderController::class, 'store']);
     Route::get('/tracking/{orderId}', [OrderController::class, 'track']);
     Route::post('/check-stock', [ProductController::class, 'checkStock']);
+    Route::get('/payment-history', [PaymentController::class, 'viewHistory']);
+    Route::post('/mark-order-received/{orderId}', [OrderController::class, 'markOrderReceived'])->name('mark-order-received');
 });
 
 

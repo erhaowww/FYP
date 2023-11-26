@@ -3,18 +3,19 @@
 namespace App\Http\Controllers;
 use Auth;
 use Braintree\Gateway;
+use App\Enums\CartItemStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
-
+use App\Repositories\Interfaces\CartItemRepositoryInterface;
 class PaymentController extends Controller
 {
     protected $gateway;
     protected $paymentRepository;
-    
-    public function __construct(PaymentRepositoryInterface $paymentRepository) {
+    protected $cartItemRepository;
+    public function __construct(PaymentRepositoryInterface $paymentRepository, CartItemRepositoryInterface $cartItemRepository) {
         $this->paymentRepository = $paymentRepository;
-
+        $this->cartItemRepository = $cartItemRepository;
         $this->gateway = new Gateway([
             'environment' => config('braintree.environment'),
             'merchantId' => config('braintree.merchantId'),
@@ -26,7 +27,6 @@ class PaymentController extends Controller
 
     public function processPayment(Request $request)
     {
-        \Log::info('transactionId: ' . $request->transactionId);
         if (empty($request->transactionId)) {
             return response()->json(['success' => false, 'message' => 'Payment method nonce is missing.']);
         }
@@ -88,5 +88,26 @@ class PaymentController extends Controller
         return response()->json(['token' => $clientToken]);
     }
 
+    public function viewHistory()
+    {
+        $userId = auth()->id();
+        $payments = $this->paymentRepository->getAllPaymentsWithOrdersByUserId($userId);
+        $allGroupedCartItems = collect(); // To store grouped cart items for all payments
+    
+        foreach ($payments as $payment) {
+            if ($payment->order) {
+                $ids = explode('|', $payment->order->cartItemIds);
+                $cartItems = $this->cartItemRepository->getByIds($ids, CartItemStatus::purchased);
+                Log::debug("Cart items with products", ['cart_items' => $cartItems]);
+    
+                // Group cart items by product ID for each payment's order
+                $groupedCartItems = $cartItems->groupBy('productId');
+                $allGroupedCartItems[$payment->order->id] = $groupedCartItems;
+            }
+        }
+    
+        // Pass the payments and the grouped cart items to the view
+        return view('user.payment-history', compact('payments', 'allGroupedCartItems'));
+    }
 }
 

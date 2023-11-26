@@ -13,7 +13,7 @@ class OrderRepository implements OrderRepositoryInterface
             'cartItemIds' => $data['cartItemIds'],
             'userId' => $data['userId'],
             'deliveryAddress' => $data['deliveryAddress'],
-            'orderStatus' => OrderStatus::Pending,
+            'orderStatus' => OrderStatus::Confirmed,
             'orderDate' => $data['orderDate'],
         ]);
     }
@@ -22,4 +22,14 @@ class OrderRepository implements OrderRepositoryInterface
     {
         return Order::findOrFail($orderId);
     }
+
+    public function markOrderAsCompleted($orderId)
+    {
+        $order = $this->getOrderById($orderId);
+        $order->orderStatus = OrderStatus::Completed->value;
+        $order->save();
+
+        return $order;
+    }
+    
 }

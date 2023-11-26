@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Enums\CartItemStatus;
+use App\Enums\OrderStatus;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
 use App\Repositories\Interfaces\DeliveryRepositoryInterface;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
@@ -110,11 +111,27 @@ class OrderController extends Controller
         $order = $this->orderRepository->getOrderById($orderId);
         $delivery = $this->deliveryRepository->getDeliveryByOrderId($orderId);
         $payment = $this->paymentRepository->getPaymentByOrderId($orderId);
+
+        $cartItemIds = explode('|', $order->cartItemIds);
+
+        $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::purchased->value);
+
+        // Pass all data to the view
         return view('user.tracking', [
             'order' => $order,
             'delivery' => $delivery,
             'payment' => $payment,
+            'cartItems' => $cartItems,
+            'orderStatus' => OrderStatus::cases()
         ]);
     }
+
+    public function markOrderReceived($orderId)
+    {
+        $this->orderRepository->markOrderAsCompleted($orderId);
+
+        return redirect()->back()->with('success', 'Order marked as received.');
+    }
+
 }
 
