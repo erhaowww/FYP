@@ -46,6 +46,9 @@ Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('pro
 Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
 Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
 
+Route::get('/virtual-showroom', function () {
+    return view('user.virtual-showroom');
+});
 
 // user
 Route::prefix('user')->middleware(['auth'])->group(function(){
