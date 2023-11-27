@@ -17,6 +17,8 @@ use App\Repositories\Interfaces\DeliveryRepositoryInterface;
 use App\Repositories\DeliveryRepository;
 use App\Repositories\Interfaces\ChatRepositoryInterface;
 use App\Repositories\ChatRepository;
+use App\Repositories\Interfaces\ChatbotRepositoryInterface;
+use App\Repositories\ChatbotRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -34,12 +36,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(DeliveryRepositoryInterface::class, DeliveryRepository::class);
         $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
         $this->app->bind(ChatRepositoryInterface::class, ChatRepository::class);
+        $this->app->bind(ChatbotRepositoryInterface::class, ChatbotRepository::class);
     }
 
     /**
      * Bootstrap any application services.
      */
-    public function boot(CartItemRepositoryInterface $cartItemRepository)
+    public function boot(CartItemRepositoryInterface $cartItemRepository, ChatbotRepositoryInterface $chatbotRepository)
     {
         View::composer('user/header', function ($view) use ($cartItemRepository) {
             try {
@@ -61,6 +64,11 @@ class AppServiceProvider extends ServiceProvider
                 \Log::error('Error in View Composer: ' . $e->getMessage());
             }
             
+        });
+
+        View::composer('user/master', function ($view) use ($chatbotRepository) {
+            $faqs = $chatbotRepository->allFAQ();
+            $view->with('faqs', $faqs);
         });
     }
 }

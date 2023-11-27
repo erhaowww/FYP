@@ -31,6 +31,7 @@ body {
     flex-wrap: wrap;
     justify-content: space-between;
     margin-top: 10px;
+    flex-direction: column;
 }
 
 .faq-button {
@@ -40,7 +41,7 @@ body {
     outline: none;
     padding: 8px 12px;
     margin: 5px;
-    border-radius: 20px;
+    border-radius: 10px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }

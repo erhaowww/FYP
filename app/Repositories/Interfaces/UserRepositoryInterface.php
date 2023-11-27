@@ -3,6 +3,7 @@ namespace App\Repositories\Interfaces;
 
 Interface UserRepositoryInterface{
     public function allUser();
+    public function allStaff();
     public function findUser($id);
     public function storeUser($data);
     public function updateUser($data, $id); 

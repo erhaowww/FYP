@@ -130,6 +130,10 @@
         .chatbox__emoji-icon {
             cursor: pointer;
         }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="animsition">
@@ -155,13 +159,14 @@
                         <div class="messages__item--operator">
                             <!-- Frequently Asked Question buttons -->
                             <div class="faq-buttons">
-                                <button type="button" class="faq-button">How can I contact support?</button>
-                                <button type="button" class="faq-button">What are your business hours?</button>
-                                <button type="button" class="faq-button" id="human-handover">Live Agent</button>
+                                @foreach($faqs as $faq)
+                                    <button type="button" class="faq-button" data-faq-id="{{ $faq->id }}" data-answer="{{ $faq->answer }}">{{ $faq->question }}</button>
+                                @endforeach
+                                @if(auth()->check())
+                                    <button type="button" class="faq-button" id="human-handover">Live Agent</button>
+                                @endif
                             </div>
                         </div>
-                        
-                        
                     </div>
                 </div>
                 <div class="chatbox__footer">
@@ -396,6 +401,28 @@
     </script>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Select all FAQ buttons
+            const faqButtons = document.querySelectorAll('.faq-button');
+
+            // Add click event listener to each button
+            faqButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    // Check if the clicked button is not the 'Live Agent' button
+                    if (this.id !== 'human-handover') {
+                        const answer = this.getAttribute('data-answer'); // Get the data-answer attribute value
+                        // Display the FAQ answer
+                        var $messages = $(".chatbox__messages");
+                        $responseMessage = $('<div class="messages__item messages__item--operator">' + answer + '</div>');
+                        $messages.append($responseMessage);
+                        $messages.scrollTop($messages.prop("scrollHeight"));
+                    }
+                });
+            });
+        });
+    </script>
+
+    <script>
         // Function to handle click on 'Human Handover' button
         document.querySelector('#human-handover').addEventListener('click', function() {
             // Display waiting message to user
@@ -419,7 +446,7 @@
                 type: 'POST',
                 url: "{{ route('requestLiveChat') }}",
                 success: function(response) {
-                   
+                    document.getElementById('human-handover').classList.add('hidden');
                 },
                 error: function(xhr) {
                     
@@ -459,6 +486,7 @@
                 } else if (data.message.message === 'end'){
                     $('#isLiveChat').val('false');
                     $('#liveAgentId').val('');
+                    document.getElementById('human-handover').classList.remove('hidden');
                     var $messages = $(".chatbox__messages");
                     $messages.append('<div class="messages__item--waiting"><div><strong>' + data.message.staffName + '</strong> left the chat. Your session has ended.</div></div>');
                     $messages.scrollTop($messages.prop("scrollHeight"));

@@ -85,8 +85,18 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::get('/admin_portal', [DashboardController::class, 'index'])->name('adminDashboard');
     Route::get('/chat', [ChatController::class, 'index'])->name('livechat');
     Route::resource('customers', UserController::class);
+    Route::resource('staffs', UserController::class);
     Route::post('/getChatRequestState', [ChatController::class, 'getChatRequestState'])->name('getChatRequestState');
     Route::post('/updateChatRequestState', [ChatController::class, 'updateChatRequestState'])->name('updateChatRequestState');
     Route::post('/liveAgentResponse', [ChatController::class, 'liveAgentResponse'])->name('liveAgentResponse');
     Route::post('/endChatSession', [ChatController::class, 'endChatSession'])->name('endChatSession');
+    Route::get('/staff', [UserController::class, 'indexStaff'])->name('staffs.all');
+
+    //faq
+    Route::get('/faqs', [ChatbotController::class, 'indexFAQ'])->name('faqs.index');
+    Route::get('/faqs/create', [ChatbotController::class, 'createFAQ'])->name('faqs.create');
+    Route::post('/faqs/store', [ChatbotController::class, 'storeFAQ'])->name('faqs.store');
+    Route::get('/faqs/{id}/edit', [ChatbotController::class, 'editFAQ'])->name('faqs.edit');
+    Route::post('/faqs/{id}/update', [ChatbotController::class, 'updateFAQ'])->name('faqs.update');
+    Route::post('/faqs/{id}/destroy', [ChatbotController::class, 'destroyFAQ'])->name('faqs.destroy');
 });

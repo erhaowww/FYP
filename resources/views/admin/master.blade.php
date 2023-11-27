@@ -15,7 +15,8 @@
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.3/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/1.2.2/css/buttons.bootstrap.min.css">
     <!-- font awesome CSS -->
-    {{-- <link rel="stylesheet" href="{{asset('user/css/all.css')}}"> --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <meta name="csrf-token" content="{{ csrf_token() }}">

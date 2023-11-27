@@ -29,6 +29,16 @@ class UserController extends Controller
         return view('admin/all-customer', compact('users'));
     }
 
+    public function indexStaff()
+    {
+        $staffs = $this->userRepository->allStaff();
+        return view('admin/all-staff', compact('staffs'));
+    }
+
+    public function create(){
+        return view('admin/add-staff');
+    }
+
     public function edit($id){
         $user = $this->userRepository->findUser($id);
         if ($user->role == 'user'){

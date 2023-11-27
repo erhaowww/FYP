@@ -15,6 +15,13 @@ class UserRepository implements UserRepositoryInterface
         ->get();
     }
 
+    public function allStaff()
+    {
+        return User::where('deleted_at', 0)
+        ->where('role', 'staff')
+        ->get();
+    }
+
     public function storeUser($data)
     {
         return User::create($data);

@@ -37,7 +37,7 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="{{route('staffs.all')}}">
           <span class="menu-title">Staff</span>
           <i class="mdi mdi-account-tie menu-icon"></i>
         </a>
@@ -62,8 +62,15 @@ use Illuminate\Foundation\Auth;
       </li>
       <li class="nav-item">
         <a class="nav-link" href="{{route('livechat')}}">
-          <span class="menu-title">Chat</span>
+          <span class="menu-title">LiveChat</span>
           <i class="mdi mdi-message-reply-text menu-icon"></i>
+          <span class="notification-dot" style="display: none;"></span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{route('faqs.index')}}">
+          <span class="menu-title">FAQ</span>
+          <i class="mdi mdi-comment-question-outline menu-icon"></i>
           <span class="notification-dot" style="display: none;"></span>
         </a>
       </li>
