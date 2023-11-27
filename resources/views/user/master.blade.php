@@ -147,7 +147,7 @@
                     </div>
                     <div class="chatbox__content--header">
                         <h4 class="chatbox__heading--header">Chat support</h4>
-                        <p class="chatbox__description--header">There are many variations of passages of Lorem Ipsum available</p>
+                        <p class="chatbox__description--header">Signal Fashion Store</p>
                     </div>
                 </div>
                 <div class="chatbox__messages">
@@ -171,6 +171,8 @@
                     <img src="{{asset('user/images/icons/emojis.svg')}}" class="chatbox__emoji-icon" alt="">
                     <img src="{{asset('user/images/icons/microphone.svg')}}" class="chatbox__microphone-icon" alt="">
                     <input type="text" class="chatbox__userQuery" placeholder="Write a message..." name="chatbox__userQuery">
+                    <input type="hidden" id="isLiveChat" value="false">
+                    <input type="hidden" id="liveAgentId" value="">
                     <p class="chatbox__send--footer">Send</p>
                 </div>
             </div>
@@ -425,32 +427,54 @@
                 }
             })
         }
-
-        function displayAgentJoinedMessage(agentName) {
-            var messagesContainer = document.querySelector('.chatbox__messages');
-            var agentMessage = document.createElement('div');
-            agentMessage.classList.add('messages__item', 'messages__item--agent');
-            agentMessage.innerText = agentName + ' has joined the chat to help you.';
-            messagesContainer.appendChild(agentMessage);
-            
-            // Remove the waiting message
-            var waitingMessage = document.querySelector('.messages__item--waiting');
-            if (waitingMessage) {
-                waitingMessage.remove();
-            }
-        }
     </script>
 
-    <script>
-        var pusher = new Pusher('b0e7d97da0709c62519f', {
-            cluster: 'ap1'
-        });
+    @if (auth()->check())
+        <script>
+            var pusher = new Pusher('b0e7d97da0709c62519f', {
+                cluster: 'ap1'
+            });
 
-        var channel = pusher.subscribe('my-channel');
-            channel.bind('my-event', function(data) {
-            alert(JSON.stringify(data));
-        });
-    </script>
+            var channel = pusher.subscribe('user-channel-{{ auth()->user()->id }}');
+            channel.bind('user-event-{{ auth()->user()->id }}', function(data) {
+                var $messages = $(".chatbox__messages");
+                if (data.message.message === 'accepted') {
+                    // Set live chat status to true
+                    $('#isLiveChat').val('true');
+                    $('#liveAgentId').val(data.message.staffId);
+                    // Remove the waiting message
+                    var waitingMessage = document.querySelector('.messages__item--waiting');
+                    if (waitingMessage) {
+                        waitingMessage.remove();
+                    }
+                    var staffJoinedHtml = `
+                        <div class="messages__item--waiting">
+                            <img class="messages__staff-img" src="${data.message.staffImage}" alt="${data.message.staffName}">
+                            <div>
+                                <strong>${data.message.staffName}</strong> has joined the chat to help you.
+                            </div>
+                        </div>
+                    `;
+                    $messages.append(staffJoinedHtml);
+                    $messages.scrollTop($messages.prop("scrollHeight"));
+                } else if (data.message.message === 'end'){
+                    $('#isLiveChat').val('false');
+                    $('#liveAgentId').val('');
+                    var $messages = $(".chatbox__messages");
+                    $messages.append('<div class="messages__item--waiting"><div><strong>' + data.message.staffName + '</strong> left the chat. Your session has ended.</div></div>');
+                    $messages.scrollTop($messages.prop("scrollHeight"));
+                } else {
+                    var typingMessage = document.querySelector('.messages__item--typing');
+                    if (typingMessage) {
+                        typingMessage.remove();
+                    }
+                    var $newMessage = $('<div class="messages__item messages__item--operator">' + data.message + '</div>');
+                    $messages.append($newMessage);
+                    $messages.scrollTop($messages.prop("scrollHeight"));
+                }
+            });
+        </script>
+    @endif
 
     <script>
         // Check for browser support
@@ -526,6 +550,7 @@
         function sendMessage() {
             $value = $('.chatbox__userQuery').val();
             var $messages = $(".chatbox__messages");
+            var isLiveChat = $('#isLiveChat').val() === 'true';
 
             //avoid sending empty messages
             if ($value.trim() === '') {
@@ -556,35 +581,54 @@
             $messages.append($loadingMessage);
             $messages.scrollTop($messages.prop("scrollHeight"));
 
-            $.ajax({
-                type: 'POST',
-                url: "{{ route('sendChat') }}",
-                data: {
-                    'input': $value
-                },
-                success: function(response) {
-                    // Remove the loading message
-                    $loadingMessage.remove();
-                    $responseMessage = $('<div class="messages__item messages__item--operator">' + response.choices[0].message.content + '</div>');
-                    $messages.append($responseMessage);
-                    $messages.scrollTop($messages.prop("scrollHeight"));
-                },
-                error: function(xhr) {
-                    // Remove the loading message
-                    $loadingMessage.remove();
+            if (isLiveChat) {
+                // Send message to staff
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('sendLiveChat') }}",
+                    data: {
+                        'staff_id': $('#liveAgentId').val(),
+                        'input': $value
+                    },
+                    success: function(response) {
 
-                    // Check if the response is in JSON format
-                    var errorResponse = xhr.responseJSON;
-                    
-                    // Check if an error message is provided
-                    var errorMessage = errorResponse && errorResponse.error ? errorResponse.error : "An unknown error occurred.";
+                    },
+                    error: function(xhr) {
+                       
+                    }
+                })
+            } else {
+                // Send message to chatbot
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('sendChat') }}",
+                    data: {
+                        'input': $value
+                    },
+                    success: function(response) {
+                        // Remove the loading message
+                        $loadingMessage.remove();
+                        $responseMessage = $('<div class="messages__item messages__item--operator">' + response.choices[0].message.content + '</div>');
+                        $messages.append($responseMessage);
+                        $messages.scrollTop($messages.prop("scrollHeight"));
+                    },
+                    error: function(xhr) {
+                        // Remove the loading message
+                        $loadingMessage.remove();
 
-                    // Display the error message
-                    var $errorMessage = $('<div class="messages__item messages__item--operator">' + errorMessage + '</div>');
-                    $messages.append($errorMessage);
-                    $messages.scrollTop($messages.prop("scrollHeight"));
-                }
-            })
+                        // Check if the response is in JSON format
+                        var errorResponse = xhr.responseJSON;
+                        
+                        // Check if an error message is provided
+                        var errorMessage = errorResponse && errorResponse.error ? errorResponse.error : "An unknown error occurred.";
+
+                        // Display the error message
+                        var $errorMessage = $('<div class="messages__item messages__item--operator">' + errorMessage + '</div>');
+                        $messages.append($errorMessage);
+                        $messages.scrollTop($messages.prop("scrollHeight"));
+                    }
+                })
+            }
         }
             
         // Send button click event

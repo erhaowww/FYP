@@ -30,19 +30,6 @@
   float: right;
 }
 
-.settings-tray--right i {
-  margin-top: 10px;
-  font-size: 25px;
-  color: grey;
-  margin-left: 14px;
-  transition: .3s;
-}
-
-.settings-tray--right i:hover {
-  color: #74b9ff;
-  cursor: pointer;
-}
-
 .search-box {
   background: #fafafa;
   padding: 10px 13px;
@@ -174,6 +161,12 @@ hr {
   padding: 0;
 }
 
+.col-md-4 {
+  height: calc(100vh - 50px);
+  overflow-y: auto;
+}
+
+
 @keyframes fadeIn {
   0% {
     opacity: 0;
@@ -188,14 +181,18 @@ hr {
   color: #fff;
 }
 
+.chat-panel {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 120px);
+}
+
 .chat-box-tray {
   background: #eee;
   display: flex;
-  align-items: baseline;
   padding: 10px 15px;
   align-items: center;
-  margin-top: 54px;
-  bottom: 0;
+  margin-top: auto;
 }
 
 .chat-box-tray input {
@@ -213,155 +210,144 @@ hr {
   margin-left: 25px;
 }
 
+.action-buttons {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 10px;
+}
+
+.btn {
+  padding: 5px 10px;
+  margin-right: 5px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.btn-accept {
+  background-color: #28a745;
+  color: white;
+}
+
+.btn-deny {
+  background-color: #dc3545;
+  color: white;
+}
+
+.chat-bubbles-container { /* You might need to add this class to your HTML */
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling for overflow content */
+}
+
+.chatbox__microphone-icon {
+    cursor: pointer;
+}
+
+.chatbox__microphone-icon.listening {
+    opacity: 0.5;
+}
+
+.emoji-picker-container {
+    position: relative;
+}
+
+.chatbox__emoji-icon {
+    cursor: pointer;
+}
+
+.chatbox__send {
+    cursor: pointer;
+}
+
+emoji-picker {
+    position: absolute;
+    bottom: 100%;
+    right: 0;
+    z-index: 1000;
+}
+
+.end-chat-btn {
+    background-color: #f44336; /* Red color for end chat */
+    border: none;
+    border-radius: 50%;
+    color: white;
+    padding: 8px;
+    margin-left: 100px;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.end-chat-btn:hover {
+    background-color: #d32f2f; /* Darker red on hover */
+}
 </style>
     <div class="container">
         <div class="row no-gutters">
-        <div class="col-md-4 border-right">
-            <div class="settings-tray">
-            <img class="profile-image" src="https://randomuser.me/api/portraits/men/39.jpg" alt="">
-            <span class="settings-tray--right">
-                <i class="material-icons">cached</i>
-                <i class="material-icons">message</i>
-                <i class="material-icons">menu</i>
-            </span>
-            </div>
-            <div class="search-box">
-            <div class="input-wrapper">
-                <i class="material-icons">search</i>
-                <input placeholder="Search here" type="text">
-            </div>
-            </div>
-            <div class="friend-drawer friend-drawer--onhover">
-            <img class="profile-image" src="https://randomuser.me/api/portraits/men/20.jpg" alt="">
-            <div class="text">
-                <h6>Robo Cop</h6>
-                <p class="text-muted">Hey, you're arrested!</p>
-            </div>
-            <span class="time text-muted small">13:21</span>
-            </div>
-            <hr>
-            <div class="friend-drawer friend-drawer--onhover">
-            <img class="profile-image" src="https://randomuser.me/api/portraits/women/64.jpg" alt="">
-            <div class="text">
-                <h6>Optimus</h6>
-                <p class="text-muted">Wanna grab a beer?</p>
-            </div>
-            <span class="time text-muted small">00:32</span>
-            </div>
-            <hr>
-            <div class="friend-drawer friend-drawer--onhover ">
-            <img class="profile-image" src="https://thumbor.forbes.com/thumbor/960x0/https%3A%2F%2Fblogs-images.forbes.com%2Fmarkhughes%2Ffiles%2F2016%2F01%2FTerminator-2-1200x873.jpg" alt="">
-            <div class="text">
-                <h6>Skynet</h6>
-                <p class="text-muted">Seen that canned piece of s?</p>
-            </div>
-            <span class="time text-muted small">13:21</span>
-            </div>
-            <hr>
-            <div class="friend-drawer friend-drawer--onhover">
-            <img class="profile-image" src="http://i66.tinypic.com/2qtbqxe.jpg" alt="">
-            <div class="text">
-                <h6>Termy</h6>
-                <p class="text-muted">Im studying spanish...</p>
-            </div>
-            <span class="time text-muted small">13:21</span>
-            </div>
-            <hr>
-            <div class="friend-drawer friend-drawer--onhover">
-            <img class="profile-image" src="https://cdn.vox-cdn.com/thumbor/AYUayCXcqYxHDkR4a1N9azY5c_8=/1400x1400/filters:format(jpeg)/cdn.vox-cdn.com/uploads/chorus_asset/file/9375391/MV5BYjg1Yjk1MTktYzE5Mi00ODkwLWFkZTQtNTYxYTY3ZDVmMWUxXkEyXkFqcGdeQXVyNjUwNzk3NDc_._V1_.jpg" alt="">
-            <div class="text">
-                <h6>Richard</h6>
-                <p class="text-muted">I'm not sure...</p>
-            </div>
-            <span class="time text-muted small">13:21</span>
-            </div>
-            <hr>
-            <div class="friend-drawer friend-drawer--onhover">
-            <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXzQ3HEvJBpgptB48mdCwRt_BHrmNrDwQiIlrjgJbDKihAV_NI" alt="">
-            <div class="text">
-                <h6>XXXXX</h6>
-                <p class="text-muted">Hi, wanna see something?</p>
-            </div>
-            <span class="time text-muted small">13:21</span>
-            </div>
-        </div>
-        <div class="col-md-8">
-            <div class="settings-tray">
-                <div class="friend-drawer no-gutters friend-drawer--grey">
-                <img class="profile-image" src="https://randomuser.me/api/portraits/men/30.jpg" alt="">
-                <div class="text">
-                <h6>Robo Cop</h6>
-                <p class="text-muted">Layin' down the law since like before Christ...</p>
+            <div class="col-md-4 border-right">
+                {{-- <div class="friend-drawer friend-drawer--onhover">
+                    <img class="profile-image" src="https://randomuser.me/api/portraits/men/20.jpg" alt="">
+                    <div class="text">
+                        <h6>Robo Cop</h6>
+                        <p class="text-muted">Hey, you're arrested!</p>
+                        <div class="action-buttons">
+                            <button type="button" class="btn btn-accept">Accept</button>
+                            <button type="button" class="btn btn-deny">Deny</button>
+                        </div>
+                    </div>
+                    <span class="time text-muted small">13:21</span>
                 </div>
-                <span class="settings-tray--right">
-                <i class="material-icons">cached</i>
-                <i class="material-icons">message</i>
-                <i class="material-icons">menu</i>
-                </span>
+                <hr>
+                <div class="friend-drawer friend-drawer--onhover">
+                    <img class="profile-image" src="https://randomuser.me/api/portraits/women/64.jpg" alt="">
+                    <div class="text">
+                        <h6>Optimus</h6>
+                        <p class="text-muted">Wanna grab a beer?</p>
+                    </div>
+                    <span class="time text-muted small">00:32</span>
+                </div>
+                <hr> --}}
             </div>
+            <div class="col-md-8">
+                {{-- <div class="settings-tray">
+                    <div class="friend-drawer no-gutters friend-drawer--grey">
+                        <img class="profile-image" src="https://randomuser.me/api/portraits/men/30.jpg" alt="">
+                        <div class="text">
+                            <h6>Robo Cop</h6>
+                            <p class="text-muted">email</p>
+                        </div>
+                        <span class="settings-tray--right">
+                            <button class="end-chat-btn material-icons">call_end</button>
+                        </span>
+                    </div>
+                </div>
+                <div class="chat-panel">
+                    <div class="chat-bubbles-container">
+                        <div class="row no-gutters">
+                            <div class="col-md-3">
+                                <div class="chat-bubble chat-bubble--left">
+                                    Hello dude!
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row no-gutters">
+                            <div class="col-md-3 offset-md-9">
+                                <div class="chat-bubble chat-bubble--right">
+                                    Hello dude!
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-box-tray">
+                        <div class="emoji-picker-container" style="position: relative;">
+                            <emoji-picker style="display: none; position: absolute; bottom: 100%;"></emoji-picker>
+                        </div>
+                        <i class="material-icons chatbox__emoji-icon">sentiment_very_satisfied</i>
+                        <input type="text" placeholder="Type your message here..." class="chatbox__userQuery">
+                        <i class="material-icons chatbox__microphone-icon">mic</i>
+                        <i class="material-icons">send</i>
+                    </div>
+                </div> --}}
             </div>
-            <div class="chat-panel">
-            <div class="row no-gutters">
-                <div class="col-md-3">
-                <div class="chat-bubble chat-bubble--left">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row no-gutters">
-                <div class="col-md-3 offset-md-9">
-                <div class="chat-bubble chat-bubble--right">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row no-gutters">
-                <div class="col-md-3 offset-md-9">
-                <div class="chat-bubble chat-bubble--right">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row no-gutters">
-                <div class="col-md-3">
-                <div class="chat-bubble chat-bubble--left">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row no-gutters">
-                <div class="col-md-3">
-                <div class="chat-bubble chat-bubble--left">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row no-gutters">
-                <div class="col-md-3">
-                <div class="chat-bubble chat-bubble--left">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row no-gutters">
-                <div class="col-md-3 offset-md-9">
-                <div class="chat-bubble chat-bubble--right">
-                    Hello dude!
-                </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                <div class="chat-box-tray">
-                    <i class="material-icons">sentiment_very_satisfied</i>
-                    <input type="text" placeholder="Type your message here...">
-                    <i class="material-icons">mic</i>
-                    <i class="material-icons">send</i>
-                </div>
-                </div>
-            </div>
-            </div>
-        </div>
         </div>
     </div>
 
@@ -372,13 +358,284 @@ hr {
     </script>
 
     <script>
-        var pusher = new Pusher('b0e7d97da0709c62519f', {
-            cluster: 'ap1'
-        });
+        $(document).ready(function() {
+            // Accept button click handler
+            $(document).on('click', '.btn-accept', function() {
+                var requestId = $(this).data('request-id');
+                var userId = $('.friend-drawer--onhover').data('user-id');
+                updateChatRequestStatus(requestId, userId, 'active');
+            });
 
-        var channel = pusher.subscribe('my-channel');
-            channel.bind('my-event', function(data) {
-            alert(JSON.stringify(data));
+            // Deny button click handler
+            $(document).on('click', '.btn-deny', function() {
+                var requestId = $(this).data('request-id');
+                var userId = $('.friend-drawer--onhover').data('user-id');
+                updateChatRequestStatus(requestId, userId, 'end');
+            });
+
+            function updateChatRequestStatus(requestId, userId, status) {
+                $.ajax({
+                    url: "{{ route('updateChatRequestState') }}",
+                    type: 'POST',
+                    data: {
+                        id: requestId,
+                        status: status,
+                        user_id: userId
+                    },
+                    success: function(response) {
+                        var friendDrawer = $('.friend-drawer[data-request-id="' + requestId + '"]');
+                        if (status === 'active') {
+                            // If the chat request is accepted, fade out the accept/deny buttons
+                            friendDrawer.find('.action-buttons').fadeOut('slow', function() {
+                                // This callback function is executed after the fading completes
+                                $(this).remove(); // Remove the buttons from the DOM
+                                // You may want to add additional UI changes here, such as showing a "Chat started" message
+                                var chatInterfaceHtml = `
+                                    <div class="settings-tray">
+                                        <div class="friend-drawer no-gutters friend-drawer--grey">
+                                            <img class="profile-image" src="${response.activeRequests[0].image}" alt="">
+                                            <div class="text">
+                                                <h6>${response.activeRequests[0].username}</h6>
+                                                <p class="text-muted">${response.activeRequests[0].email}</p>
+                                            </div>
+                                            <span class="settings-tray--right">
+                                                <button class="end-chat-btn material-icons">call_end</button>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="chat-panel">
+                                        <div class="chat-bubbles-container">
+                                            <!-- Chat bubbles will be dynamically added here -->
+                                        </div>
+                                        <div class="chat-box-tray">
+                                            <div class="emoji-picker-container" style="position: relative;">
+                                                <emoji-picker style="display: none; position: absolute; bottom: 100%;"></emoji-picker>
+                                            </div>
+                                            <i class="material-icons chatbox__emoji-icon">sentiment_very_satisfied</i>
+                                            <input type="text" placeholder="Type your message here..." class="chatbox__userQuery">
+                                            <i class="material-icons chatbox__microphone-icon">mic</i>
+                                            <i class="material-icons chatbox__send">send</i>
+                                        </div>
+                                    </div>
+                                `;
+                                $('.col-md-8').html(chatInterfaceHtml);
+                                setupEmojiPicker();
+                                setupSpeechRecognition();
+                                setupSendMsg();
+                                setupEndChat();
+                            });
+                        } else {
+                            // If the chat request is denied, remove the entire chat box
+                            friendDrawer.fadeOut('slow', function() {
+                                // This callback function is executed after the fading completes
+                                $(this).next('hr').remove();
+                                $(this).remove(); // Remove the chat box from the DOM
+                                // Any additional cleanup can be done here
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        if (xhr.status === 422 && xhr.responseJSON && xhr.responseJSON.message) {
+                            swal({
+                                title: "Error!",
+                                text: xhr.responseJSON.message,
+                                icon: "error",
+                                buttons: false,
+                                timer: 2000
+                            });
+                            var friendDrawer = $('.friend-drawer[data-request-id="' + requestId + '"]');
+                            friendDrawer.fadeOut('slow', function() {
+                                // This callback function is executed after the fading completes
+                                $(this).next('hr').remove();
+                                $(this).remove(); // Remove the chat box from the DOM
+                                // Any additional cleanup can be done here
+                            });
+                        }
+                    }
+                });
+            }
         });
     </script>
+
+    <script>
+        function setupSendMsg(){
+            $('.chatbox__send').click(function() {
+                // Get the message from input field
+                var message = $('.chatbox__userQuery').val().trim();
+                // Retrieve user ID
+                var userId = $('.friend-drawer--onhover').data('user-id')
+
+                // Check if the message is not empty
+                if (message) {
+                    $.ajax({
+                        type: 'POST',
+                        url: "{{ route('liveAgentResponse') }}",
+                        data: {
+                            'input': message,
+                            'user_id': userId
+                        },
+                        success: function(response) {
+                            // Create a new chat bubble element
+                            var chatBubbleHtml = `<div class="row no-gutters">
+                                                    <div class="col-md-3 offset-md-9">
+                                                        <div class="chat-bubble chat-bubble--right">${message}</div>
+                                                    </div>
+                                                </div>`;
+
+                            // Append the chat bubble to the chat container
+                            $('.chat-bubbles-container').append(chatBubbleHtml);
+
+                            // Scroll to the bottom of the chat container
+                            var chatContainer = $('.chat-bubbles-container');
+                            chatContainer.scrollTop(chatContainer.prop("scrollHeight"));
+
+                            // Clear the input field
+                            $('.chatbox__userQuery').val('');
+                        },
+                        error: function(xhr) {
+                            
+                        }
+                    })
+                } else {
+                    swal({
+                        title: "Error!",
+                        text: "Please don't send empty query messages",
+                        icon: "error",
+                        buttons: false,
+                        timer: 3000
+                    });
+                }
+            });
+        }
+    </script>
+
+    <script>
+        function setupEndChat() {
+            $('.end-chat-btn').click(function() {
+                var userId = $('.friend-drawer--onhover').data('user-id');
+                var requestId = $('.friend-drawer--onhover').data('request-id');
+
+                $.ajax({
+                    url: "{{ route('endChatSession') }}",
+                    type: 'POST',
+                    data: {
+                        id: requestId,
+                        user_id: userId
+                    },
+                    success: function(response) {
+                        // Remove the chat UI elements
+                        $('.settings-tray').remove();
+                        $('.chat-panel').remove();
+                        var friendDrawer = $('.friend-drawer--onhover[data-user-id="' + userId + '"]');
+                        friendDrawer.next('hr').remove(); // Remove the hr following the friend-drawer
+                        friendDrawer.remove(); // Remove the friend-drawer itself
+                    },
+                    error: function(xhr, status, error) {
+                        // Handle errors
+                        console.error("Error ending chat: " + error);
+                    }
+                });
+            });
+        }
+    </script>
+
+    <script>
+        function setupSpeechRecognition() {
+            // Check for browser support
+            var SpeechRecognition = SpeechRecognition || webkitSpeechRecognition;
+
+            if (SpeechRecognition) {
+                let recognition = new SpeechRecognition();
+                let isListening = false;
+                const microphoneButton = document.querySelector('.chatbox__microphone-icon');
+                const chatInput = document.querySelector('.chatbox__userQuery');
+
+                if (microphoneButton) {
+                    microphoneButton.addEventListener('click', () => {
+                        if (isListening) {
+                            recognition.stop();
+                            return;
+                        }
+
+                        recognition.lang = 'en-US'; // Set the language of the recognition
+                        recognition.start(); // Start the recognition
+                        isListening = true;
+                        microphoneButton.classList.add('listening'); // Optional: change the icon style when listening
+                    });
+                }
+
+                recognition.onresult = (event) => {
+                    const transcript = Array.from(event.results)
+                        .map(result => result[0])
+                        .map(result => result.transcript)
+                        .join('');
+
+                    chatInput.value += transcript; // Append the transcript to the input field
+                };
+
+                recognition.onend = () => {
+                    isListening = false;
+                    microphoneButton.classList.remove('listening'); // Optional: revert the icon style when not listening
+                };
+
+                recognition.onerror = (event) => {
+                    console.error('Speech recognition error', event.error);
+                    isListening = false;
+                    microphoneButton.classList.remove('listening'); // Optional: revert the icon style when not listening
+                };
+            } else {
+                console.log('Speech Recognition Not Available');
+                // Hide or disable the microphone button as speech recognition is not supported in the browser
+            }
+        }
+    </script>
+
+    <script type="module">
+        import 'https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/index.js'
+    </script>
+    
+    <script>
+        function setupEmojiPicker() {
+            const emojiPicker = document.querySelector('.emoji-picker-container emoji-picker');
+            const emojiButton = document.querySelector('.chatbox__emoji-icon');
+            const chatInput = document.querySelector('.chatbox__userQuery');
+
+            emojiButton.addEventListener('click', () => {
+                const isDisplayed = window.getComputedStyle(emojiPicker).display !== 'none';
+                emojiPicker.style.display = isDisplayed ? 'none' : 'block';
+                emojiButton.style.opacity = isDisplayed ? '1' : '0.5';
+            });
+
+            emojiPicker.addEventListener('emoji-click', event => {
+                chatInput.value += event.detail.unicode;
+                chatInput.focus(); // Brings focus back to the input after selecting an emoji
+            });
+        }
+    </script>
+
+    @if (auth()->check())
+        <script>
+            var pusher = new Pusher('b0e7d97da0709c62519f', {
+                cluster: 'ap1'
+            });
+
+            var channel = pusher.subscribe('admin-channel-{{ auth()->user()->id }}');
+            channel.bind('admin-event-{{ auth()->user()->id }}', function(data) {
+                // Create a new chat bubble element
+                var chatBubbleHtml = `<div class="row no-gutters">
+                                        <div class="col-md-3">
+                                            <div class="chat-bubble chat-bubble--left">${data.message}</div>
+                                        </div>
+                                    </div>`;
+
+                // Append the chat bubble to the chat container
+                $('.chat-bubbles-container').append(chatBubbleHtml);
+
+                // Scroll to the bottom of the chat container
+                var chatContainer = $('.chat-bubbles-container');
+                chatContainer.scrollTop(chatContainer.prop("scrollHeight"));
+            });
+        </script>
+    @endif
+
 @endsection

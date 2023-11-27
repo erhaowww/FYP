@@ -70,6 +70,8 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/store-transaction', [OrderController::class, 'store']);
     Route::get('/tracking/{orderId}', [OrderController::class, 'track']);
     Route::post('/check-stock', [ProductController::class, 'checkStock']);
+
+    Route::post('/sendLiveChat', [ChatController::class, 'sendLiveChat'])->name('sendLiveChat');
 });
 
 
@@ -78,4 +80,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::get('/admin_portal', [DashboardController::class, 'index'])->name('adminDashboard');
     Route::get('/chat', [ChatController::class, 'index'])->name('livechat');
     Route::resource('customers', UserController::class);
+    Route::post('/getChatRequestState', [ChatController::class, 'getChatRequestState'])->name('getChatRequestState');
+    Route::post('/updateChatRequestState', [ChatController::class, 'updateChatRequestState'])->name('updateChatRequestState');
+    Route::post('/liveAgentResponse', [ChatController::class, 'liveAgentResponse'])->name('liveAgentResponse');
+    Route::post('/endChatSession', [ChatController::class, 'endChatSession'])->name('endChatSession');
 });

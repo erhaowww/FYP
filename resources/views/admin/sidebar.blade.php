@@ -64,6 +64,7 @@ use Illuminate\Foundation\Auth;
         <a class="nav-link" href="{{route('livechat')}}">
           <span class="menu-title">Chat</span>
           <i class="mdi mdi-message-reply-text menu-icon"></i>
+          <span class="notification-dot" style="display: none;"></span>
         </a>
       </li>
       <li class="nav-item">

@@ -18,7 +18,7 @@
     {{-- <link rel="stylesheet" href="{{asset('user/css/all.css')}}"> --}}
 
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     {{-- jquery --}}
     <!-- plugins:js -->
@@ -140,6 +140,38 @@
             font-size: 14px;
             padding: 10px 15px;
         }
+
+        @keyframes shakeAnimation {
+            0% { transform: translateX(0); }
+            10% { transform: translateX(-10px); }
+            20% { transform: translateX(10px); }
+            30% { transform: translateX(-10px); }
+            40% { transform: translateX(10px); }
+            50% { transform: translateX(0); }
+        }
+
+        .shake {
+            animation: shakeAnimation 1.0s;
+            animation-iteration-count: infinite;
+        }
+
+        .notification-dot {
+            height: 10px;
+            width: 10px;
+            background-color: red;
+            border-radius: 50%;
+            position: absolute;
+            top: 25%;
+            right: -5px;
+            transform: translate(0, -50%);
+            display: none;
+            transition: display 0.2s, opacity 0.2s ease, transform 0.2s;
+        }
+
+        .nav-item {
+            position: relative;
+        }
+
     </style>
 </head>
 <body>
@@ -164,6 +196,99 @@
     <script src="{{asset('admin/assets/js/jquery.cookie.js')}}" type="text/javascript"></script>
     <!-- Custom js for this page -->
     <script src="{{asset('admin/assets/js/file-upload.js')}}"></script>
+    <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
+
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
+
+    <script>
+        $(document).ready(function() {
+            // Function to fetch the initial state of chat requests
+            function fetchInitialState() {
+                $.ajax({
+                    url: "{{ route('getChatRequestState') }}",
+                    type: 'POST',
+                    success: function(response) {
+                        // Update UI based on response
+                        if (response.hasPendingRequests) {
+                            // Check if the current page is not the chat page
+                            if (!window.location.href.includes('/admin/chat')) {
+                                var chatLink = document.querySelector('.nav-link[href="{{route('livechat')}}"]');
+                                var notificationDot = chatLink.querySelector('.notification-dot');
+
+                                // Add the 'shake' class to the chat menu item and show the notification dot
+                                chatLink.classList.add('shake');
+                                notificationDot.style.display = 'inline-block'; // Show the dot
+                                notificationDot.style.opacity = '1';
+                                notificationDot.style.transform = 'scale(1)';
+                            } else {
+                                // Add new friend-drawers
+                                response.pendingRequests.forEach(function(request) {
+                                    if ($('.friend-drawer[data-user-id="' + request.user_id + '"]').length === 0) {
+                                        var friendDrawerHtml = `
+                                            <div class="friend-drawer friend-drawer--onhover" data-user-id="${request.user_id}" data-request-id="${request.id}">
+                                                <img class="profile-image" src="${request.image}" alt="Profile Image">
+                                                <div class="text">
+                                                    <h6>${request.username}</h6>
+                                                    <p class="text-muted">Live chat request</p>
+                                                    <div class="action-buttons">
+                                                        <button type="button" class="btn btn-accept" data-request-id="${request.id}">Accept</button>
+                                                        <button type="button" class="btn btn-deny" data-request-id="${request.id}">Deny</button>
+                                                    </div>
+                                                </div>
+                                                <span class="time text-muted small">${request.request_time}</span>
+                                            </div>
+                                            <hr>
+                                        `;
+
+                                        // Append the friendDrawerHtml to the container that holds these drawers
+                                        $('.col-md-4.border-right').prepend(friendDrawerHtml);
+                                    }
+                                });
+                            }
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("Error: " + error); // Logs error to browser's console
+                        console.error("Status: " + status);
+                        console.error("Response: ", xhr.responseText); // The responseText will contain the detailed error message
+                        
+                    }
+                });
+            }
+
+            // Call the function on page load to get initial state
+            fetchInitialState();
+
+            // Setup Pusher for real-time updates
+            var pusher = new Pusher('b0e7d97da0709c62519f', {
+                cluster: 'ap1'
+            });
+
+            var channel = pusher.subscribe('my-channel');
+            channel.bind('my-event', function(data) {
+                fetchInitialState();
+            });
+
+            // When the chat menu item is clicked, remove the shake and hide the dot
+            document.querySelector('.nav-link[href="{{route('livechat')}}"]').addEventListener('click', function() {
+                this.classList.remove('shake');
+                var notificationDot = this.querySelector('.notification-dot');
+                if (notificationDot) {
+                    notificationDot.style.opacity = '0';
+                    notificationDot.style.transform = 'scale(0)';
+                    setTimeout(function() {
+                        notificationDot.style.display = 'none';
+                    }, 200); // Wait for the opacity transition to finish before hiding
+                }
+            });
+        });
+    </script>
 
 </body>
 </html>

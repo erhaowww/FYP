@@ -15,6 +15,8 @@ use App\Repositories\Interfaces\PaymentRepositoryInterface;
 use App\Repositories\PaymentRepository;
 use App\Repositories\Interfaces\DeliveryRepositoryInterface;
 use App\Repositories\DeliveryRepository;
+use App\Repositories\Interfaces\ChatRepositoryInterface;
+use App\Repositories\ChatRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -31,6 +33,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(OrderRepositoryInterface::class, OrderRepository::class);
         $this->app->bind(DeliveryRepositoryInterface::class, DeliveryRepository::class);
         $this->app->bind(PaymentRepositoryInterface::class, PaymentRepository::class);
+        $this->app->bind(ChatRepositoryInterface::class, ChatRepository::class);
     }
 
     /**
