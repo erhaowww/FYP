@@ -9,7 +9,9 @@
 <script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.min.js"></script>
 <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
 <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
-
+@php
+use App\Enums\OrderStatus;
+@endphp
 <style>
 .scrollable {
     height: 12.5rem;
@@ -479,89 +481,99 @@ h2 {
 
   <br>
 
-<div class="card mx-auto" style="width: 1200px;margin-top:100px;">
+  <div class="card mx-auto" style="width: 1200px; margin-top: 40px;">
     <div class="card-header">
         <h2 class="card-header-text default">Payment History</h2>
     </div>
     <div class="card-body" id="deliveriesDataStorageBody" role="tabpanel">
-        <h5 class="default">Invoices <span style="float:right">{{$count}}</span></h5><br>
-<div class="table-responsive scrollable" style="height:345px;">
-            <table class="table table-sm table-hover text-nowrap grid-welcm" >
+        <h5 class="default">Invoices <span style="float: right">{{ count($payments) }}</span></h5><br>
+        <div class="table-responsive scrollable" style="height: 345px;">
+            <table class="table table-sm table-hover text-nowrap grid-welcm">
                 <thead class="default">
                     <tr>
                         <th>NO.</th>
                         <th>Image</th>
-                        <th>Car Name</th>
+                        <th>Product Name</th>
                         <th>Charge</th>
                         <th>Payment Method</th>
                         <th>Payment Date</th>
                         <th>Shipping Address</th>
                         <th>Status</th>
+                        <th>Track Order</th>
                         <th>Review and Rating</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @php   
-                    $previousPaymentId = '';
-                    $i = 1;
-                    @endphp
-                @foreach ($productDetail as $index => $productDetails)
-                    @php
-                    $nextPaymentId = isset($payments[$index+1]) ? $payments[$index+1]->id : null;
-                    @endphp
-                    @if($payments[$index]->id == $previousPaymentId || $payments[$index]->id == $nextPaymentId)
-                    <tr style="background-color: rgba(0,0,0,.05);">
-                    @else
+    @forelse ($payments as $paymentIndex => $payment)
+        @php
+            $displayedDetails = false; // Flag to track if payment details have been displayed
+        @endphp
+        @if ($payment->order && isset($allGroupedCartItems[$payment->order->id]))
+            @foreach ($allGroupedCartItems[$payment->order->id] as $productId => $groupedItems)
+                @php
+                    $firstItem = $groupedItems->first();
+                    $itemsByColor = $groupedItems->groupBy('color');
+                @endphp
+                @if($firstItem && $firstItem->product)
                     <tr>
-                    @endif
+                        <td>{{ $displayedDetails ? '' : $paymentIndex + 1 }}</td>
                         <td>
-                            @if($payments[$index]->id != $previousPaymentId)
-                            {{ $i }} 
-                            @php $i++ @endphp
-                            @endif
-                        </td>
-                        @php
-                            $images = explode('|', $productDetails->product_image);
-                        @endphp
-                        <td><img src="{{asset('user/img/product/'.$images[0])}}" style="width:50px;height:50px;"></td>
-                        <td>{{ $productDetails->make }} {{ $productDetails->model }}</td>
-                        @if($payments[$index]->id != $previousPaymentId)
-                        <td>RM {{ $payments[$index]->total_charge }}</td>
-                        <td>{{ $payments[$index]->payment_method }}</td>
-                        <td>{{ date('Y-m-d', strtotime($payments[$index]->payment_date)) }}</td>
-                        <td style="white-space: pre-wrap;">{{ $payments[$index]->billing_address }}</td>
-                        <td>{{ $payments[$index]->delivery_status }}</td>
-                        <td class="text-center">
-                            @if(!empty(json_decode($comments, true)))
-                                @foreach($comments as $comm)
-                                    @if($comm->payment_id == $payments[$index]->id)
-                                        <button type="button" class="btn btn-secondary" data-toggle="tooltip" data-placement="top" title="You have rated and reviewed this payment">Review</button>
-                                        @php break; @endphp
-                                    @endif
-                                    @if(($comm === $comments->last() && $comm->payment_id != $payments[$index]->id))
-                                        <button type="button" class="btn btn-primary add_review" data-payment-id="{{ $payments[$index]->id }}">Review</button>
-                                    @endif
-                                @endforeach
+                            @if($firstItem->product->productImgObj)
+                                @php
+                                    $imagePath = explode('|', $firstItem->product->productImgObj)[0];
+                                @endphp
+                                <img src="{{ asset('/user/images/product/' . $imagePath) }}" style="width:50px;height:50px;">
                             @else
-                                <button type="button" class="btn btn-primary add_review" data-payment-id="{{ $payments[$index]->id }}">Review</button>
+                                <span>No Image</span>
                             @endif
                         </td>
+                        <td>
+                            {{ $firstItem->product->productName }}
+                            <br>
+                            @foreach ($itemsByColor as $color => $items)
+                                {{ $color }} (
+                                @foreach ($items as $item)
+                                    {{ $item->size }}:{{ $item->quantity }}@if (!$loop->last), @endif
+                                @endforeach
+                                )
+                                @if (!$loop->last)<br> @endif
+                            @endforeach
+                        </td>
+                        @if (!$displayedDetails)
+                            <td>RM {{ $payment->totalPaymentFee }}</td>
+                            <td>{{ $payment->paymentMethod }}</td>
+                            <td>{{ $payment->paymentDate }}</td>
+                            <td>{{ $payment->order->deliveryAddress }}</td>
+                            <td>{{ ucwords(str_replace('_', ' ', $payment->order->orderStatus)) }}</td>
+                            <td class="text-center">
+                                @if($payment->order->orderStatus != OrderStatus::Completed->value)
+                                    <a href="{{ url('/user/tracking', ['orderId' => $payment->order->id]) }}" class="btn btn-secondary">Track</a>
+                                @endif
+                            </td>
+                            @php
+                                $displayedDetails = true;
+                            @endphp
                         @else
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
+                            <td colspan="6"></td>
                         @endif
-                        @php $previousPaymentId=$payments[$index]->id @endphp
+                        <td class="text-center">
+                            <a href="#{{$firstItem->product->id}}"type="button" class="btn btn-primary add_review">Review</a>
+                        </td>
                     </tr>
-                    @endforeach
-                </tbody>
+                @endif
+            @endforeach
+        @endif
+    @empty
+        <tr>
+            <td colspan="11">No payments found.</td>
+        </tr>
+    @endforelse
+</tbody>
             </table>
         </div>
-  </div>
-      </div>
+    </div>
+</div>
+
       <br>
 
 
@@ -573,7 +585,7 @@ h2 {
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <form action="{{route('comments.store')}}" enctype="multipart/form-data" method="POST">
+                    <form action="#comment" enctype="multipart/form-data" method="POST">
                         @csrf
                     <div class="wrapper">
                         <div class="master">

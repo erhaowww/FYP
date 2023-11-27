@@ -139,7 +139,7 @@ class CartItemController extends Controller
 
     public function makeOrder(Request $request) {
         $selectedItemIds = $request->input('selectedItems', []);
-        $cartItems = $this->cartItemRepository->getByIds($selectedItemIds);
+        $cartItems = $this->cartItemRepository->getByIds($selectedItemIds, CartItemStatus::inCart->value);
         
         $groupedItems = [];
         $overallSubtotal = 0; // This will hold the subtotal for all selected items

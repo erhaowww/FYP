@@ -52,7 +52,7 @@
                                             <li><a href="{{route('adminDashboard')}}">Dashboard</a></li>
                                         @endif
                                         <li><a href="{{route('profile')}}">Profile</a></li>
-                                        <li><a href="{{route('paymentHistory')}}">Payment History</a></li>
+                                        <li><a href="/user/payment-history">Payment History</a></li>
                                         <li><a href="{{route('changePassword')}}">Change Password</a></li>
                                         <li><a href="/logout">Logout</a></li>
                                     </ul>
@@ -166,7 +166,7 @@
             </li>
 
             <li>
-                <a href="product.html">Shop</a>
+                <a href="/product">Shop</a>
             </li>
 
             <li>
@@ -455,15 +455,12 @@
                             Total: RM{{ $totalPrice }}
                         </div>
 
-                        <div class="header-cart-buttons flex-w w-full">
+                        <div class="header-cart-buttons flex-w w-full" style="display: flex; justify-content: center;">
                             <a href="/user/cart" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
                                 View Cart
                             </a>
-
-                            <a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-                                Check Out
-                            </a>
                         </div>
+
                     </div>
                 @else
                     <p>Your cart is empty.</p>

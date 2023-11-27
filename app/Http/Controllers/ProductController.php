@@ -5,6 +5,7 @@ use Illuminate\Http\Request;
 use App\Enums\ProductCategory;
 use App\Enums\ProductType;
 use App\Enums\ProductColor;
+use App\Enums\CartItemStatus;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
@@ -50,7 +51,7 @@ class ProductController extends Controller
         $isInStock = true;
     
         // Retrieve cart items including associated products
-        $cartItems = $this->cartItemRepository->getByIds($cartItemIds);
+        $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::inCart->value);
         Log::info('Retrieved cart items:', ['cartItems' => $cartItems]);
     
         foreach ($cartItems as $cartItem) {

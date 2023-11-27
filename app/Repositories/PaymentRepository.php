@@ -27,5 +27,13 @@ class PaymentRepository implements PaymentRepositoryInterface
     {
         return Payment::where('orderId', $orderId)->first();
     }
+    
+    public function getAllPaymentsWithOrdersByUserId($userId)
+    {
+        return Payment::with('order')
+                  ->where('userId', $userId)
+                  ->orderBy('paymentDate', 'desc')
+                  ->get();
+    }
 
 }

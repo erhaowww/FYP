@@ -106,10 +106,10 @@ class CartItemRepository implements CartItemRepositoryInterface
         return $totalQuantity;
     }
 
-    public function getByIds(array $ids) {
+    public function getByIds(array $ids, $status) {
         return CartItem::with('product')
                 ->whereIn('id', $ids)
-                ->where('status', CartItemStatus::inCart->value)
+                ->where('status', $status)
                 ->get();
     }
 

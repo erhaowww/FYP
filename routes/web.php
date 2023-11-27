@@ -46,6 +46,9 @@ Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('pro
 Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
 Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
 
+Route::get('/virtual-showroom', function () {
+    return view('user.virtual-showroom');
+});
 
 // user
 Route::prefix('user')->middleware(['auth'])->group(function(){
@@ -70,6 +73,8 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/store-transaction', [OrderController::class, 'store']);
     Route::get('/tracking/{orderId}', [OrderController::class, 'track']);
     Route::post('/check-stock', [ProductController::class, 'checkStock']);
+    Route::get('/payment-history', [PaymentController::class, 'viewHistory']);
+    Route::post('/mark-order-received/{orderId}', [OrderController::class, 'markOrderReceived'])->name('mark-order-received');
 
     Route::post('/sendLiveChat', [ChatController::class, 'sendLiveChat'])->name('sendLiveChat');
 });
