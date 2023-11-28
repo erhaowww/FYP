@@ -8,4 +8,7 @@ interface ProductRepositoryInterface
     public function find($id);
     public function findRelatedProducts($type, $category, $excludeId);
     public function updateStock($productId, $color, $size, $quantity);
+    public function create(array $data);
+    public function update(array $data, $id);
+    public function delete($id);
 }

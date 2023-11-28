@@ -43,7 +43,7 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="/admin/all-product">
           <span class="menu-title">Product</span>
           <i class="mdi mdi-cube-outline menu-icon"></i>
         </a>

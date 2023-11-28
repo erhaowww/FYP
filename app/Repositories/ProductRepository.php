@@ -9,14 +9,13 @@ class ProductRepository implements ProductRepositoryInterface
 {
     public function getAll()
     {
-        return Product::available();
+        return Product::available()->get();
     }
 
     public function allWithFilters(Request $request)
     {
         $query = Product::available();
 
-        // Apply sorting based on the provided criteria
         $sort = $request->query('sort');
         switch ($sort) {
             case 'popularity':
@@ -131,5 +130,23 @@ class ProductRepository implements ProductRepositoryInterface
             $product->save();
         }
     }
-    
+    public function create(array $data)
+    {
+        return Product::create($data);
+    }
+    public function update(array $data, $id) {
+        $product = $this->find($id);
+        if ($product) {
+            $product->update($data);
+            return $product;
+        }
+    }
+    public function delete($id) {
+        $product = $this->find($id);
+        if ($product) {
+            $product->deleted = 1;
+            $product->save();
+            return $product;
+        }
+    }
 }

@@ -21,15 +21,11 @@ class PaymentController extends Controller
             'merchantId' => config('braintree.merchantId'),
             'publicKey' => config('braintree.publicKey'),
             'privateKey' => config('braintree.privateKey'),
-            'accessToken' => config('braintree.paypalAccessToken'),
         ]);
     }
 
     public function processPayment(Request $request)
     {
-        if (empty($request->transactionId)) {
-            return response()->json(['success' => false, 'message' => 'Payment method nonce is missing.']);
-        }
         $amount = $request->totalPrice;
 
         // Determine the card type

@@ -4,12 +4,12 @@ namespace App\Enums;
 
 enum ProductColor: string
 {
-    case Black = 'black';
-    case White = 'white';
-    case Green = 'green';
-    case Blue = 'blue';
-    case Red = 'red';
-    case Other = 'other';
+    case Black = 'Black';
+    case White = 'White';
+    case Green = 'Green';
+    case Blue = 'Blue';
+    case Red = 'Red';
+    case Other = 'Other';
 
     public function colorCode(): string
     {

@@ -5,10 +5,13 @@ use Illuminate\Http\Request;
 use App\Enums\ProductCategory;
 use App\Enums\ProductType;
 use App\Enums\ProductColor;
+use App\Enums\ProductSize;
 use App\Enums\CartItemStatus;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+
+use App\Models\Product;
 class ProductController extends Controller
 {
     protected $productRepository;
@@ -100,5 +103,260 @@ class ProductController extends Controller
         return isset($stockInfo[$color][$size]) && $stockInfo[$color][$size] >= $quantity;
     }
 
+    public function displayAllProduct() {
+        $products = $this->productRepository->getAll();
+        return view('/admin/all-product', [
+            'products' => $products,
+        ]);
+    }
+
+    public function create()
+    {
+        $productTypes = ProductType::cases();
+        $categories = ProductCategory::cases();
+        $colors = ProductColor::cases();
+        $sizes = ProductSize::cases();
+        return view('/admin/add-product', compact('productTypes', 'categories','colors', 'sizes'));
+    }
+
+    public function add(Request $request)
+    {
+        $validatedData = $request->validate([
+            'productName' => 'required|max:255',
+            'productType' => 'required',
+            'category' => 'required',
+            'productDesc' => 'required|max:255',
+            'productPrice' => 'required',
+            'color' => 'required|array',
+            'size' => 'required|array',
+            'stock' => 'required|array',
+        ]);
+        $validatedData['productPrice'] = str_replace(['RM', ' '], '', $validatedData['productPrice']);
+
+        $sizeCounts = json_decode($request->input('sizeCountData'), true);
+        if (is_null($sizeCounts)) {
+            $sizeCounts = [1 => 1];
+        }
+        $sizes = $validatedData['size'];
+        $stocks = $validatedData['stock'];
+        $sizeString = '';
+        $stockString = '';
+        $currentIndex = 0;
+
+        foreach ($sizeCounts as $colorId => $count) {
+            $sizesForColor = array_slice($sizes, $currentIndex, $count);
+            $stocksForColor = array_slice($stocks, $currentIndex, $count);
+
+            list($sortedSizesForColor, $sortedStocksForColor) = $this->sortSizesAndStocks($sizesForColor, $stocksForColor);
+
+            $sizeString .= ($sizeString === '' ? '' : '|') . implode(',', $sortedSizesForColor);
+            $stockString .= ($stockString === '' ? '' : '|') . implode(',', $sortedStocksForColor);
+
+            $currentIndex += $count;
+        }
+
+        $qrFileName  = '';
+        $images = array();
+        if ($files = $request->input('filepond')) {
+            foreach ($files as $file) {
+                $json_string = json_decode($file, true);
+                $data_column = $json_string['data'];
+                $image = base64_decode($data_column);
+                $imageName = time() . '_' . $json_string['name']; // timestamp_imageName
+                file_put_contents('../public/user/images/product/'.$imageName, $image);
+                $images[] = $imageName;
+            }
+            $product_image = implode("|", $images);
+        }
+
+        if ($modelFile = $request->input('productModel')) {
+            $json_string = json_decode($modelFile, true);
+            $data_column = $json_string['data'];
+
+            $model = base64_decode($data_column);
+            $modelName = time() . '_' . $json_string['name']; // timestamp_imageName
+            file_put_contents('../public/user/images/product/'.$modelName, $model);
+            $product_image .= '|' . $modelName;
+        }
+
+        // Handle virtual try-on QR upload
+        if ($qrFile = $request->input('virtualTryOnQR')) {
+            $json_string = json_decode($qrFile, true);
+            $data_column = $json_string['data'];
+
+            $qr = base64_decode($data_column);
+            $qrName = time() . '_QR_' . $json_string['name']; // timestamp_QR_imageName
+            file_put_contents('../public/user/images/product/'.$qrName, $qr);
+            $qrFileName = $qrName; 
+        }
+
+        $productData = [
+            'productName' => $validatedData['productName'],
+            'productType' => $validatedData['productType'],
+            'category' => $validatedData['category'],
+            'productDesc' => $validatedData['productDesc'],
+            'price' => $validatedData['productPrice'],
+            'color' => implode('|', $validatedData['color']),
+            'size' => $sizeString,
+            'stock' => $stockString,
+            'productImgObj' => $product_image, 
+            'productTryOnQR' => $qrFileName,
+            'deleted'=>0,
+        ];
+        $this->productRepository->create($productData);
+        return redirect()->route('all-products')->with('success', 'Product processed successfully.');
+    }
+
+    private function sortSizesAndStocks(array $sizes, array $stocks)
+    {
+        $sizeOrder = [ProductSize::S->value, ProductSize::M->value, ProductSize::L->value, ProductSize::XL->value, ProductSize::XXL->value];
+        
+        // Combine sizes and stocks into an array of pairs
+        $combined = array_map(null, $sizes, $stocks);
+        
+        // Sort the combined array based on the size order
+        usort($combined, function($a, $b) use ($sizeOrder) {
+            return array_search($a[0], $sizeOrder) - array_search($b[0], $sizeOrder);
+        });
+
+        // Separate the sorted sizes and stocks
+        $sortedSizes = array_column($combined, 0);
+        $sortedStocks = array_column($combined, 1);
+
+        return [$sortedSizes, $sortedStocks];
+    }
+
+    public function edit($id)
+    {
+        $product = $this->productRepository->find($id);
+        $allColors = explode('|', $product->color);
+        $allSizes = explode('|', $product->size);
+        $allStocks = explode('|', $product->stock);
+
+        $sizeCount = [];
+        foreach ($allSizes as $index => $sizesForColor) {
+            $sizesArray = explode(',', $sizesForColor);
+            $sizeCount[$index + 1] = count($sizesArray);
+    
+            $allSizes[$index] = $sizesArray;
+            $allStocks[$index] = explode(',', $allStocks[$index]);
+        }
+        Log::info('Processed product details:', [
+            'colors' => $allColors,
+            'sizes' => $allSizes,
+            'stocks' => $allStocks,
+            'sizeCount' => $sizeCount
+        ]);
+        $productTypes = ProductType::cases();
+        $categories = ProductCategory::cases();
+        $colors = ProductColor::cases();
+        $sizes = ProductSize::cases();
+        return view('/admin/edit-product', compact('productTypes', 'categories','colors', 'sizes','product', 'sizeCount','allColors','allSizes','allStocks'));
+    }
+
+    public function update(Request $request, $id)
+    {
+        $product = $this->productRepository->find($id);
+        $validatedData = $request->validate([
+            'productName' => 'required|max:255',
+            'productType' => 'required',
+            'category' => 'required',
+            'productDesc' => 'required|max:255',
+            'productPrice' => 'required',
+            'color' => 'required|array',
+            'size' => 'required|array',
+            'stock' => 'required|array',
+        ]);
+        $validatedData['productPrice'] = str_replace(['RM', ' '], '', $validatedData['productPrice']);
+
+        $sizeCounts = json_decode($request->input('sizeCountData'), true);
+        if (is_null($sizeCounts)) {
+            $sizeCounts = [1 => 1];
+        }
+        $sizes = $validatedData['size'];
+        $stocks = $validatedData['stock'];
+        $sizeString = '';
+        $stockString = '';
+        $currentIndex = 0;
+
+        foreach ($sizeCounts as $colorId => $count) {
+            $sizesForColor = array_slice($sizes, $currentIndex, $count);
+            $stocksForColor = array_slice($stocks, $currentIndex, $count);
+
+            // Sort the sizes and stocks for this color
+            list($sortedSizesForColor, $sortedStocksForColor) = $this->sortSizesAndStocks($sizesForColor, $stocksForColor);
+
+            $sizeString .= ($sizeString === '' ? '' : '|') . implode(',', $sortedSizesForColor);
+            $stockString .= ($stockString === '' ? '' : '|') . implode(',', $sortedStocksForColor);
+
+            $currentIndex += $count;
+        }
+
+        $qrFileName  = '';
+        $images = array();
+        $product_image = $product->productImgObj;
+        if ($files = $request->input('filepond')) {
+            foreach ($files as $file) {
+                $json_string = json_decode($file, true);
+                $data_column = $json_string['data'];
+                $image = base64_decode($data_column);
+                $imageName = time() . '_' . $json_string['name']; // timestamp_imageName
+                file_put_contents('../public/user/images/product/'.$imageName, $image);
+                $images[] = $imageName;
+            }
+            $product_image = implode("|", $images);
+        }
+        
+
+        if ($modelFile = $request->input('productModel')) {
+            $json_string = json_decode($modelFile, true);
+            $data_column = $json_string['data'];
+
+            $model = base64_decode($data_column);
+            $modelName = time() . '_' . $json_string['name'];
+            file_put_contents('../public/user/images/product/'.$modelName, $model);
+            $product_image .= '|' . $modelName;
+        } else {
+            $modelName = $product->productImgObj;
+        }
+
+        if ($qrFile = $request->input('virtualTryOnQR')) {
+            $json_string = json_decode($qrFile, true);
+            $data_column = $json_string['data'];
+
+            $qr = base64_decode($data_column);
+            $qrName = time() . '_QR_' . $json_string['name'];
+            file_put_contents('../public/user/images/product/'.$qrName, $qr);
+            $qrFileName = $qrName; 
+        } else {
+            $qrFileName = $product->productTryOnQR;
+        }
+
+        $capitalizedColors = array_map(function($color) {
+            return ucwords($color);
+        }, $validatedData['color']);
+        
+        $colorString = implode('|', $capitalizedColors);
+        
+        $productData = [
+            'productName' => $validatedData['productName'],
+            'productType' => $validatedData['productType'],
+            'category' => $validatedData['category'],
+            'productDesc' => $validatedData['productDesc'],
+            'price' => $validatedData['productPrice'],
+            'color' => implode('|', $validatedData['color']),
+            'size' => $sizeString,
+            'stock' => $stockString,
+            'productImgObj' => $product_image, 
+            'productTryOnQR' => $qrFileName,
+            'deleted'=>0,
+        ];
+        $this->productRepository->update($productData,$id);
+        return redirect()->route('all-products')->with('success', 'Product updated successfully.');
+    }
+    public function delete($id) {
+        $this->productRepository->delete($id);
+        return redirect()->route('all-products')->with('success', 'Product updated successfully.');
+    }
 }
 
