@@ -18,18 +18,19 @@ class ProductRepository implements ProductRepositoryInterface
     {
         $query = Product::available();
 
+        $salesQuery = \DB::table('cart_item')
+                    ->select('productId', \DB::raw('COALESCE(SUM(quantity), 0) as total_sales'))
+                    ->where('status', CartItemStatus::purchased->value)
+                    ->groupBy('productId');
+
+        $query->leftJoinSub($salesQuery, 'sales', function($join) {
+            $join->on('product.id', '=', 'sales.productId');
+        });
+
         $sort = $request->query('sort');
         switch ($sort) {
             case 'popularity':
-                $query->leftJoin('cart_item', 'product.id', '=', 'cart_item.productId')
-                    ->select('product.*', \DB::raw('COALESCE(SUM(cart_item.quantity), 0) as total_sales'))
-                    ->where('cart_item.status', CartItemStatus::purchased->value)
-                    ->orWhereNull('cart_item.productId') // Include products that have not been sold
-                    ->groupBy('product.id', 'product.productName', 'product.productType', 'product.productDesc', 
-                                'product.productImgObj', 'product.productTryOnQR', 'product.category', 'product.color', 
-                                'product.size', 'product.stock', 'product.price', 'product.deleted', 
-                                'product.created_at', 'product.updated_at')
-                    ->orderBy('total_sales', 'desc');
+                $query->orderBy('sales.total_sales', 'desc');
             case 'rating':
                 // $query->orderBy('average_rating', 'desc');
                 break;
