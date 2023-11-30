@@ -5,6 +5,8 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use Illuminate\Support\Facades\Log;
+use App\Models\CartItem;
+use App\Enums\CartItemStatus;
 class ProductRepository implements ProductRepositoryInterface
 {
     public function getAll()
@@ -19,8 +21,15 @@ class ProductRepository implements ProductRepositoryInterface
         $sort = $request->query('sort');
         switch ($sort) {
             case 'popularity':
-                // $query->orderBy('popularity', 'desc');
-                break;
+                $query->leftJoin('cart_item', 'product.id', '=', 'cart_item.productId')
+                    ->select('product.*', \DB::raw('COALESCE(SUM(cart_item.quantity), 0) as total_sales'))
+                    ->where('cart_item.status', CartItemStatus::purchased->value)
+                    ->orWhereNull('cart_item.productId') // Include products that have not been sold
+                    ->groupBy('product.id', 'product.productName', 'product.productType', 'product.productDesc', 
+                                'product.productImgObj', 'product.productTryOnQR', 'product.category', 'product.color', 
+                                'product.size', 'product.stock', 'product.price', 'product.deleted', 
+                                'product.created_at', 'product.updated_at')
+                    ->orderBy('total_sales', 'desc');
             case 'rating':
                 // $query->orderBy('average_rating', 'desc');
                 break;

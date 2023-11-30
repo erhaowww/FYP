@@ -139,7 +139,7 @@
                 </div>
                 <div class="form-group">
                     <label for="orderDate">Order Status</label>
-                    <select name="orderStatus" id="orderStatus" class="form-select">
+                    <select name="orderStatus" id="orderStatus" class="form-select" {{ $ordersWithDelivery->orderStatus === 'completed' ? 'disabled' : '' }}>
                         @if ($ordersWithDelivery->orderStatus === 'confirmed')
                             <option value="confirmed" selected>Confirmed</option>
                             <option value="courier_picked">Courier Picked</option>
@@ -246,7 +246,7 @@
                         errors.push('Invalid delivery man name or company.');
                     }
 
-                    var phonePattern = /^(012\d{8,9})$/;
+                    var phonePattern = /^(01\d{8,9})$/;
                     if (!phonePattern.test(deliveryManPhone)) {
                         errors.push('Invalid phone number (must be in the format 01212341234 or 0121234123).');
                     }

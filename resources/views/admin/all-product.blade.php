@@ -100,9 +100,14 @@
                             <p style="text-align: center">No Image</p>
                         @endif
                     </td>
-                    <td>
-                        <img src="{{ asset('/user/images/product/'.$product->productTryOnQR) }}" class="img-fluid">
-                    </td>
+                    @if(!empty($product->productTryOnQR))
+                        <td>
+                            <img src="{{ asset('/user/images/product/'.$product->productTryOnQR) }}" class="img-fluid">
+                        </td>
+                    @else
+                    <td>N/A</td>          
+                    @endif
+                    
                     <td>{{ $product->color }}</td>
                     <td>{{ $product->size }}</td>
                     <td>{{ $product->stock }}</td>
