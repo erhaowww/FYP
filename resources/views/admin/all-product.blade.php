@@ -108,6 +108,7 @@
                     <td>{{ $product->stock }}</td>
                     <td>RM {{ number_format($product->price, 2) }}</td>
                     <td> 
+                        <a href="{{ route('product.addStock', $product->id) }}" class="btn btn-success btn-edit" title="Add"><i class="mdi mdi-plus-circle-outline"></i></a>
                         <a href="{{ route('product.edit', $product->id) }}" class="btn btn-success btn-edit" title="Edit"><i class="mdi mdi-square-edit-outline"></i></a>
                         <a href="{{ route('product.delete', $product->id) }}" class="btn btn-danger delete_button btn-delete" title="Delete"><i class="mdi mdi-delete-outline"></i></a>
                     </td>

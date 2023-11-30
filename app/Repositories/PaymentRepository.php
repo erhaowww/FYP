@@ -36,4 +36,9 @@ class PaymentRepository implements PaymentRepositoryInterface
                   ->get();
     }
 
+    public function getAllPayments()
+    {
+        return Payment::all();
+    }
+
 }

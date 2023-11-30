@@ -117,14 +117,14 @@
                 @csrf
                 <input type="hidden" id="sizeCountData" name="sizeCountData" value="">
                 <div class="form-group">
-                    <label for="productName">Product Name:</label>
+                    <label for="productName">Product Name*</label>
                     <input type="text" class="form-control" id="productName" name="productName" value="{{ $product->productName }}" maxlength="255">
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="productType">Product Type:</label>
+                            <label for="productType">Product Type*</label>
                             <select class="form-select" name="productType" id="productType">
                                 @foreach($productTypes as $type)
                                     <option value="{{ $type->value }}" {{ $product->type == $type->value ? 'selected' : '' }}>
@@ -136,7 +136,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="category">Product Categories:</label>
+                            <label for="category">Product Categories*</label>
                             <select class="form-select" name="category" id="category">
                                 @foreach($categories as $category)
                                     <option value="{{ $category->value }}" {{ $product->category == $category->value ? 'selected' : '' }}>
@@ -149,17 +149,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="productDesc">Description:</label>
+                    <label for="productDesc">Description*</label>
                     <textarea class="form-control" id="productDesc" name="productDesc" maxlength="255">{{ $product->productDesc }}</textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="order_id">Product Price</label>
+                    <label for="order_id">Product Price*</label>
                     <input type="text" class="form-control" name="productPrice" id="productPrice" placeholder="RM12" maxlength="255" value="{{ $product->price }}">
                     
                 </div>
                 <div class="form-group">
-                    <label>Product Detail</label>
+                    <label>Product Detail*</label>
                     <table class="table" id="dynamic_field_color">
                         @foreach($allColors as $index => $colorValue)
                             <tr class="product-detail" data-color-id="{{ $index + 1 }}">
@@ -223,7 +223,7 @@
                     $qrFile = $product->productTryOnQR;
                 @endphp
                 <div class="form-group">
-                    <label>Current Images:</label>
+                    <label>Current Images</label>
                     <div class="form-card">
                         <div class="image-container">
                             @foreach($imageFiles as $imageFile)
@@ -233,7 +233,7 @@
                             @endforeach
                         </div>
                     </div>
-                    <small class="form-text text-muted">Uploading a new image will replace all existing image.</small>
+                    <small class="form-text text-muted">Uploading a new image will replace all existing image.<br>The first image on preview will be thumbnail</small>
                 </div>
                 <div class="form-group">
                     <label for="productImages">Product Image</label>
@@ -245,7 +245,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Current 3D Model:</label>
+                            <label>Current 3D Model</label>
                             <div>
                                 @if($modelFile)
                                     <model-viewer src="{{ asset('user/images/product/' . $modelFile) }}" alt="3D Model" auto-rotate camera-controls style="width: 100%; height: 200px;"></model-viewer>
@@ -258,7 +258,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label>Current Try On QR Code:</label>
+                            <label>Current Try On QR Code</label>
                             <div class="image-container">
                                 @if($qrFile)
                                     <div class="image-wrapper">
@@ -388,10 +388,12 @@ var maxColors = parseInt({{ count($colors) }})-1;
                 color = (color !== undefined && color !== '') ? color : 'N/A';
                 size = (size !== undefined && size !== '') ? size : 'N/A';
 
-                if (stockValue === '' || parseInt(stockValue, 10) <= 0) {
-                    errors.push(`Row ${index + 1}, Color '${color}', Size '${size}': Stock quantity must be greater than 0 and cannot be empty.`);
-                }else if (!stockValue.match(digitPattern)) {
-                    errors.push(`Row ${index + 1}, Color '${color}', Size '${size}': Stock quantity must be a positive integer and cannot be empty.`);
+                if (stockValue === null || stockValue === ''){
+                    errors.push(`Row ${index + 1}, Color '${color}', Size '${size}': If no stock added please set it to 0`);
+                }else if(parseInt(stockValue, 10) !== 0 && stockValue !== null && stockValue !== ''){
+                    if (!stockValue.match(digitPattern)) {
+                        errors.push(`Row ${index + 1}, Color '${color}', Size '${size}': Stock quantity must be a positive integer`);
+                    }
                 }
             });
             return errors;
@@ -536,7 +538,7 @@ $(document).ready(function(){
         $('#sizeCountData').val(JSON.stringify(sizeCount));
         console.log('sizeCount:', sizeCount);
     }
-    
+    updateSizeCountInput();
 
     $(document).on('click', '.add-newSize', function() {
         var colorId = $(this).closest('tr[data-color-id]').data('color-id');

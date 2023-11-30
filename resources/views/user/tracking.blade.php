@@ -32,7 +32,7 @@ use App\Enums\OrderStatus;
                 <article class="card">
                     <div class="card-body row">
                         <div class="col"> <strong>Estimated Delivery time:</strong> <br>{{ $delivery->estimatedDeliveryDate ?? 'Not available' }} </div>
-                        <div class="col"> <strong>Shipping BY: {{ $delivery->deliveryCompany ?? '' }}</strong> <br>{{ $delivery->deliveryManName ?? 'Not available' }} | <i class="fa fa-phone"></i> {{ $delivery->deliveryManPhone ?? 'Not available' }} </div>
+                        <div class="col"> <strong>Shipping BY: </strong> <br>{{ $delivery->deliveryManName ?? 'Not available' }} | <i class="fa fa-phone"></i> {{ $delivery->deliveryManPhone ?? 'Not available' }} | <i class="fa fa-building"></i> {{ $delivery->deliveryCompany ?? '' }} </div>
                         <div class="col"> <strong>Status:</strong> <br> {{ ucwords(str_replace('_', ' ', $order->orderStatus)) }} </div>
                     </div>
                 </article>

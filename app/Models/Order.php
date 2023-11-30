@@ -15,4 +15,8 @@ class Order extends Model
         'orderDate',
     ];
 
+    public function delivery()
+    {
+        return $this->hasOne(Delivery::class, 'orderId', 'id');
+    }
 }

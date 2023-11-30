@@ -149,4 +149,12 @@ class ProductRepository implements ProductRepositoryInterface
             return $product;
         }
     }
+    public function increaseStock($stockString, $id) {
+        $product = $this->find($id);
+        if ($product) {
+            $product->stock = $stockString;
+            $product->save();
+            return $product;
+        }
+    }
 }

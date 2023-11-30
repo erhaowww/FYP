@@ -506,7 +506,7 @@ h2 {
                 <tbody>
     @forelse ($payments as $paymentIndex => $payment)
         @php
-            $displayedDetails = false; // Flag to track if payment details have been displayed
+            $displayedDetails = false;
         @endphp
         @if ($payment->order && isset($allGroupedCartItems[$payment->order->id]))
             @foreach ($allGroupedCartItems[$payment->order->id] as $productId => $groupedItems)

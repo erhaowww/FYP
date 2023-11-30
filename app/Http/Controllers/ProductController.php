@@ -283,7 +283,6 @@ class ProductController extends Controller
             $sizesForColor = array_slice($sizes, $currentIndex, $count);
             $stocksForColor = array_slice($stocks, $currentIndex, $count);
 
-            // Sort the sizes and stocks for this color
             list($sortedSizesForColor, $sortedStocksForColor) = $this->sortSizesAndStocks($sizesForColor, $stocksForColor);
 
             $sizeString .= ($sizeString === '' ? '' : '|') . implode(',', $sortedSizesForColor);
@@ -351,11 +350,63 @@ class ProductController extends Controller
             'productTryOnQR' => $qrFileName,
             'deleted'=>0,
         ];
+        Log::info('Final product data for update', ['id' => $id, 'productData' => $productData]);
         $this->productRepository->update($productData,$id);
         return redirect()->route('all-products')->with('success', 'Product updated successfully.');
     }
     public function delete($id) {
         $this->productRepository->delete($id);
+        return redirect()->route('all-products')->with('success', 'Product updated successfully.');
+    }
+
+    public function addStock($id)
+    {
+        $product = $this->productRepository->find($id);
+        $allColors = explode('|', $product->color);
+        $allSizes = explode('|', $product->size);
+
+        $sizeCount = [];
+        foreach ($allSizes as $index => $sizesForColor) {
+            $sizesArray = explode(',', $sizesForColor);
+            $sizeCount[$index + 1] = count($sizesArray);
+    
+            $allSizes[$index] = $sizesArray;
+        }
+        $productTypes = ProductType::cases();
+        $categories = ProductCategory::cases();
+        $colors = ProductColor::cases();
+        $sizes = ProductSize::cases();
+        return view('/admin/add-product-stock', compact('productTypes', 'categories','colors', 'sizes','product', 'sizeCount','allColors','allSizes'));
+    }
+
+    public function increaseStock(Request $request,$id)
+    {
+        $product = $this->productRepository->find($id);
+        $validatedData = $request->validate([
+            'stock' => 'required|array',
+        ]);
+
+        $sizeCounts = json_decode($request->input('sizeCountData'), true);
+        if (is_null($sizeCounts)) {
+            $sizeCounts = [1 => 1];
+        }
+
+        $currentStocks = explode(',', str_replace('|', ',', $product->stock));
+
+        $stocks = $validatedData['stock'];
+        foreach ($currentStocks as $index => &$quantity) {
+            if (isset($stocks[$index])) {
+                $quantity += $stocks[$index];
+            }
+        }
+        $stockString = '';
+        $currentIndex = 0;
+        foreach ($sizeCounts as $colorId => $count) {
+            $stocksForColor = array_slice($currentStocks, $currentIndex, $count);
+            $stockString .= ($stockString === '' ? '' : '|') . implode(',', $stocksForColor);
+            $currentIndex += $count;
+        }
+        $this->productRepository->increaseStock($stockString,$id);
         return redirect()->route('all-products')->with('success', 'Product updated successfully.');
     }
 }

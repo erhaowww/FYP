@@ -125,4 +125,8 @@ class CartItemRepository implements CartItemRepositoryInterface
             $cartItem->save();
         }
     }
+
+    public function getAllCart() {
+        return CartItem::all();
+    }
 }

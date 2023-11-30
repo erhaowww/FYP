@@ -14,4 +14,5 @@ interface CartItemRepositoryInterface
     public function getByIds(array $ids, $status);
     public function getById($cartItemId);
     public function updateStatus($cartItemId, $status);
+    public function getAllCart();
 }

@@ -186,5 +186,13 @@ class CartItemController extends Controller
             'state' => $state,
         ]);
     }
+
+    public function displayAllCart(){
+        $cartItems = $this->cartItemRepository->getAllCart();
+
+        return view('/admin/all-cart', [
+            'cartItems' => $cartItems
+        ]);
+    }
 }
 

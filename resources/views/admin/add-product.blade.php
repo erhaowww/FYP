@@ -96,14 +96,14 @@
                 @csrf
                 <input type="hidden" id="sizeCountData" name="sizeCountData" value="">
                 <div class="form-group">
-                    <label for="productName">Product Name:</label>
+                    <label for="productName">Product Name*</label>
                     <input type="text" class="form-control" id="productName" name="productName" value="" maxlength="255">
                 </div>
 
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="productType">Product Type:</label>
+                            <label for="productType">Product Type*</label>
                             <select class="form-select" name="productType" id="productType">
                                 @foreach($productTypes as $type)
                                     <option value="{{ $type->value }}">{{ $type->name }}</option>
@@ -113,7 +113,7 @@
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
-                            <label for="category">Product Categories:</label>
+                            <label for="category">Product Categories*</label>
                             <select class="form-select" name="category" id="category">
                                 @foreach($categories as $category)
                                     <option value="{{ $category->value }}">{{ $category->name }}</option>
@@ -124,17 +124,17 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="productDesc">Description:</label>
+                    <label for="productDesc">Description*</label>
                     <textarea class="form-control" id="productDesc" name="productDesc" maxlength="255">1</textarea>
                 </div>
 
                 <div class="form-group">
-                    <label for="order_id">Product Price</label>
+                    <label for="order_id">Product Price*</label>
                     <input type="text" class="form-control" name="productPrice" id="productPrice" placeholder="RM12" maxlength="255" value="">
                     
                 </div>
                 <div class="form-group">
-                    <label>Product Detail</label>
+                    <label>Product Detail*</label>
                     <table class="table" id="dynamic_field_color">
                         <tr class="product-detail" data-color-id="1">
                             <td style="padding-left:0px;">
@@ -170,7 +170,7 @@
                     </table>
                 </div>
                 <div class="form-group">
-                    <label for="productImages">Product Image*</label>
+                    <label for="productImages">Product Image*</label> <small class="form-text text-muted">The first image on preview will be thumbnail</small>
                     <div class="form-card">
                         <input type="file" class="filepond" id="productImages" name="filepond[]" multiple data-max-file-size="30MB" data-max-files="5" />
                     </div>
