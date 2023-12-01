@@ -4,16 +4,19 @@ namespace App\Http\Controllers;
 use App\Enums\CartItemStatus;
 use Illuminate\Http\Request;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+use App\Repositories\Interfaces\MembershipRepositoryInterface;
 use Auth;
 use App\Models\Product;
 
 class CartItemController extends Controller
 {
     protected $cartItemRepository;
+    private $membershipRepository;
 
-    public function __construct(CartItemRepositoryInterface $cartItemRepository)
+    public function __construct(CartItemRepositoryInterface $cartItemRepository, MembershipRepositoryInterface $membershipRepository)
     {
         $this->cartItemRepository = $cartItemRepository;
+        $this->membershipRepository = $membershipRepository;
     }
 
     public function addToCart(Request $request)
@@ -104,7 +107,11 @@ class CartItemController extends Controller
             return $total + ($cartItem->quantity * $cartItem->product->price);
         }, 0);
         $totalPrice = floatval(str_replace(',', '', $totalPrice));
-        $discountRate = 10;
+        $discountRate = 0;
+        if(auth()->user()->membership_level){
+            $membership = $this->membershipRepository->findMembershipByLevel(auth()->user()->membership_level);
+            $discountRate = $membership->discount;
+        }
         // Return the cart view with cart items and total price
         return view('/user/cart', [
             'cartItems' => $cartItems,
@@ -162,7 +169,7 @@ class CartItemController extends Controller
             $groupedItems[$productId]['subtotal'] += $itemSubtotal;
         }
         $cartItemIds = implode('|', $selectedItemIds);
-        $discountRate = 10; // 10%
+        $discountRate = $request->input('discountRate');
         $discount = $overallSubtotal * ($discountRate / 100);
         $shippingCost = $request->input('shippingCostHidden',0);
         $finalTotalPrice = $overallSubtotal + $shippingCost - $discount;

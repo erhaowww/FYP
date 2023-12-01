@@ -8,20 +8,24 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+use App\Repositories\Interfaces\CommentRepositoryInterface;
+
 class PaymentController extends Controller
 {
     protected $gateway;
     protected $paymentRepository;
     protected $cartItemRepository;
-    public function __construct(PaymentRepositoryInterface $paymentRepository, CartItemRepositoryInterface $cartItemRepository) {
+    private $commentmRepository;
+
+    public function __construct(PaymentRepositoryInterface $paymentRepository, CartItemRepositoryInterface $cartItemRepository, CommentRepositoryInterface $commentmRepository) {
         $this->paymentRepository = $paymentRepository;
         $this->cartItemRepository = $cartItemRepository;
+        $this->commentmRepository = $commentmRepository;
         $this->gateway = new Gateway([
             'environment' => config('braintree.environment'),
             'merchantId' => config('braintree.merchantId'),
             'publicKey' => config('braintree.publicKey'),
             'privateKey' => config('braintree.privateKey'),
-            'accessToken' => config('braintree.paypalAccessToken'),
         ]);
     }
 
@@ -105,9 +109,9 @@ class PaymentController extends Controller
                 $allGroupedCartItems[$payment->order->id] = $groupedCartItems;
             }
         }
-    
+        $comments = $this->commentmRepository->allComment();
         // Pass the payments and the grouped cart items to the view
-        return view('user.payment-history', compact('payments', 'allGroupedCartItems'));
+        return view('user.payment-history', compact('payments', 'allGroupedCartItems', 'comments'));
     }
 }
 

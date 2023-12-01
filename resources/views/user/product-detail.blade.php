@@ -1,5 +1,7 @@
 @extends('user/master')
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
 <style>
 	.bg4{
 		background-color:#9A9A9A;
@@ -26,6 +28,54 @@
 	padding-top: 10px;
 	padding-bottom: 10px;
 	padding-left: 20px; }
+
+	.review-images img {
+		min-width: 100px; 
+		min-height: 100px; 
+		max-width: 100px; 
+		max-height: 100px;
+	}
+	.like-buttons button:hover {
+		color: #333;
+	}
+	.like-buttons button.clicked {
+		color: #717fe0;
+	}
+	.like-buttons button {
+		margin: 10px 5px;
+	}
+	.text-muted {
+		margin-top: 5px; /* Adds space above the like count */
+	}
+
+	.comment-time {
+		font-size: 0.8em;
+		color: #777;
+	}
+
+	.admin-reply {
+		flex-basis: 100%;
+		margin-left: 60px;
+		background-color: #e9f0f5;
+		padding: 10px;
+		margin-top: 20px;
+		border-radius: 8px;
+		border-left: 3px solid #717fe0;
+	}
+
+	.admin-reply p {
+		margin-bottom: 0;
+		color: #666666;
+		font-size: 14px;
+	}
+
+	.admin-reply:before {
+		content: 'Admin Reply:';
+		font-weight: bold;
+		display: block;
+		margin-bottom: 5px;
+		color: #717fe0;
+	}
 	</style>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
    <!-- breadcrumb -->
@@ -271,7 +321,7 @@
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
+							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews ({{ $totalReviews }})</a>
 						</li>
 					</ul>
 
@@ -321,84 +371,189 @@
 							</div>
 						</div>
 						
-						<!-- - -->
+						<!-- Reviews -->
 						<div class="tab-pane fade" id="reviews" role="tabpanel">
 							<div class="row">
 								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
 									<div class="p-b-30 m-lr-15-sm">
-										<!-- Review -->
-										<div class="flex-w flex-t p-b-68">
-											<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-												<img src="images/avatar-01.jpg" alt="AVATAR">
-											</div>
-
-											<div class="size-207">
-												<div class="flex-w flex-sb-m p-b-17">
-													<span class="mtext-107 cl2 p-r-20">
-														Ariana Grande
-													</span>
-
-													<span class="fs-18 cl11">
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star"></i>
-														<i class="zmdi zmdi-star-half"></i>
-													</span>
+										<div class="flex-w flex-sb-m p-b-52">
+											<div class="flex-w flex-c-m m-tb-10">
+												<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
+													<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
+													<i class="icon-close-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-close dis-none"></i>
+													 Filter
 												</div>
-
-												<p class="stext-102 cl6">
-													Quod autem in homine praestantissimum atque optimum est, id deseruit. Apud ceteros autem philosophos
-												</p>
+											</div>
+											
+											<!-- Filter -->
+											<div class="dis-none panel-filter w-full p-t-10">
+												<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
+													<div class="filter-col1 p-r-15 p-b-27">
+														<div class="mtext-102 cl2 p-b-15">
+															Rating Star
+														</div>
+							
+														<ul>
+															<li class="p-b-6">
+																<a href="#" class="filter-link stext-106 trans-04">
+																	All
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<a href="#" class="filter-link stext-106 trans-04">
+																	5
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<a href="#" class="filter-link stext-106 trans-04">
+																	4
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+																	3
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<a href="#" class="filter-link stext-106 trans-04">
+																	2
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<a href="#" class="filter-link stext-106 trans-04">
+																	1
+																</a>
+															</li>
+														</ul>
+													</div>
+							
+													<div class="filter-col2 p-r-15 p-b-27">
+														<div class="mtext-102 cl2 p-b-15">
+															Size
+														</div>
+							
+														<ul>
+															@foreach ($sizePairs as $size)
+																<li class="p-b-6">
+																	<a href="#" class="filter-link stext-106 trans-04">
+																		{{ $size }}
+																	</a>
+																</li>
+															@endforeach
+														</ul>
+													</div>
+							
+													<div class="filter-col3 p-r-15 p-b-27">
+														<div class="mtext-102 cl2 p-b-15">
+															Color
+														</div>
+							
+														<ul>
+															<li class="p-b-6">
+																<span class="fs-15 lh-12 m-r-6" style="color: #222;">
+																	<i class="zmdi zmdi-circle"></i>
+																</span>
+							
+																<a href="#" class="filter-link stext-106 trans-04">
+																	Black
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<span class="fs-15 lh-12 m-r-6" style="color: #4272d7;">
+																	<i class="zmdi zmdi-circle"></i>
+																</span>
+							
+																<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+																	Blue
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<span class="fs-15 lh-12 m-r-6" style="color: #b3b3b3;">
+																	<i class="zmdi zmdi-circle"></i>
+																</span>
+							
+																<a href="#" class="filter-link stext-106 trans-04">
+																	Grey
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<span class="fs-15 lh-12 m-r-6" style="color: #00ad5f;">
+																	<i class="zmdi zmdi-circle"></i>
+																</span>
+							
+																<a href="#" class="filter-link stext-106 trans-04">
+																	Green
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<span class="fs-15 lh-12 m-r-6" style="color: #fa4251;">
+																	<i class="zmdi zmdi-circle"></i>
+																</span>
+							
+																<a href="#" class="filter-link stext-106 trans-04">
+																	Red
+																</a>
+															</li>
+							
+															<li class="p-b-6">
+																<span class="fs-15 lh-12 m-r-6" style="color: #aaa;">
+																	<i class="zmdi zmdi-circle-o"></i>
+																</span>
+							
+																<a href="#" class="filter-link stext-106 trans-04">
+																	White
+																</a>
+															</li>
+														</ul>
+													</div>
+							
+													<div class="filter-col4 p-b-27">
+														<div class="mtext-102 cl2 p-b-15">
+															Tags
+														</div>
+							
+														<div class="flex-w p-t-4 m-r--5">
+															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+																Fashion
+															</a>
+							
+															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+																Lifestyle
+															</a>
+							
+															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+																Denim
+															</a>
+							
+															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+																Streetstyle
+															</a>
+							
+															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
+																Crafts
+															</a>
+														</div>
+													</div>
+												</div>
 											</div>
 										</div>
 										
-										<!-- Add review -->
-										<form class="w-full">
-											<h5 class="mtext-108 cl2 p-b-7">
-												Add a review
-											</h5>
+										<!-- Container for the reviews that will be dynamically shown/hidden -->
+										<div id="commentContainer">
+											<!-- Reviews will be inserted here by JavaScript -->
+										</div>
 
-											<p class="stext-102 cl6">
-												Your email address will not be published. Required fields are marked *
-											</p>
-
-											<div class="flex-w flex-m p-t-50 p-b-23">
-												<span class="stext-102 cl3 m-r-16">
-													Your Rating
-												</span>
-
-												<span class="wrap-rating fs-18 cl11 pointer">
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<i class="item-rating pointer zmdi zmdi-star-outline"></i>
-													<input class="dis-none" type="number" name="rating">
-												</span>
-											</div>
-
-											<div class="row p-b-25">
-												<div class="col-12 p-b-5">
-													<label class="stext-102 cl3" for="review">Your review</label>
-													<textarea class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10" id="review" name="review"></textarea>
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="name">Name</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name" type="text" name="name">
-												</div>
-
-												<div class="col-sm-6 p-b-5">
-													<label class="stext-102 cl3" for="email">Email</label>
-													<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="email" type="text" name="email">
-												</div>
-											</div>
-
-											<button class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
-												Submit
-											</button>
-										</form>
+										<!-- Button to load more reviews -->
+										<button class="stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04" id="loadMoreBtn">Load More</button>
 									</div>
 								</div>
 							</div>
@@ -476,6 +631,176 @@
 		<img src="{{ asset('user/images/product/' . $mainProduct->productTryOnQR) }}"/>
 	</div>
 
+	<script>
+		$(document).ready(function() {
+			$('.image-link').magnificPopup({
+			type: 'image'
+			});
+		});
+	</script>
+
+	<!-- JavaScript to handle loading more reviews -->
+	<script>
+		var comments = @json($comments); // Your reviews data from the server, as a JSON array
+		var currentIndex = 0; // Keeps track of which review to load next
+		var commentsPerClick = 3; // Number of reviews to show each time the button is clicked
+
+		function createRatingStars(rating) {
+			let starsHtml = '';
+			for (let i = 1; i <= 5; i++) {
+				if (i <= rating) {
+					// Full star
+					starsHtml += `<i class="zmdi zmdi-star"></i>`;
+				} else {
+					// Empty star
+					starsHtml += `<i class="zmdi zmdi-star-outline"></i>`;
+				}
+			}
+			return starsHtml;
+		}
+
+		function createCommentHTML(comment) {
+			var isAuthenticated = @json(auth()->check());
+			var currentUserId = @json(auth()->id());
+
+			// comment image
+			var imageUrls = [];
+
+			if (comment.image && comment.image.trim() !== '') {
+				imageUrls = comment.image.split('|');
+			}
+
+			var imagesHTML = imageUrls.map(function(url) {
+				return `<a href="{{asset('user/images/review/${url}')}}" class="image-link"><img src="{{asset('user/images/review/${url}')}}" alt="Review Image" class="mr-3 mb-3 img-fluid img-equal"></a>`;
+			}).join('');
+
+			// Total likes and check if user has liked
+			var likes = comment.likes && comment.likes.users_id ? comment.likes.users_id.length : 0;
+    		var userHasLiked = comment.likes && comment.likes.users_id && comment.likes.users_id.includes(currentUserId);
+			// Like button HTML, only if the user is authenticated
+			var likeButtonClass = userHasLiked ? "like-button clicked" : "like-button";
+			var likeIconClass = userHasLiked ? "fa fa-thumbs-up" : "fa fa-thumbs-o-up";
+			var likeButtonHTML = isAuthenticated ? `
+				<div class="like-buttons">
+					<button class="${likeButtonClass}" id="${comment.id}">
+						<i class="${likeIconClass}"></i> Like
+					</button>
+				</div>
+			` : '';
+
+			// comment posted date and time
+			var createdAt = new Date(comment.created_at).toLocaleString('en-US', {
+				year: 'numeric', month: '2-digit', day: '2-digit',
+				hour: '2-digit', minute: '2-digit', second: '2-digit',
+				hour12: false
+			});
+
+			// Create rating stars
+			var ratingStars = createRatingStars(comment.rating);
+
+			// Admin reply section
+			// asset('user/images/profile_image/263-2635979_admin-abuse.png') 
+			var adminReplyHTML = '';
+			if (comment.admin_reply) {
+				adminReplyHTML = `
+				<div class="admin-reply">
+					<p>${comment.admin_reply}</p>
+				</div>
+				`;
+			}
+
+			return `
+				<div class="flex-w flex-t p-b-68">
+					<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+						<img src="{{asset('user/images/profile_image/${comment.user.image}')}}" alt="AVATAR">
+					</div>
+
+					<div class="size-207">
+						<div class="flex-w flex-sb-m p-b-17">
+							<span class="mtext-107 cl2 p-r-20">
+								${comment.user.name}
+							</span>
+							<span class="fs-18 cl11">
+								${ratingStars}
+							</span>
+						</div>
+
+						<p class="stext-102">
+							${comment.review}
+						</p>
+
+						<div class="review-images">
+							<div>
+								${imagesHTML}
+							</div>
+						</div>
+
+						${likeButtonHTML}
+						<div>
+							<small class="text-muted">${likes} likes</small>
+						</div>
+
+						<div class="comment-time">
+							Posted on ${createdAt}
+						</div>
+					</div>
+					${adminReplyHTML}
+				</div>
+			`;
+		}
+
+		function loadReviews() {
+			var commentContainer = document.getElementById('commentContainer');
+			for (var i = 0; i < commentsPerClick && currentIndex < comments.length; i++, currentIndex++) {
+				var comment = comments[currentIndex];
+				var commentHTML = createCommentHTML(comment);
+				commentContainer.insertAdjacentHTML('beforeend', commentHTML);
+			}
+			// Hide the button if there are no more reviews to load
+			if (currentIndex >= comments.length) {
+				document.getElementById('loadMoreBtn').style.display = 'none';
+			}
+		}
+
+		// Initially load the first few reviews
+		loadReviews();
+
+		// Add event listener to the Load More button
+		document.getElementById('loadMoreBtn').addEventListener('click', loadReviews);
+	</script>
+
+	<script>
+		$('.like-button').on('click', function(e) {
+			e.preventDefault(); // Prevent the default anchor tag behaviour
+			var likeButton = $(this);
+			var likeButtonId = $(this).attr('id'); // Assuming the button's ID is the comment ID
+
+			$.ajax({
+				url: '/user/comment/' + likeButtonId + '/like', // Your server endpoint
+				type: 'POST', // Assuming liking is a POST action
+				dataType: 'json',
+				success: function(data) {
+					// Update the likes count text
+					var likesCount = likeButton.closest('.flex-w').find('.text-muted');
+            		likesCount.text(data.num_likes + ' likes');
+
+					// Toggle the like button class
+					likeButton.toggleClass('clicked'); // If 'clicked' class is present, it is removed; if it's not, it is added
+
+					// Change the icon
+					var iconEl = likeButton.find('i');
+					if (likeButton.hasClass('clicked')) {
+						iconEl.removeClass('fa-thumbs-o-up').addClass('fa-thumbs-up');
+					} else {
+						iconEl.removeClass('fa-thumbs-up').addClass('fa-thumbs-o-up');
+					}
+				}.bind(this), // .bind(this) ensures 'this' inside the success function refers to the clicked like button
+				error: function(xhr, status, error) {
+					console.error("An error occurred: " + xhr.status + " " + error);
+				}
+			});
+		});
+	</script>
 
 	<script>
 

@@ -9,15 +9,21 @@ use App\Enums\CartItemStatus;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+use App\Repositories\Interfaces\CommentRepositoryInterface;
 class ProductController extends Controller
 {
     protected $productRepository;
     protected $cartItemRepository;
-    public function __construct(ProductRepositoryInterface $productRepository,CartItemRepositoryInterface $cartItemRepository)
+    protected $commentmRepository;
+
+    public function __construct(ProductRepositoryInterface $productRepository,CartItemRepositoryInterface $cartItemRepository, CommentRepositoryInterface $commentmRepository)
     {
         $this->productRepository = $productRepository;
         $this->cartItemRepository = $cartItemRepository;
+        $this->cartItemRepository = $cartItemRepository;
+        $this->commentmRepository = $commentmRepository;
     }
+
     public function show(Request $request)
     {
         $products = $this->productRepository->allWithFilters($request);
@@ -36,13 +42,18 @@ class ProductController extends Controller
     {
         $mainProduct = $this->productRepository->find($id);
         $relatedProducts = $this->productRepository->findRelatedProducts($mainProduct->productType,$mainProduct->category, $id);
+        $comments = $this->commentmRepository->allCommentByProductId($id);
+        $totalReviews = count($comments);
 
         // Return the view with the main product and related products
         return view('user/product-detail', [
             'mainProduct' => $mainProduct,
             'relatedProducts' => $relatedProducts,
+            'comments' => $comments,
+            'totalReviews' => $totalReviews,
         ]);
     }
+
     public function checkStock(Request $request) {
         Log::info('Checking stock with request data:', $request->all());
     

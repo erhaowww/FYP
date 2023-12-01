@@ -10,6 +10,8 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\MembershipController;
+use App\Http\Controllers\CommentController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -50,6 +52,8 @@ Route::get('/virtual-showroom', function () {
     return view('user.virtual-showroom');
 });
 
+Route::resource('comments', CommentController::class);
+
 // user
 Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::get('/edit-profile', [UserController::class, 'edit_profile'])->name('profile');
@@ -77,6 +81,8 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/mark-order-received/{orderId}', [OrderController::class, 'markOrderReceived'])->name('mark-order-received');
 
     Route::post('/sendLiveChat', [ChatController::class, 'sendLiveChat'])->name('sendLiveChat');
+    Route::post('/comment/{comment_id}/like', [CommentController::class, 'like']);
+
 });
 
 
@@ -86,6 +92,7 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::get('/chat', [ChatController::class, 'index'])->name('livechat');
     Route::resource('customers', UserController::class);
     Route::resource('staffs', UserController::class);
+    Route::resource('memberships', MembershipController::class);
     Route::post('/getChatRequestState', [ChatController::class, 'getChatRequestState'])->name('getChatRequestState');
     Route::post('/updateChatRequestState', [ChatController::class, 'updateChatRequestState'])->name('updateChatRequestState');
     Route::post('/liveAgentResponse', [ChatController::class, 'liveAgentResponse'])->name('liveAgentResponse');

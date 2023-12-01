@@ -40,12 +40,14 @@
 }
  main section .lx-column.column-user-pic {
 	 display: flex;
-	 align-items: flex-start;
-	 justify-content: flex-end;
+	 align-items: flex-end;
+	 justify-content: flex-start;
+   flex-direction: column;
 }
  main section .profile-pic {
 	 width: auto;
 	 max-width: 20rem;
+	 min-width: 20rem;
 	 margin: 3rem 2rem;
 	 padding: 2rem;
 	 display: flex;
@@ -345,19 +347,25 @@ input[type=number]::-webkit-outer-spin-button {
                 <p><i class="fa fa-exclamation-triangle"></i>&nbsp;&nbsp;This photo will appear on the platform, in your contributions or where it is mentioned.</p>
               </div>
             </div>
+            @if($data->membership_level)
+            <script>
+              document.querySelector('.lx-column.column-user-pic').style.justifyContent = 'flex-end';
+            </script>
+              <div class="profile-pic bs-md">
+                  <h4 class="pic-label">Membership</h4>
+                  <p>Tier: <span class="membership-badge {{$data->membership_level}}" data-toggle="tooltip" data-placement="right" title="Membership Level">{{$data->membership_level}}</span></p>
+                  <p>Discount: <span class="membership-badge" data-toggle="tooltip" data-placement="right" title="You get the discount when you make payment">{{$data->membership_discount}}%</span></p>
+                  <p>Points: <span class="membership-badge" data-toggle="tooltip" data-placement="right" title="You can use this points to claim reward">{{$data->reward_point}}</span></p>
+              </div>
+            @endif
           </div>
           <div class="lx-column">
             <form class="edit-profile-form" id="edit-profile-form" method="POST" action="{{ route('submitEditProfileForm', ['id' => $data->id]) }}" enctype="multipart/form-data">
-                {{-- <input type="hidden" name="old-profile-image" id="old-profile-image" value="{{$data->image}}"> --}}
                 @csrf
                 <input id='selectedFile' class="disp-none" style="display: none" type='file' accept="image/*">
                 <input type="hidden" name="changed-profile-image" class="changed-profile-image" id="changed-profile-image" value="">
               <div class="fieldset">
-                <label for="user-name">Name 
-                  {{-- @if($data->currentMembershipLevel)
-                    &nbsp;&nbsp;&nbsp;<span class="membership-badge {{$data->currentMembershipLevel}}" data-toggle="tooltip" data-placement="right" title="Membership Level">{{$data->currentMembershipLevel}}</span>
-                  @endif --}}
-                </label>
+                <label for="user-name">Name</label>
                 <div class="input-wrapper">
                   <span class="icon"><i class="fa fa-user"></i></span>
                   <input type="text" id="user-name" name="user-name" value="{{$data->name}}" autocomplete="username" required>

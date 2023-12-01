@@ -14,14 +14,17 @@ use Illuminate\Support\Facades\DB;
 use App\Mail\SendMail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Carbon;
+use App\Repositories\Interfaces\MembershipRepositoryInterface;
 
 class UserController extends Controller
 {
     private $userRepository;
+    private $membershipRepository;
 
-    public function __construct(UserRepositoryInterface $userRepository)
+    public function __construct(UserRepositoryInterface $userRepository, MembershipRepositoryInterface $membershipRepository)
     {
         $this->userRepository = $userRepository;
+        $this->membershipRepository = $membershipRepository;
     }
 
     public function index(){
@@ -85,7 +88,10 @@ class UserController extends Controller
     public function edit_profile(){
         $user_id = auth()->user()->id;
         $data = $this->userRepository->findUser($user_id);
-        
+        if($data->membership_level){
+            $membership = $this->membershipRepository->findMembershipByLevel($data->membership_level);
+            $data->setAttribute('membership_discount', $membership->discount);
+        }
         return view('user/profile', compact('data'));
     }
 
@@ -129,6 +135,7 @@ class UserController extends Controller
 
         if (Auth::attempt($credentials)) {
             // Authentication successful
+            $this->userRepository->updateUserLoginTime(auth()->user()->id);
             return response()->json(['success' => 'Login successful.']);
         } else {
             // Authentication failed
@@ -254,6 +261,7 @@ class UserController extends Controller
         if ($existingUser) {
             // If the user exists, log them in
             Auth::login($existingUser);
+            $this->userRepository->updateUserLoginTime(auth()->user()->id);
         } else {
             // If the user does not exist, create a new user account
             $data = [
@@ -265,6 +273,7 @@ class UserController extends Controller
             $newUser = $this->userRepository->storeUser($data);
             // Log in the new user
             Auth::login($newUser);
+            $this->userRepository->updateUserLoginTime(auth()->user()->id);
         }
 
         // Redirect to the home page

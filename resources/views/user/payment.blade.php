@@ -594,6 +594,36 @@
 		.or-text {
 			white-space: nowrap;
 		}
+
+		.membership-badge {
+			display: inline-block;
+			padding: 5px 10px;
+			border-radius: 20px;
+			font-weight: bold;
+			font-size: 14px;
+			text-transform: uppercase;
+		}
+
+		.gold {
+			background-color: #ffc107;
+			color: #fff;
+		}
+
+		.silver {
+			background-color: #c4c4c4;
+			color: #fff;
+		}
+
+		.bronze {
+			background-color: #cd7f32;
+			color: #fff;
+		}
+
+		.platinum {
+			background-color: #e5e4e2;
+			color: #0c0c0c;
+			border: 2px solid #c0c0c0;
+		}
 	</style>
 <div class="container" style="margin-top:50px">
 		<div class="row">
@@ -623,7 +653,7 @@
 				<li class="list-group-item d-flex justify-content-between bg-light">
 				  <div class="text-success">
 					<h6 class="my-0">Member
-					  <span class="membership-badge">gold</span>
+					  <span class="membership-badge {{auth()->user()->membership_level}}">{{auth()->user()->membership_level}}</span>
 					</h6>
 					<small>Discount {{$discountRate}}%</small><br>
 				  </div>

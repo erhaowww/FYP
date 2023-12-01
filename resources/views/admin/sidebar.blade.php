@@ -31,7 +31,7 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="{{route('memberships.index')}}">
           <span class="menu-title">Membership</span>
           <i class="mdi mdi-account-card-details menu-icon"></i>
         </a>
@@ -75,7 +75,7 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="{{route('comments.index')}}">
           <span class="menu-title">Comment</span>
           <i class="mdi mdi-comment-text-multiple-outline menu-icon"></i>
         </a>

@@ -47,6 +47,7 @@
 	<form id="checkoutForm" class="bg0 p-t-75 p-b-85" action="/user/make-order" method="POST">
 		@csrf
 		<input type="hidden" name="shippingCostHidden" id="shippingCostHidden" value="undefined">
+		<input type="hidden" name="discountRate" id="discountRateHidden" value="{{$discountRate}}">
 		<div class="container">
 			<div class="row">
 				<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
@@ -58,7 +59,7 @@
 									foreach ($cartItems as $item) {
 										$itemTotalPrice += $item->quantity * $item->product->price;
 									}
-									$discount = 10; // Example discount
+									// $discount = 10; // Example discount
 								@endphp
 								@if ($cartItems->isNotEmpty())
 									<tr class="table_head">

@@ -42,6 +42,34 @@ class UserRepository implements UserRepositoryInterface
         $user->save();
     }
 
+    public function updateUserMembership($level, $id)
+    {
+        $user = User::where('id', $id)->first();
+        $user->membership_level = $level;
+        $user->save();
+    }
+
+    public function updateUserLoginTime($id)
+    {
+        $user = User::where('id', $id)->first();
+        $user->last_login_at = now();
+        $user->save();
+    }
+
+    public function updateUserTotalSpent($total_spent, $id)
+    {
+        $user = User::where('id', $id)->first();
+        $user->total_spent += $total_spent;
+        $user->save();
+    }
+
+    public function updateUserRewardPoint($point, $id)
+    {
+        $user = User::where('id', $id)->first();
+        $user->reward_point += $point;
+        $user->save();
+    }
+
     public function destroyUser($id)
     {
         $user = User::find($id);

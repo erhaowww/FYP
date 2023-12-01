@@ -9,6 +9,8 @@
 <script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.min.js"></script>
 <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
 <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+
 @php
 use App\Enums\OrderStatus;
 @endphp
@@ -179,6 +181,10 @@ h2 {
     border: 1px solid #ff5a49;
     background: #fff;
     cursor: pointer;
+}
+
+.modal-content {
+    margin-top: 100px;
 }
 
 .modal-header, .modal-body{
@@ -457,17 +463,6 @@ h2 {
     }
 </style>
 
-@if(Session::has('membership_upgrade_message'))
-    <script>
-        swal({
-            title: "Success!",
-            text: "{{ Session::get('membership_upgrade_message') }}",
-            icon: "success",
-            button: "OK",
-        });
-    </script>
-@endif
-
 @if(Session::has('add_review_message'))
     <script>
         swal({
@@ -557,7 +552,14 @@ h2 {
                             <td colspan="6"></td>
                         @endif
                         <td class="text-center">
-                            <a href="#{{$firstItem->product->id}}"type="button" class="btn btn-primary add_review">Review</a>
+                            @php
+                                $hasComment = $comments->contains(function ($comment) use ($productId, $payment) {
+                                    return $comment->payment_id == $payment->id && $comment->product_id == $productId;
+                                });
+                            @endphp
+                            <button type="button" class="btn {{ $hasComment ? 'btn-secondary' : 'btn-primary add_review' }}" data-product-id="{{ $firstItem->product->id }}" data-payment-id="{{ $payment->id }}" {{ $hasComment ? 'disabled' : '' }}>
+                                {{ $hasComment ? 'Reviewed' : 'Review' }}
+                            </button>
                         </td>
                     </tr>
                 @endif
@@ -585,88 +587,88 @@ h2 {
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 </div>
                 <div class="modal-body">
-                    <form action="#comment" enctype="multipart/form-data" method="POST">
+                    <form action="{{route('comments.store')}}" enctype="multipart/form-data" method="POST" id="add-comment-form">
                         @csrf
-                    <div class="wrapper">
-                        <div class="master">
-                          <h1>Review And rating</h1>
-                          <h2>How was your experience about our product?</h2>
+                        <div class="wrapper">
+                            <div class="master">
+                            <h1>Review And rating</h1>
+                            <h2>How was your experience about our product?</h2>
 
-                          <input type="hidden" name="payment_id" id="payment_id" value="">
-                          <div class="rating-component">
-                            <div class="status-msg">
-                              <label>
-                                <input  class="rating_msg" type="hidden" name="rating_msg" value=""/>
-                              </label>
-                            </div>
-                            <div class="stars-box">
-                              <i class="star fa fa-star" title="1 star" data-message="Poor" data-value="1"></i>
-                              <i class="star fa fa-star" title="2 stars" data-message="Too bad" data-value="2"></i>
-                              <i class="star fa fa-star" title="3 stars" data-message="Average quality" data-value="3"></i>
-                              <i class="star fa fa-star" title="4 stars" data-message="Nice" data-value="4"></i>
-                              <i class="star fa fa-star" title="5 stars" data-message="very good qality" data-value="5"></i>
-                            </div>
-                            <div class="starrate">
-                              <label>
-                                <input class="ratevalue" type="hidden" name="rate_value" value=""/>
-                              </label>
-                            </div>
-                          </div>
-                      
-                          <div class="feedback-tags">
-                            <div class="tags-container" data-tag-set="1">
-                              <div class="question-tag">
-                                Why was your experience so bad?
-                              </div>
-                            </div>
-                            <div class="tags-container" data-tag-set="2">
-                              <div class="question-tag">
-                                Why was your experience so bad?
-                              </div>
-                      
-                            </div>
-                      
-                            <div class="tags-container" data-tag-set="3">
-                              <div class="question-tag">
-                                Why was your average rating experience ?
-                              </div>
-                            </div>
-                            <div class="tags-container" data-tag-set="4">
-                              <div class="question-tag">
-                                Why was your experience good?
-                              </div>
-                            </div>
-                      
-                            <div class="tags-container" data-tag-set="5">
-                              <div class="make-compliment">
-                                <div class="compliment-container">
-                                  Give a compliment
-                                  <i class="far fa-smile-wink"></i>
+                            <input type="hidden" name="product_id" id="product_id" value="">
+                            <input type="hidden" name="payment_id" id="payment_id" value="">
+                            <div class="rating-component">
+                                <div class="status-msg">
+                                <label>
+                                    <input  class="rating_msg" type="hidden" name="rating_msg" value=""/>
+                                </label>
                                 </div>
-                              </div>
+                                <div class="stars-box">
+                                <i class="star fa fa-star" title="1 star" data-message="Poor" data-value="1"></i>
+                                <i class="star fa fa-star" title="2 stars" data-message="Too bad" data-value="2"></i>
+                                <i class="star fa fa-star" title="3 stars" data-message="Average quality" data-value="3"></i>
+                                <i class="star fa fa-star" title="4 stars" data-message="Nice" data-value="4"></i>
+                                <i class="star fa fa-star" title="5 stars" data-message="very good qality" data-value="5"></i>
+                                </div>
+                                <div class="starrate">
+                                <label>
+                                    <input class="ratevalue" type="hidden" name="rate_value" value=""/>
+                                </label>
+                                </div>
                             </div>
-                            
-                            <div class="tags-box">
-                              <input type="text" class="tag form-control" name="review" id="inlineFormInputName" placeholder="Please enter your review">
-                              <input type="hidden" name="product_id" value="" />
+                        
+                            <div class="feedback-tags">
+                                <div class="tags-container" data-tag-set="1">
+                                <div class="question-tag">
+                                    Why was your experience so bad?
+                                </div>
+                                </div>
+                                <div class="tags-container" data-tag-set="2">
+                                <div class="question-tag">
+                                    Why was your experience so bad?
+                                </div>
+                        
+                                </div>
+                        
+                                <div class="tags-container" data-tag-set="3">
+                                <div class="question-tag">
+                                    Why was your average rating experience ?
+                                </div>
+                                </div>
+                                <div class="tags-container" data-tag-set="4">
+                                <div class="question-tag">
+                                    Why was your experience good?
+                                </div>
+                                </div>
+                        
+                                <div class="tags-container" data-tag-set="5">
+                                <div class="make-compliment">
+                                    <div class="compliment-container">
+                                    Give a compliment
+                                    <i class="far fa-smile-wink"></i>
+                                    </div>
+                                </div>
+                                </div>
+                                
+                                <div class="tags-box">
+                                <input type="text" class="tag form-control" name="review" id="inlineFormInputName" placeholder="Please enter your review">
+                                </div>
+        
+                                <input type="file" class="filepond" name="filepond[]" multiple data-max-file-size="3MB" data-max-files="9" />
+                                
                             </div>
-    
-                            <input type="file" class="filepond" name="filepond[]" multiple data-max-file-size="3MB" data-max-files="9" />
-                            
-                          </div>
-                      
-                          <div class="button-box">
-                            <button type="submit" class="done btn btn-warning" disabled="disabled">Add review</button>
-                          </div>
-                      
-                          <div class="submited-box">
-                            <div class="loader"></div>
-                            <div class="success-message">
-                              Thank you!
+                        
+                            <div class="button-box">
+                                <button type="submit" class="done btn btn-warning" disabled="disabled">Add review</button>
                             </div>
-                          </div>
+                        
+                            <div class="submited-box">
+                                <div class="loader"></div>
+                                <div class="success-message">
+                                Thank you!
+                                </div>
+                            </div>
+                            </div>
                         </div>
-                    </div>
                     </form>
                 </div>
           </div>
@@ -675,15 +677,18 @@ h2 {
 
     <script>
         $(function () {
-            $('[data-toggle="tooltip"]').tooltip()
+            $('[data-toggle="tooltip"]').tooltip();
         })
     </script>
 
     <script>
         $('.add_review').click(function(){
+            var productId = $(this).data('product-id');
             var paymentId = $(this).data('payment-id');
+            $('#product_id').val(productId);
             $('#payment_id').val(paymentId);
-            console.log($('#payment_id').val());
+            // console.log("product id: " + $('#product_id').val());
+            // console.log("payment id: " + $('#payment_id').val());
             $('#review_modal').modal('show');
         });
 
@@ -810,7 +815,7 @@ h2 {
                 $(".submited-box .success-message").show();
             }, 1500);
 
-            $('form').submit();
+            $('form[id="add-comment-form"]').submit();
         });
 
     </script>

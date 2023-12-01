@@ -1,5 +1,6 @@
 @extends('user/master')
 @section('content')
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
 @php
 use App\Enums\OrderStatus;
 @endphp
@@ -9,6 +10,17 @@ use App\Enums\OrderStatus;
             background-color: #eeeeee;
         }
     </style>
+
+    @if(Session::has('membership_upgrade_message'))
+        <script>
+            swal({
+                title: "Success!",
+                text: "{{ Session::get('membership_upgrade_message') }}",
+                icon: "success",
+                button: "OK",
+            });
+        </script>
+    @endif
 
     <!-- breadcrumb -->
 	<div class="container">

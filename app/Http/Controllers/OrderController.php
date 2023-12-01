@@ -12,25 +12,35 @@ use App\Repositories\Interfaces\DeliveryRepositoryInterface;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
+use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\Interfaces\MembershipRepositoryInterface;
+use Session;
+
 class OrderController extends Controller
 {
     protected $orderRepository;
     protected $deliveryRepository;
     protected $paymentRepository;
     protected $cartItemRepository;
+    private $userRepository;
+    private $membershipRepository;
     protected $productRepository;
 
     public function __construct(
+        UserRepositoryInterface $userRepository,
         OrderRepositoryInterface $orderRepository, 
         DeliveryRepositoryInterface $deliveryRepository, 
         PaymentRepositoryInterface $paymentRepository,
         CartItemRepositoryInterface $cartItemRepository,
-        ProductRepositoryInterface $productRepository
+        ProductRepositoryInterface $productRepository,
+        MembershipRepositoryInterface $membershipRepository
     ) {
         $this->orderRepository = $orderRepository;
         $this->deliveryRepository = $deliveryRepository;
         $this->paymentRepository = $paymentRepository;
         $this->cartItemRepository = $cartItemRepository;
+        $this->userRepository = $userRepository;
+        $this->membershipRepository = $membershipRepository;
         $this->productRepository = $productRepository;
     }
 
@@ -92,6 +102,7 @@ class OrderController extends Controller
 
             $this->deliveryRepository->create($deliveryData);
             $this->paymentRepository->create($paymentData);
+            $this->userRepository->updateUserTotalSpent($request->input('totalPrice'), auth()->user()->id);
             
             return response()->json([
                 'success' => true,
@@ -115,6 +126,19 @@ class OrderController extends Controller
         $cartItemIds = explode('|', $order->cartItemIds);
 
         $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::purchased->value);
+
+        $memberships = $this->membershipRepository->allMembership();
+        $membership_level = '';
+        foreach ($memberships as $membership) {
+            if (auth()->user()->total_spent >= $membership->totalAmount_spent) {
+                $membership_level = $membership->level;
+            } 
+        }
+        if(auth()->user()->membership_level != $membership_level) {
+            //upgrade membership level
+            $this->userRepository->updateUserMembership($membership_level, auth()->user()->id);
+            Session::flash('membership_upgrade_message', 'Congratulations, you have been upgraded to '.$membership_level.' membership level!');
+        }
 
         // Pass all data to the view
         return view('user.tracking', [
