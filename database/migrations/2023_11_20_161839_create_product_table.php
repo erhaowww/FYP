@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('productType');
             $table->string('productDesc');
             $table->string('productImgObj');
-            $table->string('productTryOnQR');
+            $table->string('productTryOnQR')->nullable();;
             $table->string('category');
             $table->string('color');
             $table->string('size');

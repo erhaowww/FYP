@@ -5,23 +5,32 @@ use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use Illuminate\Support\Facades\Log;
+use App\Models\CartItem;
+use App\Enums\CartItemStatus;
 class ProductRepository implements ProductRepositoryInterface
 {
     public function getAll()
     {
-        return Product::available();
+        return Product::available()->get();
     }
 
     public function allWithFilters(Request $request)
     {
         $query = Product::available();
 
-        // Apply sorting based on the provided criteria
+        $salesQuery = \DB::table('cart_item')
+                    ->select('productId', \DB::raw('COALESCE(SUM(quantity), 0) as total_sales'))
+                    ->where('status', CartItemStatus::purchased->value)
+                    ->groupBy('productId');
+
+        $query->leftJoinSub($salesQuery, 'sales', function($join) {
+            $join->on('product.id', '=', 'sales.productId');
+        });
+
         $sort = $request->query('sort');
         switch ($sort) {
             case 'popularity':
-                // $query->orderBy('popularity', 'desc');
-                break;
+                $query->orderBy('sales.total_sales', 'desc');
             case 'rating':
                 // $query->orderBy('average_rating', 'desc');
                 break;
@@ -131,5 +140,31 @@ class ProductRepository implements ProductRepositoryInterface
             $product->save();
         }
     }
-    
+    public function create(array $data)
+    {
+        return Product::create($data);
+    }
+    public function update(array $data, $id) {
+        $product = $this->find($id);
+        if ($product) {
+            $product->update($data);
+            return $product;
+        }
+    }
+    public function delete($id) {
+        $product = $this->find($id);
+        if ($product) {
+            $product->deleted = 1;
+            $product->save();
+            return $product;
+        }
+    }
+    public function increaseStock($stockString, $id) {
+        $product = $this->find($id);
+        if ($product) {
+            $product->stock = $stockString;
+            $product->save();
+            return $product;
+        }
+    }
 }

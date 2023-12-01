@@ -10,6 +10,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ChatController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\CommentController;
 /*
@@ -106,4 +107,23 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::get('/faqs/{id}/edit', [ChatbotController::class, 'editFAQ'])->name('faqs.edit');
     Route::post('/faqs/{id}/update', [ChatbotController::class, 'updateFAQ'])->name('faqs.update');
     Route::post('/faqs/{id}/destroy', [ChatbotController::class, 'destroyFAQ'])->name('faqs.destroy');
+
+    //product
+    Route::get('/all-product', [ProductController::class,'displayAllProduct'])->name('all-products');
+    Route::get('/product/create', [ProductController::class,'create'])->name('product.create');
+    Route::post('/product/add', [ProductController::class,'add'])->name('product.add');
+    Route::get('/product/edit/{id}', [ProductController::class,'edit'])->name('product.edit');
+    Route::post('/product/update/{id}', [ProductController::class, 'update'])->name('product.update');
+    Route::get('/product/delete/{id}', [ProductController::class, 'delete'])->name('product.delete');
+    Route::get('/product/add-stock/{id}', [ProductController::class, 'addStock'])->name('product.addStock');
+    Route::post('/product/increase-stock/{id}', [ProductController::class, 'increaseStock'])->name('product.increaseStock');
+    //order delivery
+    Route::get('/all-delivery', [DeliveryController::class,'displayAllDeliveryData'])->name('all-delivery');
+    Route::get('/delivery/{id}', [DeliveryController::class,'edit'])->name('delivery.edit');
+    Route::post('/delivery/update/{id}', [DeliveryController::class,'update'])->name('delivery.update');
+    //payment
+    Route::get('/all-payment', [PaymentController::class,'displayAllPayment'])->name('all-payment');
+
+    //cart
+    Route::get('/all-cart', [CartItemController::class,'displayAllCart'])->name('all-cart');
 });

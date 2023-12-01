@@ -68,7 +68,7 @@ class OrderController extends Controller
         $eastMalaysiaStates = ['Sabah', 'Sarawak', 'Labuan']; // Define East Malaysia states
         $isEastMalaysia = in_array($request->input('state'), $eastMalaysiaStates);
         $estimatedDeliveryDays = $isEastMalaysia ? 14 : 7;
-        $validatedData['estiDeliveryDate'] = Carbon::now()->addDays($estimatedDeliveryDays);
+        $validatedData['estiDeliveryDate'] = Carbon::now()->addDays($estimatedDeliveryDays)->format('Y-m-d');
 
         try {
             $order = $this->orderRepository->create($validatedData);
@@ -152,7 +152,7 @@ class OrderController extends Controller
 
     public function markOrderReceived($orderId)
     {
-        $this->orderRepository->markOrderAsCompleted($orderId);
+        $this->orderRepository->updateStatus($orderId,OrderStatus::Completed->value);
 
         return redirect()->back()->with('success', 'Order marked as received.');
     }

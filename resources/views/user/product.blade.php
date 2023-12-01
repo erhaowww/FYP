@@ -96,7 +96,7 @@ use App\Enums\ProductColor;
 									<input type="radio" id="sort_popularity" name="sort" value="popularity" class="hidden" >
 									<label for="sort_popularity">
 										<span onclick="toggleSortingActive(this)" class="filter-link stext-106 trans-04 sorting">
-										Popularity (coming soon)
+										Popularity
 										</span>
 									</label>
 								</li>
@@ -252,10 +252,9 @@ use App\Enums\ProductColor;
 			<div class="row isotope-grid">
 			@foreach ($products as $product)
                     <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item {{ $product->productType }}">
-                        <!-- Block2 -->
                         <div class="block2">
-                            <div class="block2-pic hov-img0">
-							<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
+                            <div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;">
+								<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
                             </div>
 
                             <div class="block2-txt flex-w flex-t p-t-14">
@@ -312,18 +311,12 @@ function togglePriceActive(element) {
 
 }
 
-// This function toggles the active class on color spans and saves the state
 function toggleColorActive(checkbox) {
-    // Assuming the span is the next sibling of the checkbox
     var spanElement = checkbox.nextSibling;
 
-    // We need to check if spanElement is the span or something else
-    // If it's a text node (possible with some HTML structures), we should get the next element
     if (spanElement.nodeType === Node.TEXT_NODE) {
         spanElement = spanElement.nextSibling;
     }
-
-    // Toggle the active class
     spanElement.classList.toggle('filter-link-active');
 }
 
@@ -332,7 +325,6 @@ function toggleColorActive(checkbox) {
 function setActiveFiltersFromURL() {
     const urlParams = new URLSearchParams(window.location.search);
 
-    // Sort parameter
     const sortParam = urlParams.get('sort');
 	
     if (sortParam) {
@@ -344,7 +336,6 @@ function setActiveFiltersFromURL() {
 					link.classList.remove('filter-link-active');
 				});
 				const sortingInputs = document.querySelectorAll('input[type="radio"][name="sort"]');
-				// Uncheck all radio buttons first.
 				sortingInputs.forEach(input => {
 					input.checked = false;
 				});
@@ -354,7 +345,6 @@ function setActiveFiltersFromURL() {
         }
     }
 
-    // Price parameter
     let price = urlParams.get('price');
     if (price) {
         let priceElement = document.querySelector(`input[name="price"][value="${price}"]`);
@@ -365,7 +355,6 @@ function setActiveFiltersFromURL() {
 					link.classList.remove('filter-link-active');
 				});
 				const sortingInputs = document.querySelectorAll('input[type="radio"][name="price"]');
-				// Uncheck all radio buttons first.
 				sortingInputs.forEach(input => {
 					input.checked = false;
 				});
@@ -375,7 +364,6 @@ function setActiveFiltersFromURL() {
         }
     }
 
-    // Color parameters
     let colors = urlParams.getAll('color[]');
     document.querySelectorAll('input[type="checkbox"][name="color[]"]').forEach(checkbox => {
         checkbox.checked = colors.includes(checkbox.value);

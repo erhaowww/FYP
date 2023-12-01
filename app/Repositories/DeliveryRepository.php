@@ -27,5 +27,21 @@ class DeliveryRepository implements DeliveryRepositoryInterface
     {
         return Delivery::where('orderId', $orderId)->first();
     }
-
+    public function updateDeliveryManData($id, $data)
+    {
+        $delivery = Delivery::findOrFail($id);
+        $delivery->deliveryManPhone = $data['deliveryManPhone'];
+        $delivery->deliveryCompany = $data['deliveryCompany'];
+        $delivery->deliveryManName = $data['deliveryManName'];
+        $delivery->save();
+    }   
+    public function updateActualDeliveryDate($id, $dateTime) {
+        $delivery = Delivery::findOrFail($id);
+        $delivery->actualDeliveryDate = $dateTime;
+        $delivery->save();
+    }
+    public function getAllDeliveries()
+    {
+        return Delivery::all();
+    }
 }

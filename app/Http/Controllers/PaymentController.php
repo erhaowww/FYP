@@ -1,13 +1,17 @@
 <?php
 
 namespace App\Http\Controllers;
+use App\Enums\OrderStatus;
 use Auth;
+use Carbon\Carbon;
 use Braintree\Gateway;
 use App\Enums\CartItemStatus;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+use App\Repositories\Interfaces\DeliveryRepositoryInterface;
+use App\Repositories\Interfaces\OrderRepositoryInterface;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
 
 class PaymentController extends Controller
@@ -15,12 +19,16 @@ class PaymentController extends Controller
     protected $gateway;
     protected $paymentRepository;
     protected $cartItemRepository;
-    private $commentmRepository;
+    private $commentRepository;
+    protected $deliveryRepository;
+    protected $orderRepository;
 
-    public function __construct(PaymentRepositoryInterface $paymentRepository, CartItemRepositoryInterface $cartItemRepository, CommentRepositoryInterface $commentmRepository) {
+    public function __construct(PaymentRepositoryInterface $paymentRepository, CartItemRepositoryInterface $cartItemRepository, CommentRepositoryInterface $commentRepository, DeliveryRepositoryInterface $deliveryRepository, OrderRepositoryInterface $orderRepository) {
         $this->paymentRepository = $paymentRepository;
         $this->cartItemRepository = $cartItemRepository;
-        $this->commentmRepository = $commentmRepository;
+        $this->deliveryRepository = $deliveryRepository;
+        $this->orderRepository = $orderRepository;
+        $this->commentRepository = $commentRepository;
         $this->gateway = new Gateway([
             'environment' => config('braintree.environment'),
             'merchantId' => config('braintree.merchantId'),
@@ -31,9 +39,6 @@ class PaymentController extends Controller
 
     public function processPayment(Request $request)
     {
-        if (empty($request->transactionId)) {
-            return response()->json(['success' => false, 'message' => 'Payment method nonce is missing.']);
-        }
         $amount = $request->totalPrice;
 
         // Determine the card type
@@ -97,21 +102,33 @@ class PaymentController extends Controller
         $userId = auth()->id();
         $payments = $this->paymentRepository->getAllPaymentsWithOrdersByUserId($userId);
         $allGroupedCartItems = collect(); // To store grouped cart items for all payments
-    
+        
         foreach ($payments as $payment) {
             if ($payment->order) {
+                $delivery = $this->deliveryRepository->getDeliveryByOrderId($payment->order->id);
+                if ($delivery && $delivery->actualDeliveryDate && Carbon::parse($delivery->actualDeliveryDate)->addDays(3)->isPast()) {
+                    $newOrderStatus = $this->orderRepository->updateStatus($payment->order->id, OrderStatus::Completed->value);
+                    $payment->order->orderStatus = $newOrderStatus->orderStatus;
+                }
                 $ids = explode('|', $payment->order->cartItemIds);
                 $cartItems = $this->cartItemRepository->getByIds($ids, CartItemStatus::purchased);
-                Log::debug("Cart items with products", ['cart_items' => $cartItems]);
-    
-                // Group cart items by product ID for each payment's order
                 $groupedCartItems = $cartItems->groupBy('productId');
                 $allGroupedCartItems[$payment->order->id] = $groupedCartItems;
             }
         }
-        $comments = $this->commentmRepository->allComment();
+        $comments = $this->commentRepository->allComment();
         // Pass the payments and the grouped cart items to the view
         return view('user.payment-history', compact('payments', 'allGroupedCartItems', 'comments'));
     }
+
+    public function displayAllPayment(){
+
+        $payments = $this->paymentRepository->getAllPayments();
+
+        return view('/admin/all-payment', [
+            'payments' => $payments,
+        ]);
+    }
+
 }
 

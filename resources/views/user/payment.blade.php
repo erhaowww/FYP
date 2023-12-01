@@ -1056,6 +1056,19 @@ function tokenizeCard(clientInstance, cardData) {
     });
 }
 function submitOrderDetails(transactionId, paymentType) {
+	if (!transactionId) {
+    Swal.fire({
+        title: 'Error',
+        text: 'Request timed out. Please reload the page.',
+        icon: 'error',
+        confirmButtonText: 'OK'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.reload();
+        }
+    });
+    return;
+}
     fetch('/user/store-transaction', {
         method: 'POST',
         headers: {
@@ -1074,7 +1087,7 @@ function submitOrderDetails(transactionId, paymentType) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            window.location.href = '/user/tracking/' + data.orderId; // Redirect to tracking page
+            window.location.href = '/user/tracking/' + data.orderId; 
         } else {
             console.error('Error storing transaction:', data.message);
         }

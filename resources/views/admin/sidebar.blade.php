@@ -43,19 +43,25 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="">
+        <a class="nav-link" href="/admin/all-product">
           <span class="menu-title">Product</span>
           <i class="mdi mdi-cube-outline menu-icon"></i>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/payments">
+        <a class="nav-link" href="/admin/all-cart">
+          <span class="menu-title">Cart</span>
+          <i class="mdi mdi-cart menu-icon"></i>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/admin/all-payment">
           <span class="menu-title">Payment</span>
           <i class="mdi mdi-coin menu-icon"></i>
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/delivery">
+        <a class="nav-link" href="/admin/all-delivery">
           <span class="menu-title">Delivery</span>
           <i class="mdi mdi-truck-fast menu-icon"></i>
         </a>
@@ -78,12 +84,6 @@ use Illuminate\Foundation\Auth;
         <a class="nav-link" href="{{route('comments.index')}}">
           <span class="menu-title">Comment</span>
           <i class="mdi mdi-comment-text-multiple-outline menu-icon"></i>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" href="/admin/freegifts">
-          <span class="menu-title">Free Gift</span>
-          <i class="mdi mdi-gift menu-icon"></i>
         </a>
       </li>
       <li class="nav-item">
