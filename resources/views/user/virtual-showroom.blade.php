@@ -288,46 +288,92 @@
     document.addEventListener('mousedown', onDocumentMouseDown, false);
 
 let currentDialog = null;
-function createTextTexture(product, width = 512, height = 256) {
+function createTextTexture(product, width = 512, height = 512) {
     const canvas = document.createElement('canvas');
     canvas.width = width;
     canvas.height = height;
-
     const context = canvas.getContext('2d');
-    context.fillStyle = '#FFFFFF'; // Background color
-    context.fillRect(0, 0, width, height);
-    context.font = '20px Arial';
-    context.fillStyle = '#000000';
-    context.textAlign = 'left';
-    context.padding = '40px';
-    context.textBaseline = 'top';
+    const padding = 20;
+    const maxWidth = width - 2 * padding;
     const lineHeight = 24;
-    let yPosition = 10;
-    context.fillText('Name: ' + product.productName, 10, yPosition);
-    yPosition += lineHeight;
-    context.fillText('Description: ' + product.productDesc, 10, yPosition);
-    yPosition += lineHeight;
-    context.fillText('Price: RM ' + product.price, 10, yPosition);
-    yPosition += lineHeight;
-    context.fillText('Color: ' + product.colors, 10, yPosition);
-    yPosition += lineHeight;
-    context.fillText('Size: ' + product.sizes, 10, yPosition);
-    yPosition += lineHeight * 2;
-    const img = new Image();
-    img.onload = function() {
-        context.drawImage(img, 10, yPosition, 100, 100); // Adjust size as needed
-        const texture = new THREE.Texture(canvas);
-        texture.needsUpdate = true;
-    };
-    img.src = '{{ asset("user/images/product/") }}'+'/' + product.productTryOnQR;
 
-    context.strokeStyle = 'red'; 
-    context.strokeRect(0, 0, width, height);
-    
+    // Background
+    context.fillStyle = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent black
+    context.fillRect(0, 0, width, height);
+
+    // Text styles
+    context.font = 'bold 24px Arial';
+    context.fillStyle = '#FFFFFF'; // White text
+    context.textAlign = 'left';
+    context.textBaseline = 'top';
+
+    let yPosition = padding;
+
+    // Product Name
+    context.fillText(product.productName, padding, yPosition);
+    yPosition += 40;
+
+    context.font = '18px Arial';
+
+    // Product Description
+    context.fillText('Name: ' + product.productName, padding, yPosition);
+    yPosition += lineHeight * 2;
+
+    // Wrap text function
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = context.measureText(testLine);
+            const testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        context.fillText(line, x, y);
+        return y + lineHeight; // Return the Y position after the last line of text
+    }
+
+    // Use wrapText function for description and update yPosition accordingly
+    yPosition = wrapText(context, product.productDesc, padding, yPosition, width - 2 * padding, lineHeight);
+
+    // Price
+    context.fillText('Price: RM ' + product.price.toFixed(2), padding, yPosition);
+    yPosition += 30; 
+
+    // Colors
+    context.fillText('Color: ' + product.colors, padding, yPosition);
+    yPosition += 30;
+
+    // Sizes
+    context.fillText('Size: ' + product.sizes, padding, yPosition);
+    yPosition += 50;
+
     const texture = new THREE.Texture(canvas);
+    const img = new Image();
+    const qrSize = 200;
+    const qrXPosition = (width - qrSize) / 2;
+    const qrYPosition = height - qrSize - 30; 
+    img.onload = function() {
+        context.drawImage(img, qrXPosition, qrYPosition, qrSize, qrSize);
+        texture.needsUpdate = true; 
+        if (callback) {
+            callback(texture);
+        }
+    };
+    img.src = '/user/images/product/' + product.productTryOnQR;
+
     texture.needsUpdate = true;
     return texture;
 }
+
+
 function create3DDialog(product, position) {
     console.log("Creating 3D dialog for product:", product);
     const dialogGroup = new THREE.Group();
