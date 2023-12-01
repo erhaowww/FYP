@@ -41,4 +41,9 @@ class PaymentRepository implements PaymentRepositoryInterface
         return Payment::all();
     }
 
+    public function getAllPaymentsWithOrders()
+    {
+        return Payment::with('order')
+                  ->get();
+    }
 }
