@@ -454,5 +454,31 @@ class ProductController extends Controller
         $this->productRepository->increaseStock($stockString,$id);
         return redirect()->route('all-products')->with('success', 'Product updated successfully.');
     }
+
+    public function showVirtualShowroom(){
+        $products = $this->productRepository->getAll();
+    
+        foreach ($products as $product) {
+            $product->colors = implode(', ', array_filter(explode('|', $product->color)));
+            
+            $sizes = explode(',', str_replace('|',',', $product->size));
+            $stocks = explode(',', str_replace('|',',', $product->stock));
+            [$sortedSizes, $sortedStocks] = $this->sortSizesAndStocks($sizes, $stocks);
+
+            $product->sizes = implode(',', array_filter($sortedSizes));
+        }
+    
+        return view('/user/virtual-showroom', [
+            'products' => $products,
+        ]);
+    }
+
+    public function index()
+    {
+        $products = $this->productRepository->getAll();
+        $types = ProductType::cases();
+        return view('user/index', compact('products', 'types'));
+    }
+    
 }
 

@@ -25,9 +25,7 @@ use App\Http\Controllers\RewardController;
 |
 */
 
-Route::get('/', function () {
-    return view('user/index');
-});
+Route::get('/', [ProductController::class, 'index']);
 Route::get('/auth/google', [UserController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [UserController::class, 'handleGoogleCallback']);
 Route::get('logout', function () {
@@ -50,9 +48,7 @@ Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('pro
 Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
 Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
 
-Route::get('/virtual-showroom', function () {
-    return view('user.virtual-showroom');
-});
+Route::get('/virtual-showroom', [ProductController::class, 'showVirtualShowroom'])->name('products.showVirtualShowroom');
 
 Route::resource('comments', CommentController::class);
 

@@ -30,22 +30,42 @@
             cursor: pointer; /* Change cursor to indicate it's clickable */
             z-index: 100;
         }
+        #crosshair {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 5px;
+            height: 5px;
+            background-color: red;
+            border-radius: 50%;
+        }
         canvas { display: block; } 
     </style>
 <body>
     <div id="instructions">
         <span style="font-size: 24px; color:white">Click to play</span><br>
         Move: WASD<br>
-        Look: Mouse Move
+        Look: Mouse Move<br>
+        Click Button: Show Details <br>(click anywhere to close it)<br>
     </div>
     <div id="showroom-container"></div>
     <div id="fullscreen-btn" style="position: fixed; top: 110px; right: 10px; z-index: 1000; cursor: pointer; padding: 10px; background-color: #f1f1f1; border-radius: 5px;">
         Fullscreen
     </div>
+    <div id="data-dialog" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 300px; padding: 20px; text-align: center; background-color: white; border-radius: 10px; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); z-index: 1001;">
+        <div id="data-content">
+        </div>
+        <button onclick="closeDataDialog()">Close</button>
+    </div>
+    <div id="crosshair"></div>
     <script src="https://cdn.jsdelivr.net/npm/three/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/PointerLockControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
 
+    <script type="text/javascript">
+    var products = @json($products);
+    </script>
     <script>
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -120,7 +140,7 @@
             requestAnimationFrame(animate);
 
             if (controls.isLocked === true) {
-                const delta = 0.1; // Adjust for speed
+                const delta = 0.03; // Adjust for speed
 
                 velocity.x -= velocity.x * 10.0 * delta;
                 velocity.z -= velocity.z * 10.0 * delta;
@@ -140,32 +160,32 @@
         }
 
         function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
+            const headerHeight = document.querySelector('header').offsetHeight;
+            const newHeight = window.innerHeight - headerHeight;
+            renderer.setSize(window.innerWidth, newHeight);
+            camera.aspect = window.innerWidth / newHeight;
             camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.render(scene, camera);
         }
-        window.addEventListener('resize', onWindowResize, false);
 
+        window.addEventListener('resize', onWindowResize);
+        document.addEventListener('fullscreenchange', onWindowResize);
+        onWindowResize();
+        window.addEventListener('resize', onWindowResize, false);
         animate();
 
         document.getElementById('showroom-container').addEventListener('click', () => {
             controls.lock();
         });
-
         document.getElementById('instructions').addEventListener('click', () => {
             controls.lock();
         });
-
-        // Add event listeners for the Pointer Lock API
         controls.addEventListener('lock', function () {
             instructions.style.display = 'none';
         });
-
         controls.addEventListener('unlock', function () {
             instructions.style.display = 'block';
         });
-
-        // Initially, the instructions should be visible
         const instructions = document.getElementById('instructions');
         instructions.style.display = 'block';
 
@@ -182,9 +202,11 @@
             if (isFullscreen) {
                 fullscreenBtn.textContent = 'Exit Fullscreen';
                 fullscreenBtn.style.top = '30px';
+                onWindowResize();
             } else {
                 fullscreenBtn.textContent = 'Fullscreen';
                 fullscreenBtn.style.top = '110px';
+                onWindowResize();
             }
 
         }
@@ -194,27 +216,207 @@
                 if (document.documentElement.requestFullscreen) {
                     document.documentElement.requestFullscreen();
 
-                } else if (document.documentElement.mozRequestFullScreen) { /* Firefox */
-                    document.documentElement.mozRequestFullScreen();
-                } else if (document.documentElement.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
-                    document.documentElement.webkitRequestFullscreen();
-                } else if (document.documentElement.msRequestFullscreen) { /* IE/Edge */
-                    document.documentElement.msRequestFullscreen();
                 }
             } else {
                 if (document.exitFullscreen) {
                     document.exitFullscreen();
-                } else if (document.mozCancelFullScreen) { /* Firefox */
-                    document.mozCancelFullScreen();
-                } else if (document.webkitExitFullscreen) { /* Chrome, Safari & Opera */
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) { /* IE/Edge */
-                    document.msExitFullscreen();
                 }
             }
         });
         document.addEventListener('fullscreenchange', toggleFullscreenElements);
 
+        
+        let buttonMeshes = [];
+        const buttonMesh1 = createButtonForProduct(1, new THREE.Vector3(-2,-1, 5));
+        scene.add(buttonMesh1);
+        buttonMeshes.push(buttonMesh1);
+        const buttonMesh3 = createButtonForProduct(3, new THREE.Vector3(2, -1, 5));
+        scene.add(buttonMesh3);
+        buttonMeshes.push(buttonMesh3);
+
+        function createButtonForProduct(productId, position) {
+            const buttonGeometry = new THREE.BoxGeometry(1, 0.5, 0.1);
+            const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+            buttonMesh.position.copy(position);
+            buttonMesh.userData = { productId: productId };
+            return buttonMesh;
+        }
+            
+
+        const raycaster = new THREE.Raycaster();
+        const mouse = new THREE.Vector2();
+        function getCanvasRelativePosition(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            return {
+                x: ((event.clientX - rect.left) / rect.width) * 2 - 1,
+                y: -((event.clientY - rect.top) / rect.height) * 2 + 1
+            };
+        }
+
+        function onMouseMove(event) {
+            const rect = renderer.domElement.getBoundingClientRect();
+            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        }
+        window.addEventListener('mousemove', onMouseMove, false);
+
+
+        function onDocumentMouseDown(event) {
+            if (controls.isLocked === true) {
+                console.log("Mouse down event triggered");
+                event.preventDefault();
+                const centerX = (window.innerWidth / 2 - renderer.domElement.offsetLeft) / renderer.domElement.clientWidth * 2 - 1;
+                const centerY = -(window.innerHeight / 2 - renderer.domElement.offsetTop) / renderer.domElement.clientHeight * 2 + 1;
+
+                // Set the raycaster to the calculated center position
+                raycaster.setFromCamera({ x: centerX, y: centerY }, camera);
+                const intersects = raycaster.intersectObjects(scene.children);
+
+                console.log("Intersections found:", intersects.length);
+                if (intersects.length > 0 && intersects[0].object.userData.productId) {
+                    console.log("Product button clicked, ID:", intersects[0].object.userData.productId);
+                    const productId = intersects[0].object.userData.productId;
+                    const buttonPosition = intersects[0].object.position;
+                    openDataDialog(productId, buttonPosition);
+                } else {
+                    console.log("No product button clicked");
+                    close3DDialog();
+                }
+            }
+        }
+    document.addEventListener('mousedown', onDocumentMouseDown, false);
+
+let currentDialog = null;
+function createTextTexture(product, width = 512, height = 512) {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const context = canvas.getContext('2d');
+    const padding = 20;
+    const maxWidth = width - 2 * padding;
+    const lineHeight = 24;
+
+    // Background
+    context.fillStyle = 'rgba(0, 0, 0, 0.7)'; // Semi-transparent black
+    context.fillRect(0, 0, width, height);
+
+    // Text styles
+    context.font = 'bold 24px Arial';
+    context.fillStyle = '#FFFFFF'; // White text
+    context.textAlign = 'left';
+    context.textBaseline = 'top';
+
+    let yPosition = padding;
+
+    // Product Name
+    context.fillText(product.productName, padding, yPosition);
+    yPosition += 40;
+
+    context.font = '18px Arial';
+
+    // Product Description
+    context.fillText('Name: ' + product.productName, padding, yPosition);
+    yPosition += lineHeight * 2;
+
+    // Wrap text function
+    function wrapText(context, text, x, y, maxWidth, lineHeight) {
+        const words = text.split(' ');
+        let line = '';
+
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = context.measureText(testLine);
+            const testWidth = metrics.width;
+            if (testWidth > maxWidth && n > 0) {
+                context.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        context.fillText(line, x, y);
+        return y + lineHeight; // Return the Y position after the last line of text
+    }
+
+    // Use wrapText function for description and update yPosition accordingly
+    yPosition = wrapText(context, product.productDesc, padding, yPosition, width - 2 * padding, lineHeight);
+
+    // Price
+    context.fillText('Price: RM ' + product.price.toFixed(2), padding, yPosition);
+    yPosition += 30; 
+
+    // Colors
+    context.fillText('Color: ' + product.colors, padding, yPosition);
+    yPosition += 30;
+
+    // Sizes
+    context.fillText('Size: ' + product.sizes, padding, yPosition);
+    yPosition += 50;
+
+    const texture = new THREE.Texture(canvas);
+    const img = new Image();
+    const qrSize = 200;
+    const qrXPosition = (width - qrSize) / 2;
+    const qrYPosition = height - qrSize - 30; 
+    img.onload = function() {
+        context.drawImage(img, qrXPosition, qrYPosition, qrSize, qrSize);
+        texture.needsUpdate = true; 
+        if (callback) {
+            callback(texture);
+        }
+    };
+    img.src = '/user/images/product/' + product.productTryOnQR;
+
+    texture.needsUpdate = true;
+    return texture;
+}
+
+
+function create3DDialog(product, position) {
+    console.log("Creating 3D dialog for product:", product);
+    const dialogGroup = new THREE.Group();
+
+    const dialogGeometry = new THREE.PlaneGeometry(2, 3);
+    const textTexture = createTextTexture(product);
+    const dialogMaterial = new THREE.MeshBasicMaterial({ map: textTexture, transparent: true });
+    const dialogMesh = new THREE.Mesh(dialogGeometry, dialogMaterial);
+    dialogGroup.add(dialogMesh);
+
+    // Positioning the dialog
+    dialogGroup.position.set(position.x, position.y + 1, position.z);
+    dialogGroup.scale.set(1, 1, 1);
+    dialogGroup.lookAt(camera.position);
+    console.log("Created dialog group:", dialogGroup);
+    return dialogGroup;
+}
+
+
+function openDataDialog(productId, buttonPosition) {
+    console.log("Opening data dialog for product:", productId);
+    var product = products.find(p => p.id === productId);
+    const buttonMesh = scene.children.find(child => child.userData.productId === productId);
+    if (!product) {
+        console.error('Product not found!');
+        return;
+    }
+    close3DDialog(); // Close any existing dialog
+    const offset = new THREE.Vector3(0, 0, -1); // Adjust the z-value as needed
+    const dialogPosition = buttonPosition.clone().add(offset.applyQuaternion(buttonMesh.quaternion));
+    currentDialog = create3DDialog(product, dialogPosition);
+    currentDialog.scale.set(2, 2, 2);
+    scene.add(currentDialog);
+    console.log("Dialog added. Scene children:", scene.children);
+}
+
+function close3DDialog() {
+    console.log("Closing data dialog");
+    if (currentDialog) {
+        scene.remove(currentDialog);
+        currentDialog = null;
+    }
+}
     </script>
 </body>
 @endsection

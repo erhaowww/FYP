@@ -1,13 +1,10 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Enums\OrderStatus;
 use Auth;
-use Carbon\Carbon;
 use Braintree\Gateway;
 use App\Enums\CartItemStatus;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
 use App\Repositories\Interfaces\DeliveryRepositoryInterface;
@@ -105,11 +102,6 @@ class PaymentController extends Controller
         
         foreach ($payments as $payment) {
             if ($payment->order) {
-                $delivery = $this->deliveryRepository->getDeliveryByOrderId($payment->order->id);
-                if ($delivery && $delivery->actualDeliveryDate && Carbon::parse($delivery->actualDeliveryDate)->addDays(3)->isPast()) {
-                    $newOrderStatus = $this->orderRepository->updateStatus($payment->order->id, OrderStatus::Completed->value);
-                    $payment->order->orderStatus = $newOrderStatus->orderStatus;
-                }
                 $ids = explode('|', $payment->order->cartItemIds);
                 $cartItems = $this->cartItemRepository->getByIds($ids, CartItemStatus::purchased);
                 $groupedCartItems = $cartItems->groupBy('productId');

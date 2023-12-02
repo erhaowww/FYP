@@ -7,4 +7,5 @@ interface PaymentRepositoryInterface
     public function getPaymentByOrderId($orderId);
     public function getAllPaymentsWithOrdersByUserId($userId);
     public function getAllPayments();
+    public function getAllPaymentsWithOrders();
 }
