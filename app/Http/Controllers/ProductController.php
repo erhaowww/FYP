@@ -438,6 +438,13 @@ class ProductController extends Controller
             'products' => $products,
         ]);
     }
+
+    public function index()
+    {
+        $products = $this->productRepository->getAll();
+        $types = ProductType::cases();
+        return view('user/index', compact('products', 'types'));
+    }
     
 }
 

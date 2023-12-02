@@ -24,9 +24,7 @@ use App\Http\Controllers\CommentController;
 |
 */
 
-Route::get('/', function () {
-    return view('user/index');
-});
+Route::get('/', [ProductController::class, 'index']);
 Route::get('/auth/google', [UserController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [UserController::class, 'handleGoogleCallback']);
 Route::get('logout', function () {
