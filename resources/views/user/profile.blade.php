@@ -323,6 +323,25 @@ input[type=number]::-webkit-outer-spin-button {
   width: 80%;
 }
 
+.claim-reward-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    margin-top: 15px;
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    text-decoration: none;
+    font-size: 16px;
+    border-radius: 5px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.claim-reward-btn:hover {
+    background-color: #45a049; /* Darker green background */
+    color: #ddd; /* Lighter text */
+    text-decoration: none; /* No underline on hover */
+}
+
 </style>
 
 <main class="has-dflex-center">
@@ -348,14 +367,17 @@ input[type=number]::-webkit-outer-spin-button {
               </div>
             </div>
             @if($data->membership_level)
-            <script>
-              document.querySelector('.lx-column.column-user-pic').style.justifyContent = 'flex-end';
-            </script>
+              <script>
+                document.querySelector('.lx-column.column-user-pic').style.justifyContent = 'flex-end';
+              </script>
               <div class="profile-pic bs-md">
                   <h4 class="pic-label">Membership</h4>
                   <p>Tier: <span class="membership-badge {{$data->membership_level}}" data-toggle="tooltip" data-placement="right" title="Membership Level">{{$data->membership_level}}</span></p>
                   <p>Discount: <span class="membership-badge" data-toggle="tooltip" data-placement="right" title="You get the discount when you make payment">{{$data->membership_discount}}%</span></p>
                   <p>Points: <span class="membership-badge" data-toggle="tooltip" data-placement="right" title="You can use this points to claim reward">{{$data->reward_point}}</span></p>
+                  <a href="{{route('reward')}}" id="claim-reward" class="lx-btn claim-reward-btn">
+                    <i class="fa fa-gift"></i>&nbsp;&nbsp;Claim Reward
+                  </a>
               </div>
             @endif
           </div>
@@ -381,7 +403,7 @@ input[type=number]::-webkit-outer-spin-button {
                   <label for="male" style="margin-left: 15px">Male</label>
                   <input type="radio" name="gender" id="gender" value="male" @if($data->gender == 'male') checked @endif>
                   <label for="female">Female</label>
-                  <input type="radio" name="gender" id="gender" value="female" @if($data->gender == 'female') checked @endif>
+                  <input type="radio" name="gender" id="gender2" value="female" @if($data->gender == 'female') checked @endif>
                 </div>
                 <div id="gender-helper" class="helper"></div>
               </div>

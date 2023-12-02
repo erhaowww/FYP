@@ -23,6 +23,8 @@ use App\Repositories\Interfaces\MembershipRepositoryInterface;
 use App\Repositories\MembershipRepository;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
 use App\Repositories\CommentRepository;
+use App\Repositories\Interfaces\RewardRepositoryInterface;
+use App\Repositories\RewardRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -43,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ChatbotRepositoryInterface::class, ChatbotRepository::class);
         $this->app->bind(MembershipRepositoryInterface::class, MembershipRepository::class);
         $this->app->bind(CommentRepositoryInterface::class, CommentRepository::class);
+        $this->app->bind(RewardRepositoryInterface::class, RewardRepository::class);
     }
 
     /**

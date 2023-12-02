@@ -3,8 +3,8 @@
 <div class="col-12 grid-margin stretch-card">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">FAQ</h4>
-        <p class="card-description"> Add FAQ </p>
+        <h4 class="card-title">Membership</h4>
+        <p class="card-description"> Edit Membership </p>
         <form class="forms-sample" method="POST" action="{{route('memberships.update', $membership->id)}}">
           @csrf
           <input type="hidden" name="_method" value="PATCH">
@@ -36,7 +36,7 @@
             @endif
           </div>
           <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
-          <a href="{{route('faqs.index')}}" class="btn btn-light">Cancel</a>
+          <a href="{{route('memberships.index')}}" class="btn btn-light">Cancel</a>
         </form>
       </div>
     </div>

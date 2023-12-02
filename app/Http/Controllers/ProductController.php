@@ -10,6 +10,9 @@ use App\Enums\CartItemStatus;
 use Illuminate\Support\Facades\Log;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+use App\Models\CartItem;
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
 
@@ -47,6 +50,37 @@ class ProductController extends Controller
         $relatedProducts = $this->productRepository->findRelatedProducts($mainProduct->productType,$mainProduct->category, $id);
         $comments = $this->commentRepository->allCommentByProductId($id);
         $totalReviews = count($comments);
+
+        foreach ($comments as $comment) {
+            // Retrieve the order_id from the payment table using the payment_id from the comment
+            $payment = Payment::where('id', $comment->payment_id)->first();
+            $order = null;
+            if ($payment) {
+                // Now retrieve the order using the order_id from the payment
+                $order = Order::where('id', $payment->orderId)->first();
+            }
+    
+            // Initialize an array to store size and color
+            $sizesAndColors = [];
+    
+            if ($order) {
+                // Split the cartItemIds and find the related cart items
+                $cartItemIds = explode('|', $order->cartItemIds);
+                $cartItems = CartItem::whereIn('id', $cartItemIds)
+                                     ->where('status', 'purchased')
+                                     ->get();
+    
+                // Map the sizes and colors
+                foreach ($cartItems as $cartItem) {
+                    if ($cartItem->productId == $id) { // Check if the cart item's product matches the comment's product
+                        $sizesAndColors[] = '[' . $cartItem->size . ', ' . $cartItem->color . ']';
+                    }
+                }
+            }
+    
+            // Attach the sizes and colors to the comment
+            $comment->sizesAndColors = implode(', ', $sizesAndColors);
+        }
 
         // Return the view with the main product and related products
         return view('user/product-detail', [

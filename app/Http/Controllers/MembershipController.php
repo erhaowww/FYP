@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use App\Repositories\Interfaces\MembershipRepositoryInterface;
 
 class MembershipController extends Controller
@@ -74,7 +75,12 @@ class MembershipController extends Controller
     public function update(Request $request, string $id)
     {
         $request->validate([
-            'level' => 'required|string|max:255|unique:memberships',
+            'level' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('memberships')->ignore($id)
+            ],
             'totalAmount_spent' => 'required|numeric|min:0',
             'discount' => 'required|numeric|between:0,100',
         ]);

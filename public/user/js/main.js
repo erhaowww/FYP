@@ -290,12 +290,20 @@
     const spans = [...document.querySelectorAll(".form-box .top span")];
     const userForm = document.querySelector(".user-form");
 
-    [".user-icon"].forEach((p) => {
-    document.querySelector(p).onclick = () => {
-        userForm.classList.add("show");
-        navList.classList.remove("show");
-    };
+    document.addEventListener('DOMContentLoaded', (event) => {
+        [".user-icon"].forEach((p) => {
+            const element = document.querySelector(p);
+            if (element) {
+                element.onclick = () => {
+                    userForm.classList.add("show");
+                    navList.classList.remove("show");
+                };
+            } else {
+                // console.log(`Element with selector ${p} not found`);
+            }
+        });
     });
+    
 
     document.querySelector(".close-form").onclick = () => {
     userForm.classList.remove("show");

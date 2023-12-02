@@ -6,10 +6,13 @@
 <link rel="stylesheet" href="https://unpkg.com/filepond/dist/filepond.min.css">
 <script src="https://unpkg.com/filepond-plugin-file-encode/dist/filepond-plugin-file-encode.min.js"></script>
 <script src="https://unpkg.com/filepond-plugin-file-validate-size/dist/filepond-plugin-file-validate-size.min.js"></script>
+<script src="https://unpkg.com/filepond-plugin-file-validate-type/dist/filepond-plugin-file-validate-type.min.js"></script>
 <script src="https://unpkg.com/filepond-plugin-image-exif-orientation/dist/filepond-plugin-image-exif-orientation.min.js"></script>
 <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
 <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
 
 @php
 use App\Enums\OrderStatus;
@@ -822,31 +825,84 @@ h2 {
 
     <script>
         /*
-    We want to preview images, so we need to register the Image Preview plugin
-    */
-    FilePond.registerPlugin(
-        
-        // encodes the file as base64 data
-        FilePondPluginFileEncode,
-        
-        // validates the size of the file
-        FilePondPluginFileValidateSize,
-        
-        // corrects mobile image orientation
-        FilePondPluginImageExifOrientation,
-        
-        // previews dropped images
-        FilePondPluginImagePreview
-    
-    );
+        We want to preview images, so we need to register the Image Preview plugin
+        */
+        FilePond.registerPlugin(
+            
+            // encodes the file as base64 data
+            FilePondPluginFileEncode,
+            
+            // validates the size of the file
+            FilePondPluginFileValidateSize,
 
-    // Select the file input and use create() to turn it into a pond
-    const inputElement = document.querySelector('input[type="file"]');
-    const pond = FilePond.create(inputElement, {
-        imagePreviewHeight: 200,
-        imagePreviewWidth: 200,
-        allowImagePreview: true,
-        allowMultiple: true
-    });
+            // validates the type of the file
+            FilePondPluginFileValidateType, 
+            
+            // corrects mobile image orientation
+            FilePondPluginImageExifOrientation,
+            
+            // previews dropped images
+            FilePondPluginImagePreview
+        
+        );
+
+        // Select the file input and use create() to turn it into a pond
+        const inputElement = document.querySelector('input[type="file"]');
+        const pond = FilePond.create(inputElement, {
+            acceptedFileTypes: ['image/*'],
+            imagePreviewHeight: 200,
+            imagePreviewWidth: 200,
+            allowImagePreview: true,
+            allowMultiple: true
+        });
     </script>
+
+    <script>
+        let model; // Declare the model outside to load it only once
+
+        // Function to load the model
+        async function loadModel() {
+            if (!model) {
+                model = await cocoSsd.load();
+            }
+            return model;
+        }
+
+        // Function to perform object detection
+        async function performObjectDetection(imageElement, file) {
+            const model = await loadModel(); // Load or get the already loaded model
+
+            // Perform object detection on the image
+            const predictions = await model.detect(imageElement);
+
+            // Define fashion-related objects
+            const fashionObjects = ['person', 'tie', 'shirt', 'dress', 'shoe'];
+
+            // Check if any fashion-related objects are detected
+            const containsFashion = predictions.some(prediction => fashionObjects.includes(prediction.class));
+
+            if (!containsFashion) {
+                // Reject the image
+                pond.removeFile(file.id);
+                swal({
+                    title: "Some Images Rejected",
+                    text: "Some images do not contain fashion-related objects and will be removed.",
+                    icon: "error",
+                    button: "OK",
+                })
+            } 
+        }
+
+        // Event listener for file addition in FilePond
+        document.querySelector('.filepond').addEventListener('FilePond:addfile', (e) => {
+            const file = e.detail.file.file;
+            const imageElement = new Image();
+            imageElement.src = URL.createObjectURL(file);
+
+            imageElement.onload = () => {
+                performObjectDetection(imageElement, e.detail.file); // Pass the FilePond file object
+            };
+        });
+    </script>
+
 @endsection

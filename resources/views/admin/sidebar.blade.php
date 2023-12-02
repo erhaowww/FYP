@@ -87,9 +87,9 @@ use Illuminate\Foundation\Auth;
         </a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/admin/gift-records">
-          <span class="menu-title">Gift Record</span>
-          <i class="mdi mdi-label menu-icon"></i>
+        <a class="nav-link" href="{{route('rewards.index')}}">
+          <span class="menu-title">Reward</span>
+          <i class="mdi mdi-gift menu-icon"></i>
         </a>
       </li>
       <li class="nav-item"> 

@@ -76,6 +76,13 @@
 		margin-bottom: 5px;
 		color: #717fe0;
 	}
+
+	.badge {
+		font-size: 0.8em;
+		color: #777;
+		font-weight: lighter;
+	}
+
 	</style>
 <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/3.1.1/model-viewer.min.js"></script>
    <!-- breadcrumb -->
@@ -376,7 +383,7 @@
 							<div class="row">
 								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
 									<div class="p-b-30 m-lr-15-sm">
-										<div class="flex-w flex-sb-m p-b-52">
+										<div class="flex-w flex-sb-m p-b-52" id="filterBox">
 											<div class="flex-w flex-c-m m-tb-10">
 												<div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
 													<i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i>
@@ -395,38 +402,32 @@
 							
 														<ul>
 															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04">
-																	All
+																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="5">
+																	5 <i class="zmdi zmdi-star"></i>
 																</a>
 															</li>
 							
 															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04">
-																	5
+																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="4">
+																	4 <i class="zmdi zmdi-star"></i>
 																</a>
 															</li>
 							
 															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04">
-																	4
+																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="3">
+																	3 <i class="zmdi zmdi-star"></i>
 																</a>
 															</li>
 							
 															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
-																	3
+																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="2">
+																	2 <i class="zmdi zmdi-star"></i>
 																</a>
 															</li>
 							
 															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04">
-																	2
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04">
-																	1
+																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="1">
+																	1 <i class="zmdi zmdi-star"></i>
 																</a>
 															</li>
 														</ul>
@@ -438,9 +439,9 @@
 														</div>
 							
 														<ul>
-															@foreach ($sizePairs as $size)
+															@foreach ($uniqueSizes as $size)
 																<li class="p-b-6">
-																	<a href="#" class="filter-link stext-106 trans-04">
+																	<a href="#" class="filter-link stext-106 trans-04" data-filter-type="size" data-filter-value="{{$size}}">
 																		{{ $size }}
 																	</a>
 																</li>
@@ -454,94 +455,18 @@
 														</div>
 							
 														<ul>
-															<li class="p-b-6">
-																<span class="fs-15 lh-12 m-r-6" style="color: #222;">
-																	<i class="zmdi zmdi-circle"></i>
-																</span>
-							
-																<a href="#" class="filter-link stext-106 trans-04">
-																	Black
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<span class="fs-15 lh-12 m-r-6" style="color: #4272d7;">
-																	<i class="zmdi zmdi-circle"></i>
-																</span>
-							
-																<a href="#" class="filter-link stext-106 trans-04 filter-link-active">
-																	Blue
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<span class="fs-15 lh-12 m-r-6" style="color: #b3b3b3;">
-																	<i class="zmdi zmdi-circle"></i>
-																</span>
-							
-																<a href="#" class="filter-link stext-106 trans-04">
-																	Grey
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<span class="fs-15 lh-12 m-r-6" style="color: #00ad5f;">
-																	<i class="zmdi zmdi-circle"></i>
-																</span>
-							
-																<a href="#" class="filter-link stext-106 trans-04">
-																	Green
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<span class="fs-15 lh-12 m-r-6" style="color: #fa4251;">
-																	<i class="zmdi zmdi-circle"></i>
-																</span>
-							
-																<a href="#" class="filter-link stext-106 trans-04">
-																	Red
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<span class="fs-15 lh-12 m-r-6" style="color: #aaa;">
-																	<i class="zmdi zmdi-circle-o"></i>
-																</span>
-							
-																<a href="#" class="filter-link stext-106 trans-04">
-																	White
-																</a>
-															</li>
+															@foreach ($colors as $color)
+																<li class="p-b-6">
+																	<span class="fs-15 lh-12 m-r-6" style="color: {{$color}};">
+																		<i class="zmdi zmdi-circle"></i>
+																	</span>
+								
+																	<a href="#" class="filter-link stext-106 trans-04" data-filter-type="color" data-filter-value="{{$color}}">
+																		{{$color}}
+																	</a>
+																</li>
+															@endforeach
 														</ul>
-													</div>
-							
-													<div class="filter-col4 p-b-27">
-														<div class="mtext-102 cl2 p-b-15">
-															Tags
-														</div>
-							
-														<div class="flex-w p-t-4 m-r--5">
-															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-																Fashion
-															</a>
-							
-															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-																Lifestyle
-															</a>
-							
-															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-																Denim
-															</a>
-							
-															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-																Streetstyle
-															</a>
-							
-															<a href="#" class="flex-c-m stext-107 cl6 size-301 bor7 p-lr-15 hov-tag1 trans-04 m-r-5 m-b-5">
-																Crafts
-															</a>
-														</div>
 													</div>
 												</div>
 											</div>
@@ -632,15 +557,26 @@
 	</div>
 
 	<script>
-		$(document).ready(function() {
+		function initMagnificPopup() {
 			$('.image-link').magnificPopup({
-			type: 'image'
+				type: 'image',
+				gallery: {
+					enabled: true
+				}
 			});
+		}
+
+		$(document).ready(function() {
+			initMagnificPopup();
 		});
 	</script>
 
 	<!-- JavaScript to handle loading more reviews -->
 	<script>
+		var showFilterBox = JSON.parse('@json($comments)');
+		if (showFilterBox.length === 0) {
+			document.getElementById('filterBox').style.display = 'none';
+		}
 		var comments = @json($comments); // Your reviews data from the server, as a JSON array
 		var currentIndex = 0; // Keeps track of which review to load next
 		var commentsPerClick = 3; // Number of reviews to show each time the button is clicked
@@ -709,6 +645,17 @@
 				`;
 			}
 
+			// Create the sizes and colors badges
+			var sizesAndColorsHtml = '';
+			if (comment.sizesAndColors) {
+				var sizesAndColors = Array.isArray(comment.sizesAndColors) ? comment.sizesAndColors : [comment.sizesAndColors];
+				sizesAndColorsHtml = '<div class="sizes-and-colors">' +
+					sizesAndColors.map(function(sc) {
+						return `<span class="badge">${sc}</span>`;
+					}).join(' ') + // This joins the array elements with a space
+				'</div>';
+			}
+
 			return `
 				<div class="flex-w flex-t p-b-68">
 					<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
@@ -719,6 +666,7 @@
 						<div class="flex-w flex-sb-m p-b-17">
 							<span class="mtext-107 cl2 p-r-20">
 								${comment.user.name}
+								${sizesAndColorsHtml}
 							</span>
 							<span class="fs-18 cl11">
 								${ratingStars}
@@ -759,7 +707,10 @@
 			// Hide the button if there are no more reviews to load
 			if (currentIndex >= comments.length) {
 				document.getElementById('loadMoreBtn').style.display = 'none';
+			} else {
+				document.getElementById('loadMoreBtn').style.display = 'block';
 			}
+			initMagnificPopup();
 		}
 
 		// Initially load the first few reviews
@@ -770,7 +721,72 @@
 	</script>
 
 	<script>
-		$('.like-button').on('click', function(e) {
+		// Object to store the state of each filter
+		var filters = {
+			rating: null,
+			size: null,
+			color: null
+		};
+
+		var allComments = @json($comments);
+		var comments = allComments.slice();
+
+		// Function to apply all active filters
+		function applyFilters() {
+			comments = allComments.filter(function(comment) {
+				var ratingMatch = !filters.rating || comment.rating === filters.rating;
+				var sizeColorPair = (filters.size ? filters.size + ', ' : '') + (filters.color || '');
+				var sizeColorMatch = !sizeColorPair.trim() || (comment.sizesAndColors && comment.sizesAndColors.includes(sizeColorPair.trim()));
+				return ratingMatch && sizeColorMatch;
+			});
+
+			// Clear the current comments and reset the index
+			var commentContainer = document.getElementById('commentContainer');
+			commentContainer.innerHTML = '';
+			currentIndex = 0;
+
+			// Update comments with the filtered list and load the reviews
+			loadReviews();
+		}
+
+		// Function to update filter state and UI
+		function updateFilter(type, value) {
+			// Toggle the filter value if it's already set, or set a new value
+			if (filters[type] === value) {
+				filters[type] = null; // Toggle off
+			} else {
+				filters[type] = value; // Set new value
+			}
+			
+			// Update the filter link UI
+			document.querySelectorAll(`.filter-link[data-filter-type="${type}"]`).forEach(function(link) {
+				if (link.getAttribute('data-filter-value') === value.toString()) {
+					link.classList.toggle('filter-link-active', filters[type] === value);
+				} else {
+					link.classList.remove('filter-link-active');
+				}
+			});
+
+			// Apply all active filters
+			applyFilters();
+		}
+
+		// Add click event listeners to filter links
+		document.querySelectorAll('.filter-link').forEach(function(link) {
+			link.addEventListener('click', function(event) {
+				event.preventDefault();
+				var filterType = this.getAttribute('data-filter-type');
+				var filterValue = this.getAttribute('data-filter-value');
+				// Convert string value to number for rating
+				var value = filterType === 'rating' ? parseInt(filterValue) : filterValue;
+				updateFilter(filterType, value);
+			});
+		});
+	</script>
+
+
+	<script>
+		$(document).on('click', '.like-button', function(e) {
 			e.preventDefault(); // Prevent the default anchor tag behaviour
 			var likeButton = $(this);
 			var likeButtonId = $(this).attr('id'); // Assuming the button's ID is the comment ID

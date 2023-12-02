@@ -13,6 +13,7 @@ use App\Http\Controllers\ChatController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\RewardController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -84,6 +85,10 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/sendLiveChat', [ChatController::class, 'sendLiveChat'])->name('sendLiveChat');
     Route::post('/comment/{comment_id}/like', [CommentController::class, 'like']);
 
+    Route::get('/reward', [RewardController::class, 'showRewardAndHistory'])->name('reward');
+    Route::post('/redeem/{rewardId}', [RewardController::class, 'redeem'])->name('redeem');
+    Route::post('/deduct-points', [RewardController::class, 'deductPoints'])->name('deductPoints');
+    Route::post('/update-points', [RewardController::class, 'updatePoints'])->name('updatePoints');
 });
 
 
@@ -126,4 +131,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
 
     //cart
     Route::get('/all-cart', [CartItemController::class,'displayAllCart'])->name('all-cart');
+
+    //reward
+    Route::resource('rewards', RewardController::class);
+
 });
