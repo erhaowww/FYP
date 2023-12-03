@@ -13,6 +13,7 @@ class RewardClaim extends Model
     protected $fillable = [
         'user_id',
         'reward_id',
+        'current_address',
         'delivery_address',
         'status',
     ];
@@ -20,5 +21,10 @@ class RewardClaim extends Model
     public function reward()
     {
         return $this->belongsTo(Reward::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -27,6 +27,12 @@ class RewardController extends Controller
         return view('admin/all-reward', compact('rewards'));
     }
 
+    public function indexRewardClaim()
+    {
+        $rewardClaims = $this->rewardRepository->allRewardClaim();
+        return view('admin/all-rewardClaim', compact('rewardClaims'));
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -78,6 +84,12 @@ class RewardController extends Controller
         return view('admin/edit-reward', compact('reward'));
     }
 
+    public function editRewardClaim(string $id)
+    {
+        $rewardClaim = $this->rewardRepository->findRewardClaim($id);
+        return view('admin/edit-rewardClaim', compact('rewardClaim'));
+    }
+
     /**
      * Update the specified resource in storage.
      */
@@ -121,9 +133,33 @@ class RewardController extends Controller
         return redirect()->route('rewards.index')->with('success', 'Information has been updated');
     }
 
+    public function updateRewardClaim(Request $request, string $id)
+    {
+        $request->validate([
+            'current_address' => 'required|string|max:255',
+            'delivery_address' => 'required|string|max:255',
+            'status' => 'required',
+        ]);
+
+        $data = [
+            'current_address' => $request->current_address,
+            'delivery_address' => $request->delivery_address,
+            'status' => $request->status,
+        ];
+        $this->rewardRepository->updateRewardClaim($data, $id);
+
+        return redirect()->route('rewardClaims.index')->with('success', 'Information has been updated');
+    }
+
     /**
      * Remove the specified resource from storage.
      */
+    public function destroyRewardClaim(string $id)
+    {
+        $this->rewardRepository->destroyRewardClaim($id);
+        return redirect()->route('rewardClaims.index')->with('success', 'Information has been deleted');
+    }
+
     public function destroy(string $id)
     {
         $this->rewardRepository->destroyReward($id);
@@ -162,6 +198,7 @@ class RewardController extends Controller
         RewardClaim::create([
             'user_id' => $user->id,
             'reward_id' => $reward->id,
+            'current_address' => '18, Jalan USJ 7/3c, Usj 7, 47610 Subang Jaya, Selangor',
             'delivery_address' => $request->address,
             'status' => 'confirmed',
         ]);
@@ -196,6 +233,11 @@ class RewardController extends Controller
         $user->save();
     
         return response()->json(['success' => true, 'newPoints' => $user->reward_point]);
+    }
+
+    public function deliveryTracking(Request $request) {
+        $reward = $this->rewardRepository->findRewardClaim($request->claimId);
+        return response()->json(['startAddress' => $reward->current_address, 'endAddress' => $reward->delivery_address]);
     }
     
 }

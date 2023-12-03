@@ -2,6 +2,9 @@
 @section('content')
     <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.js"></script>
+
     <style>
     /* redeem page css */
     .list-item {
@@ -204,21 +207,27 @@
                                     <path id="wheelIndicator" d="M 363.54132,1.1905768 A 38.4,38.4 0 0 0 330.11457,58.128194 l 32.09183,57.171796 a 2.1,2.1 0 0 0 2.0358,1.27104 2.6,2.6 0 0 0 2.18301,-1.23063 l 31.4336,-57.710474 a 39.6,39.6 0 0 0 4.47517,-18.30827 38.5,38.5 0 0 0 -38.79266,-38.1310792 z" fill="#ffffff" />
                                     <path id="wheelIndicatorInnerCircle" d="m 355.60575,31.838852 a 9.3,9.3 0 0 0 0.57623,8.140513 l 1.35764,1.790758 a 14.9,14.9 0 0 0 1.6754,1.28181 8.8,8.8 0 0 0 4.1452,1.291247 9.2,9.2 0 0 0 4.08058,-0.871118 7.6,7.6 0 0 0 2.63856,-1.771437 l 0.75221,-0.827153 a 8.6,8.6 0 0 0 1.71538,-3.880399 8.4,8.4 0 0 0 -0.31998,-4.208042 7.4,7.4 45 0 0 -2.16414,-3.708975 8.5,8.5 0 0 0 -3.6156,-2.139495 8.4,8.4 0 0 0 -4.3355,-0.23116 7.4,7.4 45 0 0 -3.80457,1.750787 l -0.78408,0.689367 a 12.2,12.2 0 0 0 -1.91733,2.693297 z" fill="#cccccc" />
                                     </g>
+
+                                    <defs>
+                                        <radialGradient id="grad1" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+                                          <stop offset="0%" style="stop-color:#007bff;stop-opacity:1" />
+                                          <stop offset="100%" style="stop-color:#0062cc;stop-opacity:1" />
+                                        </radialGradient>
+                                    </defs>
+
+                                    <circle cx="365" cy="365" r="40" fill="url(#grad1)" id="btnPlay" style="cursor:pointer;"/>
+                                    <text x="365" y="370" fill="white" font-size="12px" text-anchor="middle" alignment-baseline="central" font-size="14" style="pointer-events:none;" id="btnPlayText">Start</text>
+                                    <text x="365" y="400" text-anchor="middle" font-size="8px" fill="#CCCCCC" style="pointer-events:none;" id="btnPlayPoints">10 Points</text>
+
                                 </svg>
                                 
-                                <div class="container">
-                                    <div class="row buttons">
-                                    <div class="col-xs-6 col-lg-6 col-md-6">
-                                        <button id="btnPlay" class="btn btn-primary">Start</button>
-                                    </div>
-                                    </div>
-                                </div>
-
                             </div>
                         </div>
                     </div>
 
                     <div class="tab-pane fade" id="reward-history" role="tabpanel">
+                        <div id="mapid" style="height: 400px;"></div>
+
                         <div class="card">
                             <div class="card-header">
                                 <h5 class="card-title mb-0">History</h5>
@@ -235,9 +244,10 @@
                                             </div>
                                             <p>{{ $history->reward->description }}</p>
                                             <p>Points used: {{ $history->reward->points_required }}</p>
+                                            <p>Delivery address: {{ $history->delivery_address }}</p>
                                             <p>Redeem at: {{ $history->created_at }}</p>
                                         </div>
-                                        <button>Track</button>
+                                        <button class="track-button" data-claim-id="{{$history->id}}">Track</button>
                                     </div>
                                 @endforeach
                             </div>
@@ -271,6 +281,95 @@
             </div>
         </div>
     </div>
+
+
+    <script>
+        // Define custom icons
+        var startIcon = L.icon({
+            iconUrl: "{{asset('user/images/reward/truck.png')}}", // URL to start icon image
+            iconSize: [25, 37], // size of the icon
+            iconAnchor: [12, 41], // point of the icon which will correspond to marker's location
+            popupAnchor: [0, -41] // point from which the popup should open relative to the iconAnchor
+        });
+        var endIcon = L.icon({
+            iconUrl: "{{asset('user/images/reward/house.png')}}", // URL to end icon image
+            iconSize: [25, 37],
+            iconAnchor: [12, 41],
+            popupAnchor: [0, -41]
+        });
+        var currentMarkers = [];
+
+        function clearMapMarkers() {
+            currentMarkers.forEach(function(marker) {
+                map.removeLayer(marker);
+            });
+            currentMarkers = []; // Reset the array
+        }
+
+        // Initialize the map
+        var map = L.map('mapid').setView([3.1390, 101.6869], 13); // Set initial view to some default coordinates
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        $('a[data-toggle="list"]').on('shown.bs.tab', function(e) {
+            map.invalidateSize();
+        });
+
+        document.querySelectorAll('.track-button').forEach(button => {
+            button.addEventListener('click', function() {
+                clearMapMarkers();
+                var claimId = this.getAttribute('data-claim-id'); // Assuming you have a data attribute for claim ID
+
+                // AJAX request to your server to get start and end addresses
+                $.ajax({
+                    url: "{{ route('deliveryTracking') }}", // URL to your endpoint that returns addresses
+                    type: 'POST',
+                    data: { claimId: claimId },
+                    success: function(response) {
+                        // Get the addresses from the response
+                        var startAddress = response.startAddress;
+                        var endAddress = response.endAddress;
+
+                        // Function to update the map with the given coordinates
+                        function updateMap(startCoords, endCoords) {
+                            clearMapMarkers();
+
+                            map.setView(startCoords, 13);
+                            var startMarker = L.marker(startCoords, {icon: startIcon}).addTo(map).bindPopup(startAddress).openPopup();
+                            var endMarker = L.marker(endCoords, {icon: endIcon}).addTo(map).bindPopup(endAddress);
+
+                            currentMarkers.push(startMarker);
+                            currentMarkers.push(endMarker);
+                        }
+
+                        // Geocode the start address
+                        $.get(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(startAddress)}&key=cedd451258b344b18b10cfb561f2bb15`, function(data) {
+                            if (data.results.length > 0) {
+                                var startCoords = [data.results[0].geometry.lat, data.results[0].geometry.lng];
+
+                                // Geocode the end address
+                                $.get(`https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(endAddress)}&key=cedd451258b344b18b10cfb561f2bb15`, function(data) {
+                                    if (data.results.length > 0) {
+                                        var endCoords = [data.results[0].geometry.lat, data.results[0].geometry.lng];
+                                        updateMap(startCoords, endCoords);
+                                    }
+                                });
+                            }
+                        });
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    },
+                    error: function(error) {
+                        // Handle errors
+                        console.log(error);
+                    }
+                });
+            });
+        });
+
+    </script>
+
     <script>
         document.querySelectorAll('.redeem-btn').forEach(button => {
             button.addEventListener('click', function() {
@@ -326,6 +425,8 @@
             var wheel = $("#wheel"),
                 active = $("#wheelIndicatorGroup"),
                 $btnPlay = $("#btnPlay");
+                $btnPlayText = $("#btnPlayText");
+                $btnPlayPoints = $("#btnPlayPoints");
 
             var cx = 365,
                 cy = -365,
@@ -480,6 +581,8 @@
 
             function spinTheWheel() {
                 $btnPlay.hide();
+                $btnPlayText.hide();
+                $btnPlayPoints.hide();
 
                 var indicator = new TimelineMax();
                 var spinWheel = new TimelineMax();
@@ -523,6 +626,8 @@
                     //TODO: ANNOUNCE THE PRIZE.
                     deg = getRandomDeg(); // Get a new random degree for the next spin
                     $btnPlay.show(); // Show the start button again
+                    $btnPlayText.show(); // Show the start button again
+                    $btnPlayPoints.show(); // Show the start button again
                     updateUserPoints(sectionText[chosenSection]);
                     }
                 })

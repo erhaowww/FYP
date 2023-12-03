@@ -15,6 +15,13 @@ class RewardRepository implements RewardRepositoryInterface
         ->get();
     }
 
+    public function allRewardClaim()
+    {
+        return RewardClaim::with('reward', 'user')
+        ->where('deleted_at', 0)
+        ->get();
+    }
+
     public function storeReward($data)
     {
         return Reward::create($data);
@@ -25,9 +32,15 @@ class RewardRepository implements RewardRepositoryInterface
         return Reward::find($id);
     }
 
+    public function findRewardClaim($id)
+    {
+        return RewardClaim::with('reward', 'user')->find($id);
+    }
+
     public function userRewardHistory($userId)
     {
         return RewardClaim::with('reward')
+            ->where('deleted_at', 0)
             ->where('user_id', $userId)->get();
     }
 
@@ -42,9 +55,25 @@ class RewardRepository implements RewardRepositoryInterface
         $reward->save();
     }
 
+    public function updateRewardClaim($data, $id)
+    {
+        $rewardClaim = RewardClaim::where('id', $id)->first();
+        $rewardClaim->current_address = $data['current_address'];
+        $rewardClaim->delivery_address = $data['delivery_address'];
+        $rewardClaim->status = $data['status'];
+        $rewardClaim->save();
+    }
+
     public function destroyReward($id)
     {
         $reward = Reward::find($id);
+        $reward->deleted_at = 1;
+        $reward->save();
+    }
+
+    public function destroyRewardClaim($id)
+    {
+        $reward = RewardClaim::find($id);
         $reward->deleted_at = 1;
         $reward->save();
     }

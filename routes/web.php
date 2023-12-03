@@ -85,6 +85,7 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/redeem/{rewardId}', [RewardController::class, 'redeem'])->name('redeem');
     Route::post('/deduct-points', [RewardController::class, 'deductPoints'])->name('deductPoints');
     Route::post('/update-points', [RewardController::class, 'updatePoints'])->name('updatePoints');
+    Route::post('/reward-delivery-tracking', [RewardController::class, 'deliveryTracking'])->name('deliveryTracking');
 });
 
 
@@ -130,5 +131,8 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
 
     //reward
     Route::resource('rewards', RewardController::class);
-
+    Route::get('rewardClaims',[RewardController::class,'indexRewardClaim'])->name('rewardClaims.index');
+    Route::get('/rewardClaims/{id}/edit', [RewardController::class, 'editRewardClaim'])->name('rewardClaims.edit');
+    Route::post('/rewardClaims/{id}/update', [RewardController::class, 'updateRewardClaim'])->name('rewardClaims.update');
+    Route::post('/rewardClaims/{id}/destroy', [RewardController::class, 'destroyRewardClaim'])->name('rewardClaims.destroy');
 });

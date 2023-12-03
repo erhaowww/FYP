@@ -27,7 +27,7 @@
             @endif
           </div>
           <button type="submit" class="btn btn-gradient-primary me-2">Submit</button>
-          <a href="{{route('staffs.all')}}" class="btn btn-light">Cancel</a>
+          <a href="{{route('faqs.index')}}" class="btn btn-light">Cancel</a>
         </form>
       </div>
     </div>
