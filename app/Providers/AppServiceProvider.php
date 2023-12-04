@@ -25,6 +25,8 @@ use App\Repositories\Interfaces\CommentRepositoryInterface;
 use App\Repositories\CommentRepository;
 use App\Repositories\Interfaces\RewardRepositoryInterface;
 use App\Repositories\RewardRepository;
+use App\Repositories\Interfaces\NotificationRepositoryInterface;
+use App\Repositories\NotificationRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,12 +48,13 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(MembershipRepositoryInterface::class, MembershipRepository::class);
         $this->app->bind(CommentRepositoryInterface::class, CommentRepository::class);
         $this->app->bind(RewardRepositoryInterface::class, RewardRepository::class);
+        $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
     }
 
     /**
      * Bootstrap any application services.
      */
-    public function boot(CartItemRepositoryInterface $cartItemRepository, ChatbotRepositoryInterface $chatbotRepository)
+    public function boot(CartItemRepositoryInterface $cartItemRepository, ChatbotRepositoryInterface $chatbotRepository, NotificationRepositoryInterface $notificationRepository)
     {
         View::composer('user/header', function ($view) use ($cartItemRepository) {
             try {
@@ -73,6 +76,14 @@ class AppServiceProvider extends ServiceProvider
                 \Log::error('Error in View Composer: ' . $e->getMessage());
             }
             
+        });
+
+        View::composer('user/header', function ($view) use ($notificationRepository) {
+            if (Auth::check()) {
+                $specificNotifications = $notificationRepository->findSpecificNotification(auth()->user()->id);
+                $unreadCount = $notificationRepository->getUserUnreadCount(auth()->user()->id);
+                $view->with('specificNotifications', $specificNotifications)->with('unreadCount', $unreadCount);
+            }
         });
 
         View::composer('user/master', function ($view) use ($chatbotRepository) {

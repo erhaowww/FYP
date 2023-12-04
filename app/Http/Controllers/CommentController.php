@@ -4,17 +4,23 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
+use App\Repositories\Interfaces\NotificationRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
+use App\Repositories\Interfaces\ProductRepositoryInterface;
 
 class CommentController extends Controller
 {
     private $commentRepository;
     private $userRepository;
+    protected $notificationRepository;
+    protected $productRepository;
 
-    public function __construct(CommentRepositoryInterface $commentRepository, UserRepositoryInterface $userRepository)
+    public function __construct(CommentRepositoryInterface $commentRepository, UserRepositoryInterface $userRepository, NotificationRepositoryInterface $notificationRepository, ProductRepositoryInterface $productRepository)
     {
         $this->commentRepository = $commentRepository;
         $this->userRepository = $userRepository;
+        $this->notificationRepository = $notificationRepository;
+        $this->productRepository = $productRepository;
     }
 
     /**
@@ -63,6 +69,18 @@ class CommentController extends Controller
             'image' => $review_img
         ];
         $this->commentRepository->storeComment($data);
+
+        $currentProduct = $this->productRepository->find($request->product_id);
+        $notificationData = [
+            'user_id' => auth()->user()->id,
+            'related_id' => $request->product_id,
+            'type' => 'comment_add',
+            'title' => 'New Comment Added',
+            'body' => 'A new comment has been added to "' . $currentProduct->productName . '".',
+            'image' => 'add-comment.png',
+        ];
+        $this->notificationRepository->storeNotification($notificationData);
+
         if(auth()->user()->membership_level) {
             $this->userRepository->updateUserRewardPoint(10, auth()->user()->id);
             $message = 'Review and Rating have been added. You have earned 10 reward points!';
@@ -102,6 +120,17 @@ class CommentController extends Controller
             'admin_reply' => $request->admin_reply,
         ];
         $this->commentRepository->updateComment($data, $id);
+
+        $currentProduct = $this->productRepository->find($request->productId);
+        $notificationData = [
+            'user_id' => $request->userId,
+            'related_id' => $request->productId,
+            'type' => 'admin_reply',
+            'title' => 'Admin Response',
+            'body' => 'Admin has responded to your comment on "' . $currentProduct->productName . '"',
+            'image' => 'admin-reply.png',
+        ];
+        $this->notificationRepository->storeNotification($notificationData);
 
         return redirect('comments')->with('success', 'Information has been updated');
     }

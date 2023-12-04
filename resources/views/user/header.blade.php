@@ -67,35 +67,28 @@
                         </div>
                     @endif
 
-                    <div class="flex-c-m h-full p-r-24">
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11" id="notificationBell">
-                            <i class="zmdi zmdi-notifications"></i>
-                        </div>
-                    </div>
-
-                    <!-- Notifications Popup -->
-                    <div class="notifications-popup" id="notificationsPopup">
-                        <!-- Add notification content here -->
-                        <!-- Row 1 -->
-                        <div class="notification-item">
-                            <img src="{{asset('user/images/gallery-02.jpg')}}" alt="Notification Image 1">
-                            <div class="notification-content">
-                            <h5 class="notification-title">Notification Title 1</h5>
-                            <p class="notification-description">Description for Notification 1 goes here.</p>
+                    @if(auth()->check())
+                        <div class="flex-c-m h-full p-r-24">
+                            <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 icon-header-noti" id="notificationBell" data-notify="{{$unreadCount}}">
+                                <i class="zmdi zmdi-notifications"></i>
                             </div>
                         </div>
 
-                        <!-- Row 2 -->
-                        <div class="notification-item">
-                            <img src="{{asset('user/images/gallery-03.jpg')}}" alt="Notification Image 2">
-                            <div class="notification-content">
-                            <h5 class="notification-title">Notification Title 2</h5>
-                            <p class="notification-description">Description for Notification 2 goes here.</p>
-                            </div>
+                        <!-- Notifications Popup -->
+                        <div class="notifications-popup" id="notificationsPopup">
+                            @foreach ($specificNotifications as $notification)
+                                <div class="notification-item {{ is_null($notification->read_at) ? 'unread' : '' }}" id="notification-{{ $notification->id }}">
+                                    <img src="{{asset('user/images/notification/'.$notification->image)}}" alt="Notification Image 1">
+                                    <div class="notification-content" onclick="markNotificationAsRead({{ $notification->id }}, '{{ $notification->path }}')">
+                                        <h5 class="notification-title">{{ $notification->title }}</h5>
+                                        <p class="notification-description">{{ $notification->body }}</p>
+                                        <span class="notification-timestamp">{{ $notification->created_at->format('M d, Y h:i A') }}</span>
+                                    </div>
+                                    <div class="close-notification" onclick="deleteNotification({{ $notification->id }})">&times;</div>
+                                </div>
+                            @endforeach
                         </div>
-
-                        <!-- Add more rows as needed -->
-                    </div>
+                    @endif
 
                     <div class="flex-c-m h-full p-r-24">
                         <div class="icon-header-item cl2 hov-cl1 trans-04 p-lr-11 js-show-modal-search">
@@ -468,6 +461,53 @@
         </div>
     </div>
 </div>
+
+<script>
+    function markNotificationAsRead(notificationId, redirectUrl) {
+        $.ajax({
+            url: "{{ route('notifications.markAsRead') }}",
+            type: 'POST',
+            data: { 'notificationId': notificationId },
+            success: function(response) {
+                updateUserUnreadCount();
+                window.location.href = redirectUrl;
+            },
+            error: function(error) {
+                console.error('Error marking as read:', error);
+            }
+        });
+    }
+
+    function deleteNotification(notificationId) {
+        event.stopPropagation(); // Prevent triggering mark as read when deleting
+        $.ajax({
+            url: "{{ route('notifications.delete') }}",
+            type: 'POST',
+            data: { 'notificationId': notificationId },
+            success: function(response) {
+                $('#notification-' + notificationId).fadeOut();
+                updateUserUnreadCount();
+            },
+            error: function(error) {
+                console.error('Error deleting notification:', error);
+            }
+        });
+    }
+
+    function updateUserUnreadCount() {
+        $.ajax({
+            url: "{{ route('notifications.getUserUnreadCount') }}",
+            method: 'GET',
+            success: function(data) {
+                $('#notificationBell').attr('data-notify', data.unreadCount);
+            },
+            error: function(error) {
+                console.error('Error fetching notification count:', error);
+                // Handle errors appropriately
+            }
+        });
+    }
+</script>
 
 <script>
     $(document).ready(function() {

@@ -51,24 +51,45 @@
     <style>
         /* Style for the notifications popup container */
         .notifications-popup {
-        position: absolute;
-        top: 100%;
-        right: 10px;
-        width: 300px;
-        background-color: #ffffff;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        border-radius: 4px;
-        padding: 10px;
-        z-index: 9999;
-        display: none; /* Hide the popup by default */
+            position: absolute;
+            top: 100%;
+            right: 10px;
+            width: 300px;
+            max-height: 400px;
+            overflow-y: auto;
+            background-color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+            z-index: 9999;
+            display: none; /* Hide the popup by default */
+            scrollbar-color: #C1C1C1 #F5F5F5; /* thumb and track color */
+            scrollbar-width: thin; /* 'auto' or 'thin' */
+        }
+
+        /* Total scrollbar styling */
+        .notifications-popup::-webkit-scrollbar {
+            width: 5px; /* Width of the scrollbar */
+            background-color: #F5F5F5; /* Color of the scrollbar track */
+        }
+
+        /* Handle of the scrollbar */
+        .notifications-popup::-webkit-scrollbar-thumb {
+            background-color: #C1C1C1; /* Color of the scrollbar thumb */
+            border-radius: 4px; /* Rounded corners of the scrollbar thumb */
+        }
+
+        /* Handle on hover */
+        .notifications-popup::-webkit-scrollbar-thumb:hover {
+            background-color: #A8A8A8; /* Darker color on hover */
         }
 
         /* Style for each notification row */
         .notification-item {
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-bottom: 1px solid #e0e0e0;
+            position: relative; 
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .notification-item:last-child {
@@ -98,9 +119,40 @@
         }
 
         /* Hover effect for notification items */
-        .notification-item:hover {
+        .notification-item:hover, .notification-item.unread:hover {
         background-color: #f5f5f5;
         cursor: pointer;
+        }
+
+        .notification-item .close-notification {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            background: #cccccc; /* Light gray background, you can change as per your color scheme */
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 20px;
+            cursor: pointer;
+            color: #fff; /* White text color */
+        }
+
+        /* Hover effect for close button */
+        .notification-item .close-notification:hover {
+            background: #555; /* Darken the button a bit when hovering */
+        }
+
+        .notification-item.unread {
+            background-color: #edf2fa;
+        }
+
+        /* Additional styles for the timestamp */
+        .notification-timestamp {
+            display: block;
+            color: #aaa;
+            font-size: 12px;
+            margin-top: 5px;
         }
 
         .emoji-picker-container {

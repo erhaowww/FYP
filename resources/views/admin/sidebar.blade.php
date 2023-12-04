@@ -95,7 +95,7 @@ use Illuminate\Foundation\Auth;
       <li class="nav-item">
         <a class="nav-link" href="{{route('rewardClaims.index')}}">
           <span class="menu-title">User Redeemed</span>
-          <i class="mdi mdi-coin menu-icon"></i>
+          <i class="mdi mdi-star-circle menu-icon"></i>
         </a>
       </li>
       <li class="nav-item"> 

@@ -10,6 +10,26 @@
     td.description-cell {
         white-space: pre-wrap;  
     }
+    .avatar {
+        width: 2.75rem;
+        height: 2.75rem;
+        line-height: 3rem;
+        border-radius: 50%;
+        display: inline-block;
+        background: transparent;
+        position: relative;
+        text-align: center;
+        color: #868e96;
+        font-weight: 700;
+        vertical-align: bottom;
+        font-size: 1rem;
+        margin-right: 1rem;
+        background-size: cover;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
 </style>
 
 <h2>Reward Page</h2><br>
@@ -41,7 +61,7 @@
                     <tr>
                     <td>{{$reward->name}}</td>
                     <td class="description-cell">{{$reward->description}}</td>
-                    <td class="image-cell"><img src="{{asset('user/images/reward/'.$reward->image)}}" class="img-fluid"></td>
+                    <td class="image-cell"><img src="{{asset('user/images/reward/'.$reward->image)}}" class="avatar"></td>
                     <td>{{$reward->points_required}}</td>
                     <td>{{$reward->quantity_available}}</td>
                     <td> 

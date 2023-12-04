@@ -14,6 +14,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MembershipController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\RewardController;
+use App\Http\Controllers\NotificationController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -73,7 +74,7 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/process-payment', [PaymentController::class, 'processPayment']);
     Route::get('/payment/token', [PaymentController::class, 'clientToken']);
     Route::post('/store-transaction', [OrderController::class, 'store']);
-    Route::get('/tracking/{orderId}', [OrderController::class, 'track']);
+    Route::get('/tracking/{orderId}', [OrderController::class, 'track'])->name('trackingOrder');
     Route::post('/check-stock', [ProductController::class, 'checkStock']);
     Route::get('/payment-history', [PaymentController::class, 'viewHistory']);
     Route::post('/mark-order-received/{orderId}', [OrderController::class, 'markOrderReceived'])->name('mark-order-received');
@@ -86,6 +87,11 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/deduct-points', [RewardController::class, 'deductPoints'])->name('deductPoints');
     Route::post('/update-points', [RewardController::class, 'updatePoints'])->name('updatePoints');
     Route::post('/reward-delivery-tracking', [RewardController::class, 'deliveryTracking'])->name('deliveryTracking');
+
+    Route::post('/notifications/mark-as-read', [NotificationController::class, 'markAsRead'])->name('notifications.markAsRead');
+    Route::post('/notifications/delete', [NotificationController::class, 'delete'])->name('notifications.delete');
+    Route::get('/notifications/unread', [NotificationController::class, 'getUserUnreadCount'])->name('notifications.getUserUnreadCount');
+
 });
 
 

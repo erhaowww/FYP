@@ -15,6 +15,8 @@
         <form class="forms-sample" method="POST" action="{{ route('comments.update', $comment->id) }}" >
           @csrf
           <input type="hidden" name="_method" value="PATCH"> 
+          <input type="hidden" name="userId" value="{{$comment->user_id}}"> 
+          <input type="hidden" name="productId" value="{{$comment->product_id}}"> 
           <div class="form-group">
             <label for="exampleInputName1">Name</label>
             <input type="text" name="name" class="form-control" id="exampleInputName1" placeholder="Name" value="{{$comment->user->name}}" readonly>

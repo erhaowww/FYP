@@ -9,15 +9,18 @@ use App\Enums\OrderStatus;
 use App\Repositories\Interfaces\DeliveryRepositoryInterface;
 use App\Repositories\Interfaces\OrderRepositoryInterface;
 use App\Repositories\Interfaces\CartItemRepositoryInterface;
+use App\Repositories\Interfaces\NotificationRepositoryInterface;
 class DeliveryController extends Controller
 {
     protected $deliveryRepository;
     protected $orderRepository;
     protected $cartItemRepository;
-    public function __construct(DeliveryRepositoryInterface $deliveryRepository, OrderRepositoryInterface $orderRepository, CartItemRepositoryInterface $cartItemRepository) {
+    protected $notificationRepository;
+    public function __construct(DeliveryRepositoryInterface $deliveryRepository, OrderRepositoryInterface $orderRepository, CartItemRepositoryInterface $cartItemRepository, NotificationRepositoryInterface $notificationRepository) {
         $this->deliveryRepository = $deliveryRepository;
         $this->orderRepository = $orderRepository;
         $this->cartItemRepository = $cartItemRepository;
+        $this->notificationRepository = $notificationRepository;
     }
     public function displayAllDeliveryData()
     {
@@ -46,8 +49,37 @@ class DeliveryController extends Controller
     
     public function update(Request $request, $id)
     {
+        $oldOrder = $this->orderRepository->getOrderById($id);
         $order = $this->orderRepository->updateStatus($id,$request->input('orderStatus'));
         $delivery = $this->deliveryRepository->getDeliveryByOrderId($order->id);
+
+        //prevent submit with unchanged status and create again the notification
+        if ($request->input('orderStatus') != 'confirmed' && $oldOrder->orderStatus != $order->orderStatus) {
+            $orderStatuses = [
+                'courier_picked' => 'courier-picked.png',
+                'on_the_way' => 'on-the-way.png',
+                'ready_for_pickup' => 'ready-for-pickup.png',
+                'completed' => 'completed.png',
+            ];
+            $notificationImg = $orderStatuses[$request->input('orderStatus')] ?? '';
+            $orderStatuses2 = [
+                'courier_picked' => 'Courier Picked',
+                'on_the_way' => 'On The Way',
+                'ready_for_pickup' => 'Ready For Pickup',
+                'completed' => 'Completed',
+            ];
+            $orderStatusText = $orderStatuses2[$request->input('orderStatus')] ?? '';
+
+            $notificationData = [
+                'user_id' => $order->userId,
+                'related_id' => $order->id,
+                'type' => 'order_status_update',
+                'title' => 'Order Status Update',
+                'body' => 'Order ID #'. $order->id .' is '. $orderStatusText,
+                'image' => $notificationImg,
+            ];
+            $this->notificationRepository->storeNotification($notificationData);
+        }
 
         if ($request->input('orderStatus') === OrderStatus::CourierPicked->value) {
             $deliveryData = [
@@ -60,6 +92,6 @@ class DeliveryController extends Controller
             $currentDateTime = Carbon::now();
             $this->deliveryRepository->updateActualDeliveryDate($delivery->id, $currentDateTime);
         }
-        return redirect()->route('all-delivery')->with('success', 'Delivery  & Order updated successfully.');
+        return redirect()->route('all-delivery')->with('success', 'Delivery & Order updated successfully.');
     }
 }
