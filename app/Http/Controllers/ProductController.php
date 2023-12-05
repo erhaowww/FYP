@@ -15,19 +15,21 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Repositories\Interfaces\CommentRepositoryInterface;
+use App\Repositories\Interfaces\NotificationRepositoryInterface;
 
 class ProductController extends Controller
 {
     protected $productRepository;
     protected $cartItemRepository;
     protected $commentRepository;
+    protected $notificationRepository;
 
-    public function __construct(ProductRepositoryInterface $productRepository,CartItemRepositoryInterface $cartItemRepository, CommentRepositoryInterface $commentRepository)
+    public function __construct(ProductRepositoryInterface $productRepository,CartItemRepositoryInterface $cartItemRepository, CommentRepositoryInterface $commentRepository, NotificationRepositoryInterface $notificationRepository)
     {
         $this->productRepository = $productRepository;
         $this->cartItemRepository = $cartItemRepository;
-        $this->cartItemRepository = $cartItemRepository;
         $this->commentRepository = $commentRepository;
+        $this->notificationRepository = $notificationRepository;
     }
 
     public function show(Request $request)
@@ -302,6 +304,15 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $product = $this->productRepository->find($id);
+        $previousPrice = $product->price;
+        $previousColors = explode('|', $product->color);
+        $previousSizes = array_map(function($sizes) {
+            return explode(',', $sizes);
+        }, explode('|', $product->size));
+        $previousStocks = array_map(function($stocks) {
+            return explode(',', $stocks);
+        }, explode('|', $product->stock));
+
         $validatedData = $request->validate([
             'productName' => 'required|max:255',
             'productType' => 'required',
@@ -395,10 +406,93 @@ class ProductController extends Controller
             'productTryOnQR' => $qrFileName,
             'deleted'=>0,
         ];
-        Log::info('Final product data for update', ['id' => $id, 'productData' => $productData]);
+        // Log::info('Final product data for update', ['id' => $id, 'productData' => $productData]);
         $this->productRepository->update($productData,$id);
+
+        if($validatedData['productPrice'] < $previousPrice) {
+            // Retrieve users to notify
+            $usersToNotify = $this->cartItemRepository->getPriceDrop($product->id);
+            $notifiedUsers = [];
+
+            foreach ($usersToNotify as $userId) {
+                // Skip if the user has already been notified
+                if (in_array($userId, $notifiedUsers)) {
+                    continue;
+                }
+
+                // Prepare notification data
+                $notificationData = [
+                    'user_id' => $userId,
+                    'related_id' => $product->id,
+                    'type' => 'price_drop',
+                    'title' => 'Price Drop Alert',
+                    'body' => "The price for {$product->productName} has been reduced! Check it out now!",
+                    'image' => 'price-drop.png',
+                ];
+                // Store the notification
+                $this->notificationRepository->storeNotification($notificationData);
+
+                // Add the user to the notified users array
+                $notifiedUsers[] = $userId;
+            }
+        }
+
+        $newColors = $validatedData['color'];
+        $newSizes = array_map(function($sizes) {
+            return explode(',', $sizes);
+        }, explode('|', $sizeString));
+        $newStocks = array_map(function($stocks) {
+            return explode(',', $stocks);
+        }, explode('|', $stockString));
+        
+        // Prepare arrays to map previous stock levels by [color][size]
+        $previousStockArray = [];
+        foreach ($previousColors as $index => $color) {
+            foreach ($previousSizes[$index] as $sizeIndex => $size) {
+                $previousStockArray[$color][$size] = $previousStocks[$index][$sizeIndex];
+            }
+        }
+
+        foreach ($newColors as $index => $color) {
+            // If the color is new, skip it
+            if (!isset($previousStockArray[$color])) {
+                continue;
+            }
+    
+            foreach ($newSizes[$index] as $sizeIndex => $size) {
+                // Skip if the size is new for this color
+                if (!isset($previousStockArray[$color][$size])) {
+                    continue;
+                }
+                
+                $previousStock = (int)$previousStockArray[$color][$size];
+                $newStock = (int)$newStocks[$index][$sizeIndex];
+    
+                // Check for restock: previous stock is 0 and new stock is greater than 0
+                if ($previousStock === 0 && $newStock > 0) {
+                    // Retrieve users to notify
+                    $usersToNotify = $this->cartItemRepository->getRestocked($product->id, $color, $size);
+    
+                    foreach ($usersToNotify as $userId) {
+                        // Prepare notification data
+                        $notificationData = [
+                            'user_id' => $userId,
+                            'related_id' => $product->id,
+                            'type' => 'product_restock',
+                            'title' => 'Product Restocked',
+                            'body' => "The product {$product->productName} in color $color and size $size is back in stock!",
+                            'image' => 'restocked.png',
+                        ];
+                        // Store the notification
+                        $this->notificationRepository->storeNotification($notificationData);
+                    }
+                }
+            }
+        }
+
         return redirect()->route('all-products')->with('success', 'Product updated successfully.');
     }
+    
     public function delete($id) {
         $this->productRepository->delete($id);
         return redirect()->route('all-products')->with('success', 'Product updated successfully.');
@@ -427,6 +521,15 @@ class ProductController extends Controller
     public function increaseStock(Request $request,$id)
     {
         $product = $this->productRepository->find($id);
+
+        $previousColors = explode('|', $product->color);
+        $previousSizes = array_map(function($sizes) {
+            return explode(',', $sizes);
+        }, explode('|', $product->size));
+        $previousStocks = array_map(function($stocks) {
+            return explode(',', $stocks);
+        }, explode('|', $product->stock));
+
         $validatedData = $request->validate([
             'stock' => 'required|array',
         ]);
@@ -452,6 +555,46 @@ class ProductController extends Controller
             $currentIndex += $count;
         }
         $this->productRepository->increaseStock($stockString,$id);
+
+        $newStocks = array_map(function($stocks) {
+            return explode(',', $stocks);
+        }, explode('|', $stockString));
+        
+        // Prepare arrays to map previous stock levels by [color][size]
+        $previousStockArray = [];
+        foreach ($previousColors as $index => $color) {
+            foreach ($previousSizes[$index] as $sizeIndex => $size) {
+                $previousStockArray[$color][$size] = $previousStocks[$index][$sizeIndex];
+            }
+        }
+
+        foreach ($previousColors as $index => $color) {    
+            foreach ($previousSizes[$index] as $sizeIndex => $size) {
+                $previousStock = (int)$previousStockArray[$color][$size];
+                $newStock = (int)$newStocks[$index][$sizeIndex];
+    
+                // Check for restock: previous stock is 0 and new stock is greater than 0
+                if ($previousStock === 0 && $newStock > 0) {
+                    // Retrieve users to notify
+                    $usersToNotify = $this->cartItemRepository->getRestocked($product->id, $color, $size);
+    
+                    foreach ($usersToNotify as $userId) {
+                        // Prepare notification data
+                        $notificationData = [
+                            'user_id' => $userId,
+                            'related_id' => $product->id,
+                            'type' => 'product_restock',
+                            'title' => 'Product Restocked',
+                            'body' => "The product {$product->productName} in color $color and size $size is back in stock!",
+                            'image' => 'restocked.png',
+                        ];
+                        // Store the notification
+                        $this->notificationRepository->storeNotification($notificationData);
+                    }
+                }
+            }
+        }
+
         return redirect()->route('all-products')->with('success', 'Product updated successfully.');
     }
 
@@ -479,6 +622,26 @@ class ProductController extends Controller
         $types = ProductType::cases();
         return view('user/index', compact('products', 'types'));
     }
+
+    public function headerSearch(Request $request)
+    {
+        $searchTerm = $request->input('term');
+        
+        // Assuming you have a Product model with a 'name' field and 'image' field
+        $products = Product::where('productName', 'LIKE', '%' . $searchTerm . '%')->where('deleted', 0)->get();
+
+        $formattedProducts = $products->map(function ($product) {
+            $images = explode('|', $product->productImgObj);
+            return [
+                'productName' => $product->productName,
+                'productId' => $product->id,
+                'productImg' => asset('user/images/product/' . $images[0]), // Adjust path as needed
+            ];
+        });
+
+        return response()->json($formattedProducts);
+    }
+
     
 }
 

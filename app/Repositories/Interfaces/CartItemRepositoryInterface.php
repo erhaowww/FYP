@@ -15,4 +15,5 @@ interface CartItemRepositoryInterface
     public function getById($cartItemId);
     public function updateStatus($cartItemId, $status);
     public function getAllCart();
+    public function getRestocked($id, $color, $size);
 }

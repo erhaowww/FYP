@@ -454,7 +454,7 @@ function updateCartTotalQuantity() {
         url: '../user/update-cart-header-quantity', // URL to the route that returns total quantity
         type: 'GET',
         success: function(response) {
-            $('.icon-header-noti').attr('data-notify', response.totalQuantity);
+            $('.icon-header-noti.js-show-cart').attr('data-notify', response.totalQuantity);
         },
         error: function(xhr) {
             // Handle error

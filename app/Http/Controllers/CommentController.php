@@ -116,21 +116,25 @@ class CommentController extends Controller
             'admin_reply' => 'required|string',
         ]);
 
+        $oldComment = $this->commentRepository->findComment($id);
+
         $data = [
             'admin_reply' => $request->admin_reply,
         ];
         $this->commentRepository->updateComment($data, $id);
 
-        $currentProduct = $this->productRepository->find($request->productId);
-        $notificationData = [
-            'user_id' => $request->userId,
-            'related_id' => $request->productId,
-            'type' => 'admin_reply',
-            'title' => 'Admin Response',
-            'body' => 'Admin has responded to your comment on "' . $currentProduct->productName . '"',
-            'image' => 'admin-reply.png',
-        ];
-        $this->notificationRepository->storeNotification($notificationData);
+        if (is_null($oldComment->admin_reply)) {
+            $currentProduct = $this->productRepository->find($request->productId);
+            $notificationData = [
+                'user_id' => $request->userId,
+                'related_id' => $request->productId,
+                'type' => 'admin_reply',
+                'title' => 'Admin Response',
+                'body' => 'Admin has responded to your comment on "' . $currentProduct->productName . '"',
+                'image' => 'admin-reply.png',
+            ];
+            $this->notificationRepository->storeNotification($notificationData);
+        }
 
         return redirect('comments')->with('success', 'Information has been updated');
     }

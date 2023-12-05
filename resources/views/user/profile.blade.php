@@ -445,7 +445,7 @@ input[type=number]::-webkit-outer-spin-button {
 
   <div class="modal fade" id="imageModalContainer" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-md modal-dialog-centered">
-      <div class="modal-content modal-content1 modal-content1">
+      <div class="modal-content modal-content1 modal-content1" style="top: 60px">
         <div class="modal-header">
           <h5 class="modal-title" id="imageModal">Crop Image</h5>
           <button type="button" class="close" data-dismiss="modal" aria-label="Close">

@@ -1,3 +1,16 @@
+<!-- Add jQuery UI -->
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+<style>
+    .ui-autocomplete {
+        max-height: 400px;
+        overflow-y: auto; /* allows scroll on overflow */
+        overflow-x: hidden; /* hides horizontal scrollbar */
+        z-index: 10000 !important; /* To ensure it's on top */
+    }
+</style>
+
 <header class="header-v2">
     <!-- Header desktop -->
     <div class="container-menu-desktop trans-03">
@@ -287,7 +300,7 @@
                 <button class="flex-c-m trans-04">
                     <i class="zmdi zmdi-search"></i>
                 </button>
-                <input class="plh3" type="text" name="search" placeholder="Search...">
+                <input class="plh3" type="text" name="search" placeholder="Search Your Product..." id="search-input">
             </form>
         </div>
     </div>
@@ -461,6 +474,62 @@
         </div>
     </div>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#search-input').autocomplete({
+            source: function(request, response) {
+                // Fetch data from your backend
+                $.ajax({
+                    url: "{{ route('header.search') }}", // Your search endpoint
+                    type: 'GET',
+                    dataType: 'json',
+                    data: {
+                        term: request.term
+                    },
+                    success: function(data) {
+                        // Handle the response from the server
+                        response($.map(data, function(item) {
+                            return {
+                                name: item.productName,
+                                id: item.productId,
+                                img: item.productImg 
+                            };
+                        }));
+                    }
+                });
+            },
+            minLength: 1, // Minimum characters before searching
+            open: function() {
+                var autocompleteMenu = $(this).autocomplete("widget");
+                var searchBoxPosition = $('.container-search-header').offset(); // Get the position of the search input
+
+                // Set the position of the autocomplete menu
+                autocompleteMenu.css({
+                    top: searchBoxPosition.top + $('.container-search-header').outerHeight(), // Position below the search box
+                    left: searchBoxPosition.left // Align with the left edge of the search box
+                });
+            },
+            create: function() {
+                $(this).data('ui-autocomplete')._resizeMenu = function() {
+                    var ul = this.menu.element;
+                    var containerWidth = $('.container-search-header').outerWidth();
+                    ul.outerWidth(containerWidth);
+                };
+            },
+            select: function(event, ui) {
+                // What happens when an item is selected
+                // Redirect to the selected product's page, or handle however you'd like
+                window.location.href = '/product/' + ui.item.id;
+            }
+        }).autocomplete("instance")._renderItem = function(ul, item) {
+            // Customize the rendering of each item in the autocomplete dropdown
+            return $("<li>")
+                .append("<div><img src='" + item.img + "' alt='Product Image' style='width:50px;'><span>" + item.name + "</span></div>")
+                .appendTo(ul);
+        };
+    });
+</script>
 
 <script>
     function markNotificationAsRead(notificationId, redirectUrl) {
@@ -644,7 +713,7 @@
                             if ($('.header-cart-item').length === 0) {
                                 $('.header-cart-content').html('<p>Your cart is empty</p>');
                             }
-                            $('.icon-header-noti').attr('data-notify', response.totalQuantity);
+                            $('.icon-header-noti.js-show-cart').attr('data-notify', response.totalQuantity);
                             swal("The item has been removed from your cart!", {
                                 icon: "success",
                             });

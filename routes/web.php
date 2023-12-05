@@ -47,9 +47,9 @@ Route::get('/product', [ProductController::class, 'show'])->name('products.show'
 Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
 
 Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
-Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
 
 Route::get('/virtual-showroom', [ProductController::class, 'showVirtualShowroom'])->name('products.showVirtualShowroom');
+Route::get('/header-search', [ProductController::class, 'headerSearch'])->name('header.search');
 
 Route::resource('comments', CommentController::class);
 
@@ -62,7 +62,7 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
 
     Route::post('/add-to-cart', [CartItemController::class, 'addToCart']);
     Route::post('/remove-from-cart', [CartItemController::class, 'removeItem']);
-    Route::get('/cart', [CartItemController::class, 'showCart']);
+    Route::get('/cart', [CartItemController::class, 'showCart'])->name('showCart');
     Route::post('/update-cart-item', [CartItemController::class, 'updateItem']);
     Route::get('/update-cart-header-quantity', [CartItemController::class, 'getTotalQuantity']);
     Route::post('/make-order', [CartItemController::class, 'makeOrder']);
@@ -79,6 +79,7 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::get('/payment-history', [PaymentController::class, 'viewHistory']);
     Route::post('/mark-order-received/{orderId}', [OrderController::class, 'markOrderReceived'])->name('mark-order-received');
 
+    Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
     Route::post('/sendLiveChat', [ChatController::class, 'sendLiveChat'])->name('sendLiveChat');
     Route::post('/comment/{comment_id}/like', [CommentController::class, 'like']);
 
@@ -96,17 +97,15 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
 
 
 // admin
-Route::prefix('admin')->middleware(['auth'])->group(function(){
+Route::prefix('admin')->middleware(['auth', 'isStafforAdmin'])->group(function(){
     Route::get('/admin_portal', [DashboardController::class, 'index'])->name('adminDashboard');
     Route::get('/chat', [ChatController::class, 'index'])->name('livechat');
     Route::resource('customers', UserController::class);
-    Route::resource('staffs', UserController::class);
     Route::resource('memberships', MembershipController::class);
     Route::post('/getChatRequestState', [ChatController::class, 'getChatRequestState'])->name('getChatRequestState');
     Route::post('/updateChatRequestState', [ChatController::class, 'updateChatRequestState'])->name('updateChatRequestState');
     Route::post('/liveAgentResponse', [ChatController::class, 'liveAgentResponse'])->name('liveAgentResponse');
     Route::post('/endChatSession', [ChatController::class, 'endChatSession'])->name('endChatSession');
-    Route::get('/staff', [UserController::class, 'indexStaff'])->name('staffs.all');
 
     //faq
     Route::get('/faqs', [ChatbotController::class, 'indexFAQ'])->name('faqs.index');
@@ -141,4 +140,10 @@ Route::prefix('admin')->middleware(['auth'])->group(function(){
     Route::get('/rewardClaims/{id}/edit', [RewardController::class, 'editRewardClaim'])->name('rewardClaims.edit');
     Route::post('/rewardClaims/{id}/update', [RewardController::class, 'updateRewardClaim'])->name('rewardClaims.update');
     Route::post('/rewardClaims/{id}/destroy', [RewardController::class, 'destroyRewardClaim'])->name('rewardClaims.destroy');
+});
+
+Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function(){
+    Route::resource('staffs', UserController::class);
+    Route::get('/staff', [UserController::class, 'indexStaff'])->name('staffs.all');
+
 });

@@ -114,11 +114,13 @@
     $('.js-show-modal-search').on('click', function(){
         $('.modal-search-header').addClass('show-modal-search');
         $(this).css('opacity','0');
+        $('body').addClass('no-scroll');
     });
 
     $('.js-hide-modal-search').on('click', function(){
         $('.modal-search-header').removeClass('show-modal-search');
         $('.js-show-modal-search').css('opacity','1');
+        $('body').removeClass('no-scroll');
     });
 
     $('.container-search-header').on('click', function(e){

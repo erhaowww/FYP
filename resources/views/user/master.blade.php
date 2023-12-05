@@ -393,7 +393,7 @@
                         $('.header-cart-wrapitem').html(response.cartItemsHtml);
                         $('#totalPrice').text('Total: RM' + response.newTotalPrice);
                     }
-                    $('.icon-header-noti').attr('data-notify', response.totalQuantity);
+                    $('.icon-header-noti.js-show-cart').attr('data-notify', response.totalQuantity);
                     swal(nameProduct, "is added to cart!", "success");
                 },
                     error: function(xhr) {

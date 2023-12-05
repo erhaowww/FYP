@@ -129,4 +129,20 @@ class CartItemRepository implements CartItemRepositoryInterface
     public function getAllCart() {
         return CartItem::all();
     }
+
+    public function getRestocked($id, $color, $size) {
+        return CartItem::where('productId', $id)
+            ->where('color', $color)
+            ->where('size', $size)
+            ->where('quantity', '=', 0)
+            ->where('status', 'in cart')
+            ->pluck('userId');
+    }
+
+    public function getPriceDrop($id) {
+        return CartItem::where('productId', $id)
+            ->where('status', 'in cart')
+            ->groupBy('userId')
+            ->pluck('userId');
+    }
 }
