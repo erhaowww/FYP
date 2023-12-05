@@ -1057,18 +1057,20 @@ function tokenizeCard(clientInstance, cardData) {
 }
 function submitOrderDetails(transactionId, paymentType) {
 	if (!transactionId) {
-    Swal.fire({
-        title: 'Error',
-        text: 'Request timed out. Please reload the page.',
-        icon: 'error',
-        confirmButtonText: 'OK'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            window.location.reload();
-        }
-    });
-    return;
-}
+		Swal.fire({
+			title: 'Error',
+			text: 'Request timed out. Please reload the page.',
+			icon: 'error',
+			confirmButtonText: 'OK'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				window.location.reload();
+			}
+		});
+		return;
+	}
+	showWaitingPopup();
+
     fetch('/user/store-transaction', {
         method: 'POST',
         headers: {
@@ -1094,7 +1096,18 @@ function submitOrderDetails(transactionId, paymentType) {
     })
     .catch(error => console.error('Error:', error));
 }
-
+function showWaitingPopup() {
+    Swal.fire({
+        title: 'Processing your payment...',
+        html: 'Please wait.',
+        showCancelButton: false,
+        showConfirmButton: false,
+        allowOutsideClick: false,
+        onBeforeOpen: () => {
+            Swal.showLoading();
+        }
+    });
+}
 
 </script>
         @endsection

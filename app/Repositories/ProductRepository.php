@@ -11,7 +11,16 @@ class ProductRepository implements ProductRepositoryInterface
 {
     public function getAll()
     {
-        return Product::available()->get();
+        $ratingQuery = \DB::table('comments')
+        ->select('product_id', \DB::raw('AVG(rating) as average_rating'))
+        ->groupBy('product_id');
+
+        $products = Product::available()
+                ->leftJoinSub($ratingQuery, 'ratings', 'product.id', '=', 'ratings.product_id')
+                ->select('product.*', 'ratings.average_rating') 
+                ->get();
+
+        return $products;
     }
 
     public function allWithFilters(Request $request)
@@ -22,9 +31,14 @@ class ProductRepository implements ProductRepositoryInterface
                     ->select('productId', \DB::raw('COALESCE(SUM(quantity), 0) as total_sales'))
                     ->where('status', CartItemStatus::purchased->value)
                     ->groupBy('productId');
+        $ratingQuery = \DB::table('comments')
+                    ->select('product_id', \DB::raw('AVG(rating) as average_rating'))
+                    ->groupBy('product_id');
 
         $query->leftJoinSub($salesQuery, 'sales', function($join) {
             $join->on('product.id', '=', 'sales.productId');
+        })->leftJoinSub($ratingQuery, 'ratings', function($join) {
+            $join->on('product.id', '=', 'ratings.product_id');
         });
 
         $sort = $request->query('sort');
@@ -32,7 +46,7 @@ class ProductRepository implements ProductRepositoryInterface
             case 'popularity':
                 $query->orderBy('sales.total_sales', 'desc');
             case 'rating':
-                // $query->orderBy('average_rating', 'desc');
+                $query->orderBy('ratings.average_rating', 'desc');
                 break;
             case 'newness':
                 $query->orderBy('created_at', 'desc');
@@ -73,10 +87,11 @@ class ProductRepository implements ProductRepositoryInterface
         
         $searchTerm = $request->query('search-product');
         if ($searchTerm) {
-            $query->where('productName', 'LIKE', "%{$searchTerm}%")
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('productName', 'LIKE', "%{$searchTerm}%")
                 ->orWhere('productDesc', 'LIKE', "%{$searchTerm}%");
-            }
-
+            });
+        }
         return $query->get();
     }
 
@@ -87,15 +102,19 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function findRelatedProducts($type,$category, $excludeId)
     {
-        
+        $ratingQuery = \DB::table('comments')
+                ->select('product_id', \DB::raw('AVG(rating) as average_rating'))
+                ->groupBy('product_id');
         $query = Product::available()
                 ->where(function ($query) use ($category, $type) {
                     $query->where('category', $category)
                           ->orWhere('productType', $type);
                 })
-                ->where('id', '!=', $excludeId);
+                ->where('id', '!=', $excludeId)
+                ->leftJoinSub($ratingQuery, 'ratings', 'product.id', '=', 'ratings.product_id')
+                ->select('product.*', 'ratings.average_rating'); 
 
-        return $query->get();         
+        return $query->get();
     }
 
     public function updateStock($productId, $color, $size, $quantity)

@@ -8,6 +8,8 @@ interface PaymentRepositoryInterface
     public function getAllPaymentsWithOrdersByUserId($userId);
     public function getAllPayments();
     public function getAllPaymentsWithOrders();
+    public function getTotalPaymentsForPeriod($start, $end);
+    public function getPaymentsForLastSevenDays();
     public function weeklySales();
     public function weeklySalesPercentageChange();
     public function weeklySalesChart();

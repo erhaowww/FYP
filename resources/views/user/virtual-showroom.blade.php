@@ -227,22 +227,33 @@
 
         
         let buttonMeshes = [];
-        const buttonMesh1 = createButtonForProduct(1, new THREE.Vector3(-2,-1, 5));
-        scene.add(buttonMesh1);
-        buttonMeshes.push(buttonMesh1);
-        const buttonMesh3 = createButtonForProduct(3, new THREE.Vector3(2, -1, 5));
-        scene.add(buttonMesh3);
-        buttonMeshes.push(buttonMesh3);
 
-        function createButtonForProduct(productId, position) {
-            const buttonGeometry = new THREE.BoxGeometry(1, 0.5, 0.1);
-            const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-            const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
-            buttonMesh.position.copy(position);
-            buttonMesh.userData = { productId: productId };
-            return buttonMesh;
+        function createButtonForProduct(productId, position, rotation = null) {
+        const buttonGeometry = new THREE.BoxGeometry(1, 0.5, 0.1);
+        const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+        buttonMesh.position.copy(position);
+
+        // Apply rotation if provided
+        if (rotation) {
+            buttonMesh.rotation.x = rotation.x;
+            buttonMesh.rotation.y = rotation.y;
+            buttonMesh.rotation.z = rotation.z;
         }
-            
+
+        buttonMesh.userData = { productId: productId };
+        return buttonMesh;
+    }
+
+    // Usage example:
+    let buttonMesh1 = createButtonForProduct(1, new THREE.Vector3(-2, -1, 5), {x: Math.PI / 2, y: 0, z: 0});
+    scene.add(buttonMesh1);
+    buttonMeshes.push(buttonMesh1);
+
+    // For a button that does not need rotation, simply omit the rotation argument
+    let buttonMesh3 = createButtonForProduct(3, new THREE.Vector3(2, -1, 5));
+    scene.add(buttonMesh3);
+    buttonMeshes.push(buttonMesh3);
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();

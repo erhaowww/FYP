@@ -104,6 +104,9 @@ class ProductController extends Controller
         $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::inCart->value);
         Log::info('Retrieved cart items:', ['cartItems' => $cartItems]);
     
+        if(count($cartItems) == 0) {
+            $isInStock = false;
+        }
         foreach ($cartItems as $cartItem) {
             // Log each cart item and its associated product
             Log::info('Cart Item:', ['cartItem' => $cartItem]);

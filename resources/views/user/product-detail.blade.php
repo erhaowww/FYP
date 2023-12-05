@@ -3,6 +3,26 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/magnific-popup.min.css" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/magnific-popup.js/1.1.0/jquery.magnific-popup.min.js"></script>
 <style>
+    
+	.block2-txt-child2 {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end; /* Align children to the right */
+	}
+	
+	.rating-below-icon {
+		margin-top: 5px; /* Adjust as needed for spacing */
+	}
+	
+	.rating-low {
+		color: red;
+		font-weight: bold;
+	}
+	
+	.rating-high {
+		color: green;
+		font-weight: bold;
+	}
 	.bg4{
 		background-color:#9A9A9A;
 	}
@@ -127,11 +147,11 @@
 								$baseName = pathinfo($file, PATHINFO_FILENAME);
 								
 								// Check if the file is a GLTF file
-								if ($extension === 'gltf') {
+								if ($extension === 'gltf' || $extension === 'glb') {
 									// Look for a corresponding image file
 									$imageFound = false;
 									foreach ($imageFiles as $image) {
-										if (pathinfo($image, PATHINFO_FILENAME) === $baseName && pathinfo($image, PATHINFO_EXTENSION) !== 'gltf') {
+										if (pathinfo($image, PATHINFO_FILENAME) === $baseName && (pathinfo($image, PATHINFO_EXTENSION) !== 'gltf' || pathinfo($image, PATHINFO_EXTENSION) !== 'glb')) {
 											$gltfWithImages[$file] = $image;
 											$imageFound = true;
 											break;
@@ -143,7 +163,7 @@
 									}
 								} else {
 									// If it's not a GLTF file and no corresponding GLTF file exists, add it to the imagesToShow array
-									if (!isset($gltfWithImages[$baseName . '.gltf'])) {
+									if (!isset($gltfWithImages[$baseName . '.gltf'])||!isset($gltfWithImages[$baseName . '.glb'])) {
 										$imagesToShow[] = $file;
 									}
 								}
@@ -520,8 +540,8 @@
 						<!-- Block2 -->
 						
 						<div class="block2">
-							<div class="block2-pic hov-img0">
-							<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
+							<div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;">
+								<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
 							</div>
 
 							<div class="block2-txt flex-w flex-t p-t-14">
@@ -536,10 +556,18 @@
 								</div>
 
 								<div class="block2-txt-child2 flex-r p-t-3">
-									<a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-										<img class="icon-heart1 dis-block trans-04" src="{{asset('user/images/icons/icon-heart-01.png')}}" alt="ICON">
-										<img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{asset('user/images/icons/icon-heart-02.png')}}" alt="ICON">
-									</a>
+									<div class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+										<img class="icon-heart1 dis-block trans-04" src="{{ asset('user/images/icons/icon-heart-01.png') }}" alt="ICON">
+										<img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{ asset('user/images/icons/icon-heart-02.png') }}" alt="ICON">
+									</div>
+									<!-- Product Rating -->
+									<div class="rating-below-icon">
+										@if (isset($product->average_rating))
+											<span class="stext-105 cl3 {{ $product->average_rating < 2 ? 'rating-low' : ($product->average_rating > 4.5 ? 'rating-high' : '') }}">
+												{{ round($product->average_rating, 1) }}/5
+											</span>
+										@endif
+									</div>
 								</div>
 							</div>
 						</div>

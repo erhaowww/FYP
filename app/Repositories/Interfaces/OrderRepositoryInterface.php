@@ -7,4 +7,7 @@ interface OrderRepositoryInterface
     public function updateStatus($orderId,$status);
     public function getAllOrdersWithDeliveries();
     public function getOrdersAndDeliveriesById($id);
+    public function getAllOrders();
+    public function getTotalOrdersForPeriod($start, $end);
+    public function getOrdersForLastSevenDays();
 }
