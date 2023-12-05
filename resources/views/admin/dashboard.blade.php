@@ -21,8 +21,8 @@
               <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
               <h4 class="font-weight-normal mb-3">Weekly Sales <i class="mdi mdi-chart-line mdi-24px float-right"></i>
               </h4>
-              <h2 class="mb-5">$ 15,0000</h2>
-              <h6 class="card-text">Increased by 60%</h6>
+              <h2 class="mb-5">RM {{ number_format($totalSalesThisWeek, 2) }}</h2>
+              <h6 class="card-text">Sales {{ $salesChange >= 0 ? 'Increased' : 'Decreased' }} by {{ number_format(abs($salesChange), 2) }}%</h6>
             </div>
           </div>
         </div>
@@ -32,8 +32,8 @@
               <img src="assets/images/dashboard/circle.svg" class="card-img-absolute" alt="circle-image" />
               <h4 class="font-weight-normal mb-3">Weekly Orders <i class="mdi mdi-bookmark-outline mdi-24px float-right"></i>
               </h4>
-              <h2 class="mb-5">45,6334</h2>
-              <h6 class="card-text">Decreased by 10%</h6>
+              <h2 class="mb-5">{{ $totalOrdersThisWeek }}</h2>
+              <h6 class="card-text">Orders {{ $ordersChange >= 0 ? 'Increased' : 'Decreased' }} by {{ number_format(abs($ordersChange), 2) }}%</h6>
             </div>
           </div>
         </div>
@@ -54,7 +54,7 @@
           <div class="card">
             <div class="card-body">
               <div class="clearfix">
-                <h4 class="card-title float-left">Visit And Sales Statistics</h4>
+                <h4 class="card-title float-left">Sales and Order Statistics</h4>
                 <div id="visit-sale-chart-legend" class="rounded-legend legend-horizontal legend-top-right float-right"></div>
               </div>
               <canvas id="visit-sale-chart" class="mt-4"></canvas>
@@ -318,4 +318,130 @@
           </div>
         </div>
     </div>
+
+    <script>
+      (function($) {
+  'use strict';
+  $(function() {
+
+    Chart.defaults.global.legend.labels.usePointStyle = true;
+    
+    if ($("#visit-sale-chart").length) {
+      var maxSales = Math.max(...@json($statistics['sales']));
+      var maxOrders = Math.max(...@json($statistics['orders']));
+      var maxValue = Math.max(maxSales, maxOrders);
+      var stepSize = Math.ceil(maxValue / 6);
+
+      Chart.defaults.global.legend.labels.usePointStyle = true;
+      var ctx = document.getElementById('visit-sale-chart').getContext("2d");
+
+      var gradientStrokeViolet = ctx.createLinearGradient(0, 0, 0, 181);
+      gradientStrokeViolet.addColorStop(0, 'rgba(218, 140, 255, 1)');
+      gradientStrokeViolet.addColorStop(1, 'rgba(154, 85, 255, 1)');
+      var gradientLegendViolet = 'linear-gradient(to right, rgba(218, 140, 255, 1), rgba(154, 85, 255, 1))';
+      
+      var gradientStrokeBlue = ctx.createLinearGradient(0, 0, 0, 360);
+      gradientStrokeBlue.addColorStop(0, 'rgba(54, 215, 232, 1)');
+      gradientStrokeBlue.addColorStop(1, 'rgba(177, 148, 250, 1)');
+      var gradientLegendBlue = 'linear-gradient(to right, rgba(54, 215, 232, 1), rgba(177, 148, 250, 1))';
+
+      var gradientStrokeRed = ctx.createLinearGradient(0, 0, 0, 300);
+      gradientStrokeRed.addColorStop(0, 'rgba(255, 191, 150, 1)');
+      gradientStrokeRed.addColorStop(1, 'rgba(254, 112, 150, 1)');
+      var gradientLegendRed = 'linear-gradient(to right, rgba(255, 191, 150, 1), rgba(254, 112, 150, 1))';
+
+      var myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: @json($statistics['dates']),
+            datasets: [
+              {
+                label: "Sales",
+                borderColor: gradientStrokeViolet,
+                backgroundColor: gradientStrokeViolet,
+                hoverBackgroundColor: gradientStrokeViolet,
+                legendColor: gradientLegendViolet,
+                pointRadius: 0,
+                fill: false,
+                borderWidth: 1,
+                fill: 'origin',
+                data: @json($statistics['sales'])
+              },
+              {
+                label: "Orders",
+                borderColor: gradientStrokeRed,
+                backgroundColor: gradientStrokeRed,
+                hoverBackgroundColor: gradientStrokeRed,
+                legendColor: gradientLegendRed,
+                pointRadius: 0,
+                fill: false,
+                borderWidth: 1,
+                fill: 'origin',
+                data: @json($statistics['orders'])
+              }
+          ]
+        },
+        options: {
+          responsive: true,
+          legend: false,
+          legendCallback: function(chart) {
+            var text = []; 
+            text.push('<ul>'); 
+            for (var i = 0; i < chart.data.datasets.length; i++) { 
+                text.push('<li><span class="legend-dots" style="background:' + 
+                           chart.data.datasets[i].legendColor + 
+                           '"></span>'); 
+                if (chart.data.datasets[i].label) { 
+                    text.push(chart.data.datasets[i].label); 
+                } 
+                text.push('</li>'); 
+            } 
+            text.push('</ul>'); 
+            return text.join('');
+          },
+          scales: {
+              yAxes: [{
+                  ticks: {
+                      display: false,
+                      min: 0,
+                      stepSize: stepSize,
+                      max: maxValue
+                  },
+                  gridLines: {
+                    drawBorder: false,
+                    color: 'rgba(235,237,242,1)',
+                    zeroLineColor: 'rgba(235,237,242,1)'
+                  }
+              }],
+              xAxes: [{
+                  gridLines: {
+                    display:false,
+                    drawBorder: false,
+                    color: 'rgba(0,0,0,1)',
+                    zeroLineColor: 'rgba(235,237,242,1)'
+                  },
+                  ticks: {
+                      padding: 20,
+                      fontColor: "#9c9fa6",
+                      autoSkip: true,
+                  },
+                  categoryPercentage: 0.5,
+                  barPercentage: 0.5
+              }]
+            }
+          },
+          elements: {
+            point: {
+              radius: 0
+            }
+          }
+      })
+      $("#visit-sale-chart-legend").html(myChart.generateLegend());
+    }
+   
+    
+  });
+})(jQuery);
+
+      </script>
 @endsection

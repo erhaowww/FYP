@@ -264,7 +264,7 @@
 							<div class="size-208 w-full-ssm">
 								<span class="stext-110 cl2" >
 									Discount:
-								</span>
+								</span><br>
 								<span class="mtext-110 cl2" id="discountRate"> 
 									<b>{{$discountRate}}%</b>
 								</span>
@@ -404,8 +404,12 @@ window.onload = function() {
 
         if (value > max) {
             quantityInput.value = max;
-            $(quantityInput).trigger('change'); // Trigger the change event manually
+            $(quantityInput).trigger('change');
         }
+		if(value == '0' && max !== 0){
+            quantityInput.value = 1;
+            $(quantityInput).trigger('change');
+		}
     });
 };
 

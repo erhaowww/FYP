@@ -11,8 +11,9 @@
 <script src="https://unpkg.com/filepond/dist/filepond.min.js"></script>
 <link rel="stylesheet" href="{{asset('user/image-uploader/image-uploader.css')}}">
 <script src="{{asset('user/image-uploader/image-uploader.js')}}"></script>
-
-
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
 <style>
     
     .image-uploader .upload-text {
@@ -216,7 +217,7 @@
                 @php
                     $filePaths = explode('|', $product->productImgObj);
                     $modelFile = null;
-                    if (str_ends_with(end($filePaths), '.gltf')) {
+                    if (str_ends_with(end($filePaths), '.gltf')||str_ends_with(end($filePaths), '.glb')) {
                         $modelFile = array_pop($filePaths);
                     }
                     $imageFiles = $filePaths;
@@ -323,6 +324,50 @@ var maxColors = parseInt({{ count($colors) }})-1;
             allowMultiple: true,
             maxFilesize: '3MB', 
             maxFiles: 5
+        });
+
+        let model;
+        async function loadModel() {
+            if (!model) {
+                try {
+                    model = await cocoSsd.load();
+                } catch (error) {
+                    console.error("Error loading COCO-SSD model:", error);
+                }
+            }
+            return model;
+        }
+        async function performObjectDetection(imageElement, file) {
+            try {
+                const model = await loadModel();
+                if (!model) return; // Exit if model is not loaded
+
+                const predictions = await model.detect(imageElement);
+                const fashionObjects = ['person', 'tie', 'shirt', 'dress', 'shoe', 'glasses'];
+                const containsFashion = predictions.some(prediction => fashionObjects.includes(prediction.class));
+
+                if (!containsFashion) {
+                    productImagesPond.removeFile(file.id);
+                    Swal.fire({
+                        title: "Some Images Rejected",
+                        text: "Some images do not contain fashion-related objects and will be removed.",
+                        icon: "error",
+                        button: "OK",
+                    });
+                }
+            } catch (error) {
+                console.error("Error in object detection:", error);
+            }
+        }
+
+        document.querySelector('#productImages').addEventListener('FilePond:addfile', (e) => {
+            const file = e.detail.file.file;
+            const imageElement = new Image();
+            imageElement.crossOrigin = "anonymous"; // Handle potential CORS issues
+            imageElement.src = URL.createObjectURL(file);
+            imageElement.onload = () => {
+                performObjectDetection(imageElement, e.detail.file);
+            };
         });
 
         const virtualTryOnQRPond = FilePond.create(document.querySelector('#virtualTryOnQR'), {
@@ -434,7 +479,7 @@ var maxColors = parseInt({{ count($colors) }})-1;
         function validateProductImages() {
             var errors = [];
             var allowedImageExtensions = [".jpg", ".jpeg", ".png"];
-            var allowedModelExtensions = [".gltf"];
+            var allowedModelExtensions = [".gltf", ".glb"];
             var modelFileCount = 0;
             var imageBaseNames = new Set();
 

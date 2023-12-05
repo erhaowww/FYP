@@ -1,6 +1,28 @@
 @extends('user/master')
 @section('content')
 <!-- Slider -->
+<style>
+    
+.block2-txt-child2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Align children to the right */
+}
+
+.rating-below-icon {
+    margin-top: 5px; /* Adjust as needed for spacing */
+}
+
+.rating-low {
+    color: red;
+    font-weight: bold;
+}
+
+.rating-high {
+    color: green;
+    font-weight: bold;
+}
+    </style>
 <section class="section-slide">
     <div class="wrap-slick1 rs1-slick1">
         <div class="slick1">
@@ -200,7 +222,7 @@
                             <div class="item-slick2 p-l-15 p-r-15 p-t-15 p-b-15">
                                 <!-- Block2 -->
                                 <div class="block2">
-                                    <div class="block2-pic hov-img0">
+                                    <div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;">
                                         <img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
                                     </div>
 
@@ -216,10 +238,18 @@
                                         </div>
 
                                         <div class="block2-txt-child2 flex-r p-t-3">
-                                            <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-                                                <img class="icon-heart1 dis-block trans-04" src="{{asset('user/images/icons/icon-heart-01.png')}}" alt="ICON">
-                                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{asset('user/images/icons/icon-heart-02.png')}}" alt="ICON">
-                                            </a>
+                                            <div class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                                                <img class="icon-heart1 dis-block trans-04" src="{{ asset('user/images/icons/icon-heart-01.png') }}" alt="ICON">
+                                                <img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{ asset('user/images/icons/icon-heart-02.png') }}" alt="ICON">
+                                            </div>
+                                            <!-- Product Rating -->
+                                            <div class="rating-below-icon">
+                                                @if (isset($product->average_rating))
+                                                    <span class="stext-105 cl3 {{ $product->average_rating < 2 ? 'rating-low' : ($product->average_rating > 4.5 ? 'rating-high' : '') }}">
+                                                        {{ round($product->average_rating, 1) }}/5
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

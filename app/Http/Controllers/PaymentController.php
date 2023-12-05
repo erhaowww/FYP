@@ -51,7 +51,7 @@ class PaymentController extends Controller
         if ($result->success) {
             return response()->json([
                 'success' => true,
-                'transactionId' => $result->transaction->id,  // Get the transaction ID
+                'transactionId' => $result->transaction->id, 
                 'cardType' => $cardType
             ]);
         } else {

@@ -2,7 +2,7 @@
 namespace App\Repositories;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Log;
-
+use Carbon\Carbon;
 use App\Repositories\Interfaces\PaymentRepositoryInterface;
 class PaymentRepository implements PaymentRepositoryInterface
 {
@@ -45,5 +45,19 @@ class PaymentRepository implements PaymentRepositoryInterface
     {
         return Payment::with('order')
                   ->get();
+    }
+    public function getTotalPaymentsForPeriod($start, $end)
+    {
+        return Payment::whereBetween('paymentDate', [$start, $end])->sum('totalPaymentFee');
+    }
+    
+    public function getPaymentsForLastSevenDays()
+    {
+        return Payment::select(\DB::raw("DATE_FORMAT(paymentDate, '%d/%m') as date"), \DB::raw('SUM(totalPaymentFee) as total'))
+            ->whereBetween('paymentDate', [Carbon::now()->subDays(6)->startOfDay(), Carbon::now()->endOfDay()])
+            ->groupBy('date')
+            ->orderBy('paymentDate')
+            ->get()
+            ->keyBy('date');
     }
 }

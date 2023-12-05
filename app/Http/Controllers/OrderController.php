@@ -14,6 +14,8 @@ use App\Repositories\Interfaces\CartItemRepositoryInterface;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\Interfaces\MembershipRepositoryInterface;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\PaymentReceiptMail;
 use Session;
 
 class OrderController extends Controller
@@ -56,6 +58,7 @@ class OrderController extends Controller
             $paymentResponse = $paymentController->processPayment($request);
             $paymentResult = json_decode($paymentResponse->getContent(), true);
             if (!$paymentResult['success']) {
+                \Log::info(''. $paymentResponse->getContent());
                 return response()->json(['success' => false, 'message' => $paymentResult['message']]);
             }
         }
@@ -102,6 +105,8 @@ class OrderController extends Controller
 
             $this->deliveryRepository->create($deliveryData);
             $this->paymentRepository->create($paymentData);
+            $eReceiptDetails = $this->prepareReceiptDetails($order, $paymentData, $cartItemIds);
+            Mail::to(Auth::user()->email)->queue(new \App\Mail\PaymentReceipt($eReceiptDetails));
             $this->userRepository->updateUserTotalSpent($request->input('totalPrice'), auth()->user()->id);
             
             return response()->json([
@@ -115,6 +120,30 @@ class OrderController extends Controller
                 'message' => 'Error creating order'
             ], 500);
         }
+    }
+
+    private function prepareReceiptDetails($order, $paymentData, $cartItemIds)
+    {
+        $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::purchased->value);
+        $productDetails = $cartItems->map(function ($cartItem) {
+            // Assuming that the 'product' relationship is defined in the CartItem model
+            $product = $cartItem->product; // Directly use the loaded relationship
+            return [
+                'productName' => $product->productName,
+                'color' => $cartItem->color,
+                'size' => $cartItem->size,
+                'quantity' => $cartItem->quantity
+            ];
+        });
+
+        return [
+            'transactionId' => $paymentData['transactionId'],
+            'paymentMethod' => $paymentData['paymentMethod'],
+            'paymentDate' => $paymentData['paymentDate']->format('Y-m-d H:i:s'),
+            'totalPaymentFee' => $paymentData['totalPaymentFee'],
+            'deliveryAddress' => $order->deliveryAddress,
+            'productDetails' => $productDetails->toArray()
+        ];
     }
 
     public function track($orderId)

@@ -30,6 +30,25 @@ use App\Enums\ProductColor;
 .hidden{
 	display:none;
 }
+.block2-txt-child2 {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end; /* Align children to the right */
+}
+
+.rating-below-icon {
+    margin-top: 5px; /* Adjust as needed for spacing */
+}
+
+.rating-low {
+    color: red;
+    font-weight: bold;
+}
+
+.rating-high {
+    color: green;
+    font-weight: bold;
+}
 
 	</style>
 	<div class="bg0 m-t-23 p-b-140">
@@ -269,11 +288,19 @@ use App\Enums\ProductColor;
                                 </div>
 
                                 <div class="block2-txt-child2 flex-r p-t-3">
-                                    <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-                                        <img class="icon-heart1 dis-block trans-04" src="{{ asset('user/images/icons/icon-heart-01.png') }}" alt="ICON">
-                                        <img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{ asset('user/images/icons/icon-heart-02.png') }}" alt="ICON">
-                                    </a>
-                                </div>
+									<div class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+										<img class="icon-heart1 dis-block trans-04" src="{{ asset('user/images/icons/icon-heart-01.png') }}" alt="ICON">
+										<img class="icon-heart2 dis-block trans-04 ab-t-l" src="{{ asset('user/images/icons/icon-heart-02.png') }}" alt="ICON">
+									</div>
+									<!-- Product Rating -->
+									<div class="rating-below-icon">
+										@if (isset($product->average_rating))
+											<span class="stext-105 cl3 {{ $product->average_rating < 2 ? 'rating-low' : ($product->average_rating > 4.5 ? 'rating-high' : '') }}">
+												{{ round($product->average_rating, 1) }}/5
+											</span>
+										@endif
+									</div>
+								</div>
                             </div>
                         </div>
                     </div>
