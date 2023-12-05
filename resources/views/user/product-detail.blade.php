@@ -351,18 +351,24 @@
 							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">
 								@if ($totalReviews > 0)
 									{{-- Display star icons based on the average rating --}}
-									@for ($i = 0; $i < floor($averageRating); $i++)
-										<i class="zmdi zmdi-star" style="color: #FFD700;"></i> {{-- Full star --}}
+									@for ($i = 0; $i < 5; $i++)
+										@if ($i < floor($averageRating))
+											<i class="zmdi zmdi-star" style="color: #FFD700;"></i> {{-- Full star --}}
+										@elseif ($i < ceil($averageRating))
+											<i class="zmdi zmdi-star-half" style="color: #FFD700;"></i> {{-- Half star --}}
+										@else
+											<i class="zmdi zmdi-star-outline" style="color: #FFD700;"></i> {{-- Empty star --}}
+										@endif
 									@endfor
-									@if ($averageRating > floor($averageRating))
-										<i class="zmdi zmdi-star-half" style="color: #FFD700;"></i> {{-- Half star --}}
-									@endif
 
 									{{-- Display the average rating and total number of reviews --}}
 									<span>{{$averageRating}}/5 ({{ $totalReviews }} Reviews)</span>
 								@else
+									@for ($i = 0; $i < 5; $i++)
+										<i class="zmdi zmdi-star" style="color: #FFD700;"></i> {{-- Full star --}}
+									@endfor
 									{{-- Display "No reviews" message --}}
-									<span>No reviews (0)</span>
+									<span>(0 Reviews)</span>
 								@endif
 							</a>
 						</li>
