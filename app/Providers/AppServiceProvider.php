@@ -27,6 +27,8 @@ use App\Repositories\Interfaces\RewardRepositoryInterface;
 use App\Repositories\RewardRepository;
 use App\Repositories\Interfaces\NotificationRepositoryInterface;
 use App\Repositories\NotificationRepository;
+use App\Repositories\Interfaces\VisitorRepositoryInterface;
+use App\Repositories\VisitorRepository;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Auth;
 
@@ -49,6 +51,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(CommentRepositoryInterface::class, CommentRepository::class);
         $this->app->bind(RewardRepositoryInterface::class, RewardRepository::class);
         $this->app->bind(NotificationRepositoryInterface::class, NotificationRepository::class);
+        $this->app->bind(VisitorRepositoryInterface::class, VisitorRepository::class);
     }
 
     /**

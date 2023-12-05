@@ -343,4 +343,22 @@ class UserController extends Controller
         }
     }
 
+    function userDemographic_report()
+    {
+        $userDemographic = $this->userRepository->userDemographic_report();
+
+        $labelArray = [];
+        foreach ($userDemographic as $data) {
+            $labelArray[] = $data->gender === null ? 'not filled' : $data->gender;
+        }
+        $labelArray = str_replace('"', "'", json_encode($labelArray));
+        
+        $dataArray = [];
+        foreach ($userDemographic as $data) {
+            $dataArray[] = $data->count;
+        }
+        
+        return view('admin/report-userDemographic', compact('labelArray', 'dataArray'));
+    }
+
 }

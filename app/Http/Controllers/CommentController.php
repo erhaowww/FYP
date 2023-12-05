@@ -171,4 +171,12 @@ class CommentController extends Controller
         $this->commentRepository->updateLikes(json_encode($likes), $comment_id);
         return json_encode($response);
     }
+
+    public function commentAnalysis_report()
+    {
+        $comments = $this->commentRepository->commentAnalysis_report();
+
+        // return $comments;
+        return view('admin/report-commentAnalysis', compact('comments'));
+    }
 }

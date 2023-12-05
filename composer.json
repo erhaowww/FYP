@@ -7,13 +7,15 @@
     "require": {
         "php": "^8.1",
         "braintree/braintree_php": "^6.15",
-        "guzzlehttp/guzzle": "^7.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "jenssegers/agent": "^2.6",
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/socialite": "^5.10",
         "laravel/tinker": "^2.8",
         "openai-php/laravel": "^0.7.8",
         "pusher/pusher-php-server": "^7.2",
+        "torann/geoip": "^3.0",
         "vonage/client": "^4.0"
     },
     "require-dev": {

@@ -35,4 +35,9 @@ class Product extends Model
     {
         return $query->where('deleted', 0);
     }
+
+    public function cartItems()
+    {
+        return $this->hasMany(CartItem::class, 'productId');
+    }
 }

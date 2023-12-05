@@ -26,32 +26,29 @@ use App\Http\Controllers\NotificationController;
 |
 */
 
-Route::get('/', [ProductController::class, 'index']);
 Route::get('/auth/google', [UserController::class, 'redirectToGoogle']);
 Route::get('/auth/google/callback', [UserController::class, 'handleGoogleCallback']);
-Route::get('logout', function () {
-    session()->flush();
-    return redirect('/');
+
+Route::middleware(['log.visitor'])->group(function () {
+    Route::get('/', [ProductController::class, 'index']);
+    Route::get('/forget_password', function () {
+        return view('user/forgetPassword');
+    });
+    Route::post('/forget_password', [UserController::class, 'forgetPassword']);
+    Route::post('/submitResetPasswordForm', [UserController::class, 'submitResetPasswordForm']);
+    Route::get('user/reset_password/{token}/{email}', [UserController::class, 'verify_reset_password'])->name('reset_password');
+    
+    Route::post('/register', [UserController::class, 'register']);
+    Route::post('/login', [UserController::class, 'login']);
+    
+    Route::get('/product', [ProductController::class, 'show'])->name('products.show');
+    Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
+    
+    Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
+    
+    Route::get('/virtual-showroom', [ProductController::class, 'showVirtualShowroom'])->name('products.showVirtualShowroom');
+    Route::get('/header-search', [ProductController::class, 'headerSearch'])->name('header.search');
 });
-Route::get('/forget_password', function () {
-    return view('user/forgetPassword');
-});
-Route::post('/forget_password', [UserController::class, 'forgetPassword']);
-Route::post('/submitResetPasswordForm', [UserController::class, 'submitResetPasswordForm']);
-Route::get('user/reset_password/{token}/{email}', [UserController::class, 'verify_reset_password'])->name('reset_password');
-
-Route::post('/register', [UserController::class, 'register']);
-Route::post('/login', [UserController::class, 'login']);
-
-Route::get('/product', [ProductController::class, 'show'])->name('products.show');
-Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
-
-Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
-
-Route::get('/virtual-showroom', [ProductController::class, 'showVirtualShowroom'])->name('products.showVirtualShowroom');
-Route::get('/header-search', [ProductController::class, 'headerSearch'])->name('header.search');
-
-Route::resource('comments', CommentController::class);
 
 // user
 Route::prefix('user')->middleware(['auth'])->group(function(){
@@ -81,6 +78,8 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
 
     Route::post('/requestLiveChat', [ChatController::class, 'requestLiveChat'])->name('requestLiveChat');
     Route::post('/sendLiveChat', [ChatController::class, 'sendLiveChat'])->name('sendLiveChat');
+
+    Route::resource('comments', CommentController::class)->only(['store']);
     Route::post('/comment/{comment_id}/like', [CommentController::class, 'like']);
 
     Route::get('/reward', [RewardController::class, 'showRewardAndHistory'])->name('reward');
@@ -93,6 +92,10 @@ Route::prefix('user')->middleware(['auth'])->group(function(){
     Route::post('/notifications/delete', [NotificationController::class, 'delete'])->name('notifications.delete');
     Route::get('/notifications/unread', [NotificationController::class, 'getUserUnreadCount'])->name('notifications.getUserUnreadCount');
 
+    Route::get('/logout', function () {
+        session()->flush();
+        return redirect('/');
+    });
 });
 
 
@@ -140,6 +143,11 @@ Route::prefix('admin')->middleware(['auth', 'isStafforAdmin'])->group(function()
     Route::get('/rewardClaims/{id}/edit', [RewardController::class, 'editRewardClaim'])->name('rewardClaims.edit');
     Route::post('/rewardClaims/{id}/update', [RewardController::class, 'updateRewardClaim'])->name('rewardClaims.update');
     Route::post('/rewardClaims/{id}/destroy', [RewardController::class, 'destroyRewardClaim'])->name('rewardClaims.destroy');
+
+    Route::resource('comments', CommentController::class)->only(['index', 'edit', 'update', 'destroy']);
+
+    Route::get('/userDemographic', [UserController::class, 'userDemographic_report'])->name('userDemographic');
+    Route::get('/commentAnalysis', [CommentController::class, 'commentAnalysis_report'])->name('commentAnalysis');
 });
 
 Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function(){

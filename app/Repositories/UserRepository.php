@@ -100,4 +100,11 @@ class UserRepository implements UserRepositoryInterface
         $user->password = Hash::make($data['password']);
         $user->save();
     }
+
+    public function userDemographic_report()
+    {
+        return User::selectRaw('gender, COUNT(*) as count')
+        ->groupBy('gender')
+        ->get();
+    }
 }

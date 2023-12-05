@@ -15,5 +15,6 @@ Interface UserRepositoryInterface{
     public function password_reset($data); 
     public function edit_password($data, $id); 
     public function destroyUser($id);
+    public function userDemographic_report();
 
 }

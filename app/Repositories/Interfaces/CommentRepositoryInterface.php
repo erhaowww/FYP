@@ -9,5 +9,9 @@ Interface CommentRepositoryInterface{
     public function findComment($id);
     public function updateComment($data, $id);
     public function destroyComment($id);
-
+    public function weeklyReview();
+    public function weeklyReviewPercentageChange();
+    public function weeklyReviewChart();
+    public function commentAnalysis_report();
+    
 }

@@ -67,7 +67,7 @@
                                         <li><a href="{{route('profile')}}">Profile</a></li>
                                         <li><a href="/user/payment-history">Payment History</a></li>
                                         <li><a href="{{route('changePassword')}}">Change Password</a></li>
-                                        <li><a href="/logout">Logout</a></li>
+                                        <li><a href="/user/logout">Logout</a></li>
                                     </ul>
                                 </li>
                             </ul>
