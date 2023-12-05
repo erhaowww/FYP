@@ -348,7 +348,23 @@
 						</li>
 
 						<li class="nav-item p-b-10">
-							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews ({{ $totalReviews }})</a>
+							<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">
+								@if ($totalReviews > 0)
+									{{-- Display star icons based on the average rating --}}
+									@for ($i = 0; $i < floor($averageRating); $i++)
+										<i class="zmdi zmdi-star" style="color: #FFD700;"></i> {{-- Full star --}}
+									@endfor
+									@if ($averageRating > floor($averageRating))
+										<i class="zmdi zmdi-star-half" style="color: #FFD700;"></i> {{-- Half star --}}
+									@endif
+
+									{{-- Display the average rating and total number of reviews --}}
+									<span>{{$averageRating}}/5 ({{ $totalReviews }} Reviews)</span>
+								@else
+									{{-- Display "No reviews" message --}}
+									<span>No reviews (0)</span>
+								@endif
+							</a>
 						</li>
 					</ul>
 
@@ -421,35 +437,20 @@
 														</div>
 							
 														<ul>
-															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="5">
-																	5 <i class="zmdi zmdi-star"></i>
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="4">
-																	4 <i class="zmdi zmdi-star"></i>
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="3">
-																	3 <i class="zmdi zmdi-star"></i>
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="2">
-																	2 <i class="zmdi zmdi-star"></i>
-																</a>
-															</li>
-							
-															<li class="p-b-6">
-																<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="1">
-																	1 <i class="zmdi zmdi-star"></i>
-																</a>
-															</li>
+															@for ($i = 5; $i >= 1; $i--)
+																<li class="p-b-6">
+																	<a href="#" class="filter-link stext-106 trans-04" data-filter-type="rating" data-filter-value="{{ $i }}">
+																		@for ($j = 0; $j < $i; $j++)
+																			<i class="zmdi zmdi-star"></i>
+																		@endfor
+																		@if (isset($totalCommentsPerStarLevel[$i]))
+																			({{ $totalCommentsPerStarLevel[$i]['totalComments'] }})
+																		@else
+																			(0)
+																		@endif
+																	</a>
+																</li>
+															@endfor
 														</ul>
 													</div>
 							

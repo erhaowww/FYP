@@ -52,6 +52,8 @@ class ProductController extends Controller
         $relatedProducts = $this->productRepository->findRelatedProducts($mainProduct->productType,$mainProduct->category, $id);
         $comments = $this->commentRepository->allCommentByProductId($id);
         $totalReviews = count($comments);
+        $totalRatingSum = 0;
+        $ratingCounts = array_fill(1, 5, 0);
 
         foreach ($comments as $comment) {
             // Retrieve the order_id from the payment table using the payment_id from the comment
@@ -82,6 +84,24 @@ class ProductController extends Controller
     
             // Attach the sizes and colors to the comment
             $comment->sizesAndColors = implode(', ', $sizesAndColors);
+
+            // Sum up all ratings.
+            $totalRatingSum += $comment->rating;
+            
+            // Increment the count for the respective star level.
+            $ratingCounts[$comment->rating]++;
+        }
+
+        // Calculate the average rating to one decimal place.
+        $averageRating = $totalReviews > 0 ? number_format($totalRatingSum / $totalReviews, 1, '.', '') : 0;
+
+        // Prepare the array for total number of comments per star level.
+        $totalCommentsPerStarLevel = [];
+        foreach ($ratingCounts as $star => $count) {
+            $totalCommentsPerStarLevel[$star] = [
+                'star' => $star,
+                'totalComments' => $count
+            ];
         }
 
         // Return the view with the main product and related products
@@ -90,6 +110,8 @@ class ProductController extends Controller
             'relatedProducts' => $relatedProducts,
             'comments' => $comments,
             'totalReviews' => $totalReviews,
+            'averageRating' => $averageRating,
+            'totalCommentsPerStarLevel' => $totalCommentsPerStarLevel,
         ]);
     }
 
