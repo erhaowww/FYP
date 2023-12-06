@@ -2,6 +2,12 @@
 @section('content')
 <script src="https://js.pusher.com/8.2.0/pusher.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/material-design-icons/3.0.1/iconfont/material-icons.min.css">
+<!-- Include Summernote CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.css" rel="stylesheet">
+
+<!-- Include Summernote JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.js"></script>
+
 <style>
 .container {
   margin: 60px auto;
@@ -280,6 +286,28 @@ emoji-picker {
 .end-chat-btn:hover {
     background-color: #d32f2f; /* Darker red on hover */
 }
+
+/* Adjust the size and position of the toolbar icons */
+.note-editor .note-toolbar .btn i,
+.note-editor .note-toolbar .note-btn i {
+    font-size: 16px;
+}
+
+/* Center the content of each button */
+.note-editor .note-toolbar .btn,
+.note-editor .note-toolbar .note-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Center the icons inside the buttons */
+.note-editor .note-toolbar .btn i,
+.note-editor .note-toolbar .note-btn i {
+  margin: 2px;
+}
+
 </style>
     <div class="container">
         <div class="row no-gutters">
@@ -342,7 +370,8 @@ emoji-picker {
                             <emoji-picker style="display: none; position: absolute; bottom: 100%;"></emoji-picker>
                         </div>
                         <i class="material-icons chatbox__emoji-icon">sentiment_very_satisfied</i>
-                        <input type="text" placeholder="Type your message here..." class="chatbox__userQuery">
+                        <!-- Div for Summernote -->
+                        <div id="chatbox__userQuery" class="chatbox__userQuery"></div>
                         <i class="material-icons chatbox__microphone-icon">mic</i>
                         <i class="material-icons">send</i>
                     </div>
@@ -412,7 +441,7 @@ emoji-picker {
                                                 <emoji-picker style="display: none; position: absolute; bottom: 100%;"></emoji-picker>
                                             </div>
                                             <i class="material-icons chatbox__emoji-icon">sentiment_very_satisfied</i>
-                                            <input type="text" placeholder="Type your message here..." class="chatbox__userQuery">
+                                            <div id="chatbox__userQuery" class="chatbox__userQuery"></div>
                                             <i class="material-icons chatbox__microphone-icon">mic</i>
                                             <i class="material-icons chatbox__send">send</i>
                                         </div>
@@ -423,6 +452,7 @@ emoji-picker {
                                 setupSpeechRecognition();
                                 setupSendMsg();
                                 setupEndChat();
+                                setupSendMessageBox();
                             });
                         } else {
                             // If the chat request is denied, remove the entire chat box
@@ -458,54 +488,85 @@ emoji-picker {
     </script>
 
     <script>
-        function setupSendMsg(){
-            $('.chatbox__send').click(function() {
-                // Get the message from input field
-                var message = $('.chatbox__userQuery').val().trim();
-                // Retrieve user ID
-                var userId = $('.friend-drawer--onhover').data('user-id')
-
-                // Check if the message is not empty
-                if (message) {
-                    $.ajax({
-                        type: 'POST',
-                        url: "{{ route('liveAgentResponse') }}",
-                        data: {
-                            'input': message,
-                            'user_id': userId
-                        },
-                        success: function(response) {
-                            // Create a new chat bubble element
-                            var chatBubbleHtml = `<div class="row no-gutters">
-                                                    <div class="col-md-3 offset-md-9">
-                                                        <div class="chat-bubble chat-bubble--right">${message}</div>
-                                                    </div>
-                                                </div>`;
-
-                            // Append the chat bubble to the chat container
-                            $('.chat-bubbles-container').append(chatBubbleHtml);
-
-                            // Scroll to the bottom of the chat container
-                            var chatContainer = $('.chat-bubbles-container');
-                            chatContainer.scrollTop(chatContainer.prop("scrollHeight"));
-
-                            // Clear the input field
-                            $('.chatbox__userQuery').val('');
-                        },
-                        error: function(xhr) {
-                            
+        function setupSendMessageBox(){
+            $('#chatbox__userQuery').summernote({
+                placeholder: 'Type your message here...',
+                toolbar: [
+                    ['style', ['bold', 'underline', 'clear']],
+                    ['insert', ['link', 'picture', 'video']]
+                ],
+                height: 70,
+                width: '100%',
+                callbacks: {
+                    onKeydown: function(e) {
+                        // When Enter is pressed without the Shift key
+                        if (e.keyCode === 13 && !e.shiftKey) {
+                            e.preventDefault(); // Prevent the default paragraph insertion
+                            // Trigger your send message function here
+                            sendMessage();
                         }
-                    })
-                } else {
-                    swal({
-                        title: "Error!",
-                        text: "Please don't send empty query messages",
-                        icon: "error",
-                        buttons: false,
-                        timer: 3000
-                    });
+                    }
                 }
             });
+        }
+    </script>
+
+    <script>
+        function setupSendMsg(){
+            $('.chatbox__send').click(function() {
+                sendMessage();
+            });
+        }
+    </script>
+
+    <script>
+        function sendMessage() {
+            // Get the message from input field
+            var message = $('#chatbox__userQuery').summernote('code');
+            var messageText = $('<p>').html(message).text().trim();
+            // Retrieve user ID
+            var userId = $('.friend-drawer--onhover').data('user-id')
+
+            // Check if the message is not empty
+            if (messageText) {
+                $.ajax({
+                    type: 'POST',
+                    url: "{{ route('liveAgentResponse') }}",
+                    data: {
+                        'input': message,
+                        'user_id': userId
+                    },
+                    success: function(response) {
+                        // Create a new chat bubble element
+                        var chatBubbleHtml = `<div class="row no-gutters">
+                                                <div class="col-md-3 offset-md-9">
+                                                    <div class="chat-bubble chat-bubble--right">${message}</div>
+                                                </div>
+                                            </div>`;
+
+                        // Append the chat bubble to the chat container
+                        $('.chat-bubbles-container').append(chatBubbleHtml);
+
+                        // Scroll to the bottom of the chat container
+                        var chatContainer = $('.chat-bubbles-container');
+                        chatContainer.scrollTop(chatContainer.prop("scrollHeight"));
+
+                        // Clear the input field
+                        $('#chatbox__userQuery').summernote('reset');
+                    },
+                    error: function(xhr) {
+                        
+                    }
+                })
+            } else {
+                swal({
+                    title: "Error!",
+                    text: "Please don't send empty query messages",
+                    icon: "error",
+                    buttons: false,
+                    timer: 3000
+                });
+            }
         }
     </script>
 
@@ -570,7 +631,7 @@ emoji-picker {
                         .map(result => result.transcript)
                         .join('');
 
-                    chatInput.value += transcript; // Append the transcript to the input field
+                        $('#chatbox__userQuery').summernote('insertText', transcript); // Append the transcript to the input field
                 };
 
                 recognition.onend = () => {
@@ -607,7 +668,7 @@ emoji-picker {
             });
 
             emojiPicker.addEventListener('emoji-click', event => {
-                chatInput.value += event.detail.unicode;
+                $('#chatbox__userQuery').summernote('insertText', event.detail.unicode);
                 chatInput.focus(); // Brings focus back to the input after selecting an emoji
             });
         }
