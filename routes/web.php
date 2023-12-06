@@ -133,7 +133,7 @@ Route::prefix('admin')->middleware(['auth', 'isStafforAdmin'])->group(function()
     Route::post('/delivery/update/{id}', [DeliveryController::class,'update'])->name('delivery.update');
     //payment
     Route::get('/all-payment', [PaymentController::class,'displayAllPayment'])->name('all-payment');
-
+    Route::get('/monthly-sales-report', [PaymentController::class, 'viewMonthlyReport'])->name('payment.viewMonthlyReport');
     //cart
     Route::get('/all-cart', [CartItemController::class,'displayAllCart'])->name('all-cart');
 

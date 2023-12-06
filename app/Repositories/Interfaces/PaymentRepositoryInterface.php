@@ -14,5 +14,5 @@ interface PaymentRepositoryInterface
     public function weeklySalesPercentageChange();
     public function weeklySalesChart();
     public function productSalesCount();
-
+    public function getPaymentsForLastTwelveMonths();
 }

@@ -967,7 +967,12 @@ function checkStock() {
 
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/user/payment/token')
-        .then(response => response.json())
+		.then(response => {
+			if (!response.ok) {
+				throw new Error('Server error');
+			}
+			return response.json();
+		})
         .then(data => {
             braintree.client.create({
                 authorization: data.token
@@ -1009,6 +1014,7 @@ document.addEventListener('DOMContentLoaded', function() {
                                 });
                             }
                         } else {
+							Swal.close();
                             Swal.fire({
                                 title: 'Out of Stock',
                                 text: 'Some items in your cart are no longer available.',
@@ -1023,7 +1029,22 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
             });
         })
-        .catch(error => console.error('Error fetching client token:', error));
+        .catch(error => {
+			console.error('Error fetching client token:', error);
+			if (error.message === 'Server error') {
+				Swal.close();
+				Swal.fire({
+					title: 'Error',
+					text: 'An error occurred. The page will now reload.',
+					icon: 'error',
+					confirmButtonText: 'Reload'
+				}).then((result) => {
+					if (result.isConfirmed) {
+						window.location.reload();
+					}
+				});
+			}
+		});
 });
 function tokenizeCard(clientInstance, cardData) {
     clientInstance.request({
@@ -1043,7 +1064,14 @@ function tokenizeCard(clientInstance, cardData) {
     }, function (err, response) {
         if (err) {
             console.error('Error tokenizing card:', err);
-            return;
+			Swal.close();
+			Swal.fire({
+				title: 'Payment Error',
+				text: 'Failed to process your card details. Please check your information and try again.',
+				icon: 'error',
+				confirmButtonText: 'OK'
+			});
+			return;
         }
 
         if (response.creditCards && response.creditCards[0]) {
@@ -1057,6 +1085,7 @@ function tokenizeCard(clientInstance, cardData) {
 }
 function submitOrderDetails(transactionId, paymentType) {
 	if (!transactionId) {
+		Swal.close();
 		Swal.fire({
 			title: 'Error',
 			text: 'Request timed out. Please reload the page.',
@@ -1066,6 +1095,15 @@ function submitOrderDetails(transactionId, paymentType) {
 			if (result.isConfirmed) {
 				window.location.reload();
 			}
+		}).catch(error => {
+			console.error('Error:', error);
+			Swal.close();
+			Swal.fire({
+				title: 'Error',
+				text: 'There was a problem processing your transaction. Please try again.',
+				icon: 'error',
+				confirmButtonText: 'OK'
+			});
 		});
 		return;
 	}
@@ -1092,6 +1130,13 @@ function submitOrderDetails(transactionId, paymentType) {
             window.location.href = '/user/tracking/' + data.orderId; 
         } else {
             console.error('Error storing transaction:', data.message);
+			Swal.close();
+			Swal.fire({
+				title: 'Error',
+				text: data.message,
+				icon: 'error',
+				confirmButtonText: 'OK'
+        	});
         }
     })
     .catch(error => console.error('Error:', error));
@@ -1103,7 +1148,7 @@ function showWaitingPopup() {
         showCancelButton: false,
         showConfirmButton: false,
         allowOutsideClick: false,
-        onBeforeOpen: () => {
+		willOpen: () => {
             Swal.showLoading();
         }
     });

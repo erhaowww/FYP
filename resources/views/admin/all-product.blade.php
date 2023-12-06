@@ -32,7 +32,13 @@
     margin-left: auto;
     margin-right: auto;
 }
-
+.text-wrap {
+    word-wrap: break-word; 
+    white-space: normal; 
+}
+#example {
+    table-layout: auto; 
+}
 </style>
 
 <h2>Product Page</h2><br>
@@ -71,17 +77,25 @@
                 @foreach($products as $product)
                 <tr>
                     <td>{{ $product->id }}</td>
-                    <td>{{ $product->productName }}</td>
+                    <td>
+                        <div style="width:100px;" class="text-wrap">
+                            {{ $product->productName }}
+                        </div>
+                    </td>
                     <td>{{ $product->productType }}</td>
                     <td>{{ $product->category }}</td>
-                    <td>{{ $product->productDesc }}</td>
+                    <td>
+                        <div style="width:200px;" class="text-wrap">
+                            {{ $product->productDesc }}
+                        </div>
+                    </td>
                     <td>
                         <div class="swiper mySwiper">
                             <div class="swiper-wrapper">
                                 @php
                                     $imageFiles = explode('|', $product->productImgObj);
                                     $images = array_filter($imageFiles, function($value) {
-                                        return !str_ends_with($value, '.gltf');
+                                        return !str_ends_with($value, '.gltf') && !str_ends_with($value, '.glb');
                                     });
                                 @endphp
                                 @foreach($images as $image)
@@ -108,9 +122,10 @@
                     <td>N/A</td>          
                     @endif
                     
-                    <td>{{ $product->color }}</td>
-                    <td>{{ $product->size }}</td>
-                    <td>{{ $product->stock }}</td>
+                    {{--convert new line to br--}}
+                    <td>{!! nl2br(e(implode("\n", explode('|', $product->color)))) !!}</td>
+                    <td>{!! nl2br(e(implode("\n", explode('|', $product->size)))) !!}</td>
+                    <td>{!! nl2br(e(implode("\n", explode('|', $product->stock)))) !!}</td>
                     <td>RM {{ number_format($product->price, 2) }}</td>
                     <td> 
                         <a href="{{ route('product.addStock', $product->id) }}" class="btn btn-success btn-edit" title="Add"><i class="mdi mdi-plus-circle-outline"></i></a>

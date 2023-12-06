@@ -374,31 +374,69 @@ class ProductController extends Controller
 
         $qrFileName  = '';
         $images = array();
-        $product_image = $product->productImgObj;
-        if ($files = $request->input('filepond')) {
-            foreach ($files as $file) {
-                $json_string = json_decode($file, true);
-                $data_column = $json_string['data'];
-                $image = base64_decode($data_column);
-                $imageName = time() . '_' . $json_string['name']; // timestamp_imageName
-                file_put_contents('../public/user/images/product/'.$imageName, $image);
-                $images[] = $imageName;
-            }
-            $product_image = implode("|", $images);
+$newModel = false;
+$product_image = $product->productImgObj;
+$existingModelName = ''; 
+$existingFiles = explode('|', $product_image);
+foreach ($existingFiles as $file) {
+    if (strpos($file, '.gltf') !== false || strpos($file, '.glb') !== false) {
+        $existingModelName = $file;
+        break;
+    }
+}
+
+// Handle model file upload
+if ($modelFile = $request->input('productModel')) {
+    $json_string = json_decode($modelFile, true);
+    $data_column = $json_string['data'];
+
+    $model = base64_decode($data_column);
+    $modelName = time() . '_' . $json_string['name'];
+    file_put_contents('../public/user/images/product/'.$modelName, $model);
+    $newModel = true;
+}
+
+// Handle image uploads
+if ($files = $request->input('filepond')) {
+    $existingFiles = explode('|', $product_image);
+    $modelTimestampMap = [];
+
+    // Mapping existing model files
+    foreach ($existingFiles as $file) {
+        if (strpos($file, 'gltf') !== false || strpos($file, 'glb') !== false) {
+            $parts = explode('_', $file);
+            $timestamp = $parts[0];
+            $baseName = str_replace(['.gltf', '.glb'], '', end($parts));
+            $modelTimestampMap[$baseName] = $timestamp;
         }
-        
+    }
 
-        if ($modelFile = $request->input('productModel')) {
-            $json_string = json_decode($modelFile, true);
-            $data_column = $json_string['data'];
+    foreach ($files as $file) {
+        $json_string = json_decode($file, true);
+        $data_column = $json_string['data'];
+        $image = base64_decode($data_column);
+        $parts = explode('_', $json_string['name']);
+        $imageBaseName = str_replace(['.jpg', '.png', '.jpeg'], '', end($parts));
 
-            $model = base64_decode($data_column);
-            $modelName = time() . '_' . $json_string['name'];
-            file_put_contents('../public/user/images/product/'.$modelName, $model);
-            $product_image .= '|' . $modelName;
+        if ($newModel || !isset($modelTimestampMap[$imageBaseName])) {
+            $imageName = time() . '_' . $json_string['name']; // New model or no matching model file
         } else {
-            $modelName = $product->productImgObj;
+            $timestamp = $modelTimestampMap[$imageBaseName];
+            $imageName = $timestamp . '_' . $json_string['name']; // Use timestamp from matching model file
         }
+
+        file_put_contents('../public/user/images/product/'.$imageName, $image);
+        $images[] = $imageName;
+    }
+}
+if ($newModel) {
+    $images[] = $modelName;
+}else if(!empty($existingModelName)){
+    $images[] = $existingModelName;
+}
+if (!empty($images)) {
+    $product_image = implode("|", $images); // Append new images
+}
 
         if ($qrFile = $request->input('virtualTryOnQR')) {
             $json_string = json_decode($qrFile, true);

@@ -151,4 +151,19 @@ class PaymentRepository implements PaymentRepositoryInterface
 
         return $productSalesCounts;
     }
+    public function getPaymentsForLastTwelveMonths()
+    {
+        $startDate = Carbon::now()->subMonths(11)->startOfMonth();
+        $endDate = Carbon::now()->endOfMonth();
+
+        return Payment::select(
+                \DB::raw("DATE_FORMAT(paymentDate, '%m-%Y') as month"),
+                \DB::raw('SUM(totalPaymentFee) as total')
+            )
+            ->whereBetween('paymentDate', [$startDate, $endDate])
+            ->groupBy('month')
+            ->orderBy('paymentDate')
+            ->get()
+            ->keyBy('month');
+    }
 }
