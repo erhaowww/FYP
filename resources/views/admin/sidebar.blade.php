@@ -106,7 +106,7 @@ use Illuminate\Foundation\Auth;
         </a>
         <div class="collapse" id="general-pages">
           <ul class="nav flex-column sub-menu">
-            <li class="nav-item"> <a class="nav-link" href="{{route('payment.viewMonthlyReport')}}"> Monthly Sales </a></li>
+            {{-- <li class="nav-item"> <a class="nav-link" href="{{route('payment.viewMonthlyReport')}}"> Monthly Sales </a></li> --}}
             <li class="nav-item"> <a class="nav-link" href="{{route('userDemographic')}}"> User Demographic </a></li>
             <li class="nav-item"> <a class="nav-link" href="{{route('commentAnalysis')}}"> Comment Analysis  </a></li>
           </ul>
