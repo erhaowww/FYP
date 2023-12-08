@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Events\PusherBroadcast;
 use App\Repositories\Interfaces\ChatRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class ChatController extends Controller
 {
@@ -85,6 +86,25 @@ class ChatController extends Controller
             // Return an error response if something goes wrong
             return response()->json(['message' => 'Chat request is no longer pending or does not exist'], 422);
         }
+    }
+
+    public function liveChatUploadImage(Request $request)
+    {
+        $urls = [];
+    
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                try {
+                    $filename = uniqid() . '_' . time() . '.' . $image->getClientOriginalExtension();
+                    $path = $image->storeAs('public/livechat', $filename);
+                    $urls[] = Storage::url($path);
+                } catch (\Exception $e) {
+                    \Log::error("File upload error: " . $e->getMessage());
+                }
+            }
+        }
+    
+        return response()->json(['urls' => $urls]);
     }
 
     public function liveAgentResponse(Request $request)

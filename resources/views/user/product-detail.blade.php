@@ -770,8 +770,18 @@
 		function applyFilters() {
 			comments = allComments.filter(function(comment) {
 				var ratingMatch = !filters.rating || comment.rating === filters.rating;
-				var sizeColorPair = (filters.size ? filters.size + ', ' : '') + (filters.color || '');
-				var sizeColorMatch = !sizeColorPair.trim() || (comment.sizesAndColors && comment.sizesAndColors.includes(sizeColorPair.trim()));
+				// Parse the sizesAndColors string into an array of size-color pairs
+				var sizesAndColorsArray = comment.sizesAndColors ? comment.sizesAndColors.match(/\[(.*?)\]/g).map(function(entry) {
+					// Remove the brackets and split by comma and space to get the individual size and color
+					return entry.replace(/[\[\]]/g, '').split(', ');
+				}) : [];
+
+				// Check if the array contains a pair with both the selected size and color
+				var sizeColorMatch = sizesAndColorsArray.some(function(pair) {
+					// Check if the pair includes both the size and color, exactly
+					return (!filters.size || pair.includes(filters.size.trim())) &&
+						(!filters.color || pair.includes(filters.color.trim()));
+				});
 				return ratingMatch && sizeColorMatch;
 			});
 

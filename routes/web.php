@@ -148,6 +148,8 @@ Route::prefix('admin')->middleware(['auth', 'isStafforAdmin'])->group(function()
 
     Route::get('/userDemographic', [UserController::class, 'userDemographic_report'])->name('userDemographic');
     Route::get('/commentAnalysis', [CommentController::class, 'commentAnalysis_report'])->name('commentAnalysis');
+
+    Route::post('/liveChatUploadImage', [ChatController::class, 'liveChatUploadImage'])->name('liveChatUploadImage');
 });
 
 Route::prefix('admin')->middleware(['auth', 'isAdmin'])->group(function(){

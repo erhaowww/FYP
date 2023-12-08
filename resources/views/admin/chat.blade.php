@@ -8,6 +8,8 @@
 <!-- Include Summernote JS -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.18/summernote-bs4.min.js"></script>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/compressorjs/1.1.1/compressor.min.js"></script>
+
 <style>
 .container {
   margin: 60px auto;
@@ -505,6 +507,44 @@ emoji-picker {
                             // Trigger your send message function here
                             sendMessage();
                         }
+                    },
+                    onImageUpload: function(files) {
+                        var formData = new FormData();
+                        $.each(files, function(i, file) {
+                            // Initialize the Compressor with options
+                            new Compressor(file, {
+                                maxWidth: 200, // Define the maximum width
+                                maxHeight: 200, // Define the maximum height
+                                success(result) {
+                                    // Append the compressed image file to FormData
+                                    formData.append('images[]', result, result.name);
+                                    
+                                    // Continue with the AJAX request once all files are processed
+                                    if (i === files.length - 1) {
+                                        $.ajax({
+                                            url: "{{ route('liveChatUploadImage') }}",
+                                            method: 'POST',
+                                            data: formData,
+                                            processData: false,
+                                            contentType: false,
+                                            success: function(response) {
+                                                if(response.urls){
+                                                    response.urls.forEach(function(url){
+                                                        $('#chatbox__userQuery').summernote('insertImage', url);
+                                                    });
+                                                }
+                                            },
+                                            error: function() {
+                                                console.error('Image upload failed');
+                                            }
+                                        });
+                                    }
+                                },
+                                error(err) {
+                                    console.log(err.message);
+                                },
+                            });
+                        });
                     }
                 }
             });
@@ -523,12 +563,12 @@ emoji-picker {
         function sendMessage() {
             // Get the message from input field
             var message = $('#chatbox__userQuery').summernote('code');
-            var messageText = $('<p>').html(message).text().trim();
+            var messageText = $('<div>').html(message).text().trim();
             // Retrieve user ID
             var userId = $('.friend-drawer--onhover').data('user-id')
 
             // Check if the message is not empty
-            if (messageText) {
+            if (messageText || $(message).find('img').length > 0) {
                 $.ajax({
                     type: 'POST',
                     url: "{{ route('liveAgentResponse') }}",
