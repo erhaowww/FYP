@@ -326,39 +326,40 @@ var maxColors = parseInt({{ count($colors) }})-1;
             maxFiles: 5
         });
 
-        let model;
-        async function loadModel() {
-            if (!model) {
-                try {
-                    model = await cocoSsd.load();
-                } catch (error) {
-                    console.error("Error loading COCO-SSD model:", error);
-                }
-            }
-            return model;
-        }
-        async function performObjectDetection(imageElement, file) {
-            try {
-                const model = await loadModel();
-                if (!model) return; // Exit if model is not loaded
+        // let model;
+        // async function loadModel() {
+        //     if (!model) {
+        //         try {
+        //             model = await cocoSsd.load();
+        //         } catch (error) {
+        //             console.error("Error loading COCO-SSD model:", error);
+        //         }
+        //     }
+        //     return model;
+        // }
+        // async function performObjectDetection(imageElement, file) {
+        //     try {
+        //         const model = await loadModel();
+        //         if (!model) return; // Exit if model is not loaded
 
-                const predictions = await model.detect(imageElement);
-                const fashionObjects = ['person', 'tie', 'shirt', 'dress', 'shoe', 'glasses'];
-                const containsFashion = predictions.some(prediction => fashionObjects.includes(prediction.class));
+        //         const predictions = await model.detect(imageElement);
+        //         console.log(predictions);
+        //         const fashionObjects = ['person', 'hat', 'suitcase', 'handbag', 'tie', 'backpack', 'umbrella', 'shoe', 'eyeglasses', 'bag'];
+        //         const containsFashion = predictions.some(prediction => fashionObjects.includes(prediction.class));
 
-                if (!containsFashion) {
-                    productImagesPond.removeFile(file.id);
-                    Swal.fire({
-                        title: "Some Images Rejected",
-                        text: "Some images do not contain fashion-related objects and will be removed.",
-                        icon: "error",
-                        button: "OK",
-                    });
-                }
-            } catch (error) {
-                console.error("Error in object detection:", error);
-            }
-        }
+        //         if (!containsFashion) {
+        //             productImagesPond.removeFile(file.id);
+        //             Swal.fire({
+        //                 title: "Some Images Rejected",
+        //                 text: "Some images do not contain fashion-related objects and will be removed. Try to use image with person.",
+        //                 icon: "error",
+        //                 button: "OK",
+        //             });
+        //         }
+        //     } catch (error) {
+        //         console.error("Error in object detection:", error);
+        //     }
+        // }
 
         document.querySelector('#productImages').addEventListener('FilePond:addfile', (e) => {
             const file = e.detail.file.file;
@@ -452,7 +453,7 @@ var maxColors = parseInt({{ count($colors) }})-1;
             var category = $('#category').val();
             var description = $('#productDesc').val().trim();
             var price = $('#productPrice').val().trim();
-            var pricePattern = /^(RM\s?|\$)?\d+(\.\d{2})?$/; 
+            var pricePattern = /^(RM\s?|\$)?\d*(\.\d{1,2})?$/;
             if (!productName) {
                 errors.push("Product Name is required.");
             }
@@ -479,12 +480,14 @@ var maxColors = parseInt({{ count($colors) }})-1;
         function validateProductImages() {
             var errors = [];
             var allowedImageExtensions = [".jpg", ".jpeg", ".png"];
-            var allowedModelExtensions = [".gltf", ".glb"];
+            var allowedModelExtensions = [".gltf", "glb"];
             var modelFileCount = 0;
             var imageBaseNames = new Set();
-
+            var existingModelFullName = "{{ $modelFile }}";
+            var existingModelBaseName = existingModelFullName ? existingModelFullName.split('_').slice(1).join('_').split('.').slice(0, -1).join('.') : '';
             var productImages = productImagesPond.getFiles();
-            if (productImages.length !== 0) {
+            if (productImages)
+            {
                 productImages.forEach(function(fileItem) {
                     var fileExtension = fileItem.file.name.split('.').pop().toLowerCase();
                     var fullExtension = "." + fileExtension;
@@ -506,6 +509,7 @@ var maxColors = parseInt({{ count($colors) }})-1;
                     var fileExtension = fileItem.file.name.split('.').pop().toLowerCase();
                     var fullExtension = "." + fileExtension;
                     if (allowedModelExtensions.includes(fullExtension)) {
+                        modelFileCount++;
                         modelBaseName = fileItem.file.name.split('.').slice(0, -1).join('.');
                         if (!(imageBaseNames.has(modelBaseName))) {
                             errors.push("A product image with the same base name as the model file is required.");
@@ -515,6 +519,11 @@ var maxColors = parseInt({{ count($colors) }})-1;
                     }
                 });
             }
+
+            if (modelFileCount === 0 && existingModelBaseName && !imageBaseNames.has(existingModelBaseName)) {
+        errors.push("A product image with the same base name as the existing model file (" + existingModelBaseName + ") is required.");
+    }
+
 
             if (virtualTryOnQRPond) {
                 var virtualTryOnQRFiles = virtualTryOnQRPond.getFiles();

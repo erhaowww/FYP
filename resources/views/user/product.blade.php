@@ -124,7 +124,7 @@ use App\Enums\ProductColor;
 									<input type="radio" id="sort_rating" name="sort" value="rating" class="hidden">
 									<label for="sort_rating">
 										<span onclick="toggleSortingActive(this)" class="filter-link stext-106 trans-04 sorting">
-										Average Rating (coming soon)
+										Average Rating
 										</span>
 									</label>
 								</li>
@@ -272,7 +272,7 @@ use App\Enums\ProductColor;
 			@foreach ($products as $product)
                     <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item {{ $product->productType }}">
                         <div class="block2">
-                            <div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;">
+                            <div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;background-color:#d3d3d3;">
 								<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
                             </div>
 

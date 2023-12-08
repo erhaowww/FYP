@@ -1,5 +1,6 @@
 @extends('user/master')
 @section('content')
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <title>Virtual Showroom</title>
     <style>
         body { margin: 0; }
@@ -58,6 +59,8 @@
         </div>
         <button onclick="closeDataDialog()">Close</button>
     </div>
+    <div id="icon-container"></div>
+
     <div id="crosshair"></div>
     <script src="https://cdn.jsdelivr.net/npm/three/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/PointerLockControls.js"></script>
@@ -129,13 +132,18 @@
         // Load GLB model
         const loader = new THREE.GLTFLoader();
         loader.load('user/images/virtual-showroom.glb', function (gltf) {
-            scene.add(gltf.scene);
+            const model = gltf.scene;
+            model.scale.set(2,2,2);
+            scene.add(model);
         }, undefined, function (error) {
             console.error('An error happened while loading the GLB file:', error);
         });
 
         camera.position.z = 5;
-
+        camera.position.y = -9;
+        let buttonMeshes = [];
+        let searchIcons = new Map();
+        let buttonCounter = 0;
         function animate() {
             requestAnimationFrame(animate);
 
@@ -148,15 +156,51 @@
                 direction.z = Number(moveForward) - Number(moveBackward);
                 direction.x = Number(moveRight) - Number(moveLeft);
                 direction.normalize(); // this ensures consistent movements in all directions
-
                 if (moveForward || moveBackward) velocity.z -= direction.z * 400.0 * delta;
                 if (moveLeft || moveRight) velocity.x -= direction.x * 400.0 * delta;
 
                 controls.moveRight(-velocity.x * delta);
                 controls.moveForward(-velocity.z * delta);
             }
-
+            checkButtonVisibility();
             renderer.render(scene, camera);
+        }
+
+        function checkButtonVisibility() {
+            const frustum = new THREE.Frustum();
+            const projScreenMatrix = new THREE.Matrix4();
+            projScreenMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+            frustum.setFromProjectionMatrix(projScreenMatrix);
+
+            buttonMeshes.forEach(button => {
+                const icon = searchIcons.get(button.userData.buttonId);
+
+                if (icon && frustum.containsPoint(button.position)) {
+                    const screenPosition = toScreenPosition(button, camera);
+                    icon.style.display = 'block';
+                    icon.style.left = `${screenPosition.x}px`;
+                    icon.style.top = `${screenPosition.y}px`;
+                } else if (icon) {
+                    icon.style.display = 'none';
+                }
+            });
+        }
+
+        function toScreenPosition(obj, camera) {
+            const vector = new THREE.Vector3();
+
+            // Get the object's position in world space
+            obj.updateMatrixWorld();
+            vector.setFromMatrixPosition(obj.matrixWorld);
+
+            // Project the position to screen space
+            vector.project(camera);
+
+            // Convert the normalized position (-1 to 1 on x and y) to the screen space
+            const x = (vector.x * .5 + .5) * window.innerWidth;
+            const y = (vector.y * -.5 + .5) * window.innerHeight;
+
+            return { x, y };
         }
 
         function onWindowResize() {
@@ -164,6 +208,7 @@
             const newHeight = window.innerHeight - headerHeight;
             renderer.setSize(window.innerWidth, newHeight);
             camera.aspect = window.innerWidth / newHeight;
+            camera.fov = 60;
             camera.updateProjectionMatrix();
             renderer.render(scene, camera);
         }
@@ -172,7 +217,7 @@
         document.addEventListener('fullscreenchange', onWindowResize);
         onWindowResize();
         window.addEventListener('resize', onWindowResize, false);
-        animate();
+        
 
         document.getElementById('showroom-container').addEventListener('click', () => {
             controls.lock();
@@ -226,34 +271,55 @@
         document.addEventListener('fullscreenchange', toggleFullscreenElements);
 
         
-        let buttonMeshes = [];
+        
 
         function createButtonForProduct(productId, position, rotation = null) {
-        const buttonGeometry = new THREE.BoxGeometry(1, 0.5, 0.1);
-        const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-        const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
-        buttonMesh.position.copy(position);
+            const buttonGeometry = new THREE.BoxGeometry(1, 0.5, 0.1);
+            const buttonMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
+            buttonMesh.position.copy(position);
 
-        // Apply rotation if provided
-        if (rotation) {
-            buttonMesh.rotation.x = rotation.x;
-            buttonMesh.rotation.y = rotation.y;
-            buttonMesh.rotation.z = rotation.z;
+            // Apply rotation if provided
+            if (rotation) {
+                buttonMesh.rotation.x = rotation.x;
+                buttonMesh.rotation.y = rotation.y;
+                buttonMesh.rotation.z = rotation.z;
+            }
+
+            buttonMesh.userData = { productId: productId };
+            return buttonMesh;
         }
 
-        buttonMesh.userData = { productId: productId };
-        return buttonMesh;
+    function createButtonsAndIcons() {
+        let buttonMesh1 = createButtonForProduct(1, new THREE.Vector3(-84.49791654174837, -10.958077154131513, -96.44773960113525));
+        scene.add(buttonMesh1);
+        buttonMeshes.push(buttonMesh1);
+
+        let buttonMesh2 = createButtonForProduct(2, new THREE.Vector3(110.77511599564004, -10.958077154131513, 28.405015434525666));
+        scene.add(buttonMesh2);
+        buttonMeshes.push(buttonMesh2);
+
+        // let buttonMesh4 = createButtonForProduct(3, new THREE.Vector3(-2, -5, 10));
+        // scene.add(buttonMesh4);
+        // buttonMeshes.push(buttonMesh4);
+
+        buttonMeshes.forEach(buttonMesh => {
+            createSearchIconForButton(buttonMesh,buttonCounter++);
+        });
+    }
+    function createSearchIconForButton(buttonMesh, buttonId) {
+        let icon = document.createElement('i');
+        icon.className = 'fas fa-search';
+        icon.style.position = 'absolute';
+        icon.style.display = 'none';
+        icon.style.color = 'white'; 
+        document.body.appendChild(icon); 
+
+        searchIcons.set(buttonId, icon);
+        buttonMesh.userData.buttonId = buttonId;
     }
 
-    // Usage example:
-    let buttonMesh1 = createButtonForProduct(1, new THREE.Vector3(-2, -1, 5), {x: Math.PI / 2, y: 0, z: 0});
-    scene.add(buttonMesh1);
-    buttonMeshes.push(buttonMesh1);
-
-    // For a button that does not need rotation, simply omit the rotation argument
-    let buttonMesh3 = createButtonForProduct(3, new THREE.Vector3(2, -1, 5));
-    scene.add(buttonMesh3);
-    buttonMeshes.push(buttonMesh3);
+    createButtonsAndIcons();
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
@@ -283,13 +349,16 @@
                 // Set the raycaster to the calculated center position
                 raycaster.setFromCamera({ x: centerX, y: centerY }, camera);
                 const intersects = raycaster.intersectObjects(scene.children);
+                const intersectedObject = intersects[0].object;
+                console.log("Intersected object:", intersectedObject);
+                console.log("Intersected point:", intersects[0].point);
+                console.log("Object position in world space:", intersectedObject.position);
 
-                console.log("Intersections found:", intersects.length);
                 if (intersects.length > 0 && intersects[0].object.userData.productId) {
                     console.log("Product button clicked, ID:", intersects[0].object.userData.productId);
                     const productId = intersects[0].object.userData.productId;
-                    const buttonPosition = intersects[0].object.position;
-                    openDataDialog(productId, buttonPosition);
+                    const buttonMesh = intersects[0].object;
+                    openDataDialog(productId, buttonMesh);
                 } else {
                     console.log("No product button clicked");
                     close3DDialog();
@@ -363,7 +432,8 @@ function createTextTexture(product, width = 512, height = 512) {
     yPosition += 30;
 
     // Sizes
-    context.fillText('Size: ' + product.sizes, padding, yPosition);
+    const uniqueSizes = Array.from(new Set(product.sizes.split(',').map(size => size.trim()))).join(', ');
+    context.fillText('Size: ' + uniqueSizes, padding, yPosition);
     yPosition += 50;
 
     const texture = new THREE.Texture(canvas);
@@ -404,23 +474,35 @@ function create3DDialog(product, position) {
 }
 
 
-function openDataDialog(productId, buttonPosition) {
+function openDataDialog(productId, buttonMesh) {
     console.log("Opening data dialog for product:", productId);
     var product = products.find(p => p.id === productId);
-    const buttonMesh = scene.children.find(child => child.userData.productId === productId);
     if (!product) {
         console.error('Product not found!');
         return;
     }
     close3DDialog(); // Close any existing dialog
-    const offset = new THREE.Vector3(0, 0, -1); // Adjust the z-value as needed
-    const dialogPosition = buttonPosition.clone().add(offset.applyQuaternion(buttonMesh.quaternion));
+    const dialogPosition = calculateDialogPosition(buttonMesh, camera);
+
     currentDialog = create3DDialog(product, dialogPosition);
-    currentDialog.scale.set(2, 2, 2);
+    currentDialog.scale.set(2, 2, 2); // Adjust the scale as needed
     scene.add(currentDialog);
     console.log("Dialog added. Scene children:", scene.children);
 }
+function calculateDialogPosition(buttonMesh, camera) {
+    // Get the vector pointing from the button to the camera
+    const toCamera = camera.position.clone().sub(buttonMesh.position);
 
+    // Project this vector onto the horizontal plane (assuming Y-up world)
+    toCamera.y = 0;
+    toCamera.normalize();
+
+    // Position the dialog a certain distance in front of the button, along this vector
+    const distanceInFront = 2; // Adjust this distance as needed
+    const positionInFront = buttonMesh.position.clone().add(toCamera.multiplyScalar(distanceInFront));
+
+    return positionInFront;
+}
 function close3DDialog() {
     console.log("Closing data dialog");
     if (currentDialog) {
@@ -428,6 +510,7 @@ function close3DDialog() {
         currentDialog = null;
     }
 }
+animate();
     </script>
 </body>
 @endsection

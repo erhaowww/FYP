@@ -108,7 +108,7 @@ class PaymentController extends Controller
                 $allGroupedCartItems[$payment->order->id] = $groupedCartItems;
             }
         }
-        $comments = $this->commentRepository->allComment();
+        $comments = $this->commentRepository->allComment();    $comments = $this->commentRepository->allComment();
         // Pass the payments and the grouped cart items to the view
         return view('user.payment-history', compact('payments', 'allGroupedCartItems', 'comments'));
     }
@@ -120,6 +120,18 @@ class PaymentController extends Controller
         return view('/admin/all-payment', [
             'payments' => $payments,
         ]);
+    }
+
+    public function viewMonthlyReport()
+    {
+        $monthlySales = $this->paymentRepository->getPaymentsForLastTwelveMonths();
+
+        $salesArray = [];
+        foreach ($monthlySales as $month => $data) {
+            $salesArray[$month] = $data->total;
+        }
+
+        return view('admin.monthly-sales-report', compact('salesArray'));
     }
 
 }

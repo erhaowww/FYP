@@ -352,7 +352,7 @@ var maxColors = parseInt({{ count($colors) }})-1;
             var category = $('#category').val();
             var description = $('#productDesc').val().trim();
             var price = $('#productPrice').val().trim();
-            var pricePattern = /^(RM\s?|\$)?\d+(\.\d{2})?$/; 
+            var pricePattern = /^(RM\s?|\$)?\d+(\.\d{1,2})?$/; 
             if (!productName) {
                 errors.push("Product Name is required.");
             }
@@ -379,7 +379,7 @@ var maxColors = parseInt({{ count($colors) }})-1;
         function validateProductImages() {
             var errors = [];
             var allowedImageExtensions = [".jpg", ".jpeg", ".png"];
-            var allowedModelExtensions = [".gltf"];
+            var allowedModelExtensions = [".gltf",".glb"];
             var modelFileCount = 0;
             var imageBaseNames = new Set();
 

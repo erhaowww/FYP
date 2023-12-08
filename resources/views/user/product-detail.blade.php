@@ -146,25 +146,23 @@
 								$extension = pathinfo($file, PATHINFO_EXTENSION);
 								$baseName = pathinfo($file, PATHINFO_FILENAME);
 								
-								// Check if the file is a GLTF file
 								if ($extension === 'gltf' || $extension === 'glb') {
-									// Look for a corresponding image file
-									$imageFound = false;
+									$gltfWithImages[$file] = null; // Initialize with null
 									foreach ($imageFiles as $image) {
-										if (pathinfo($image, PATHINFO_FILENAME) === $baseName && (pathinfo($image, PATHINFO_EXTENSION) !== 'gltf' || pathinfo($image, PATHINFO_EXTENSION) !== 'glb')) {
+										if (pathinfo($image, PATHINFO_FILENAME) === $baseName && pathinfo($image, PATHINFO_EXTENSION) !== 'gltf') {
 											$gltfWithImages[$file] = $image;
-											$imageFound = true;
 											break;
 										}
 									}
-									// If no corresponding image file is found, map the GLTF file to null
-									if (!$imageFound) {
-										$gltfWithImages[$file] = null;
-									}
-								} else {
-									// If it's not a GLTF file and no corresponding GLTF file exists, add it to the imagesToShow array
-									if (!isset($gltfWithImages[$baseName . '.gltf'])||!isset($gltfWithImages[$baseName . '.glb'])) {
-										$imagesToShow[] = $file;
+								} 
+							}
+
+							foreach ($imageFiles as $image) {
+								$extension = pathinfo($image, PATHINFO_EXTENSION);
+								if (!in_array($extension, ['gltf', 'glb'])) {
+									$baseName = pathinfo($image, PATHINFO_FILENAME);
+									if (!in_array($baseName . '.gltf', array_keys($gltfWithImages)) && !in_array($baseName . '.glb', array_keys($gltfWithImages))) {
+										$imagesToShow[] = $image;
 									}
 								}
 							}
