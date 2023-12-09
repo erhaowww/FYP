@@ -44,7 +44,7 @@ Route::middleware(['log.visitor'])->group(function () {
     Route::get('/product', [ProductController::class, 'show'])->name('products.show');
     Route::get('/product/{id}', [ProductController::class, 'showDetail'])->name('product.detail');
     
-    Route::post('/send', [ChatbotController::class, 'sendChat'])->name('sendChat');
+    Route::post('/sendChat', [ChatbotController::class, 'sendChat'])->name('sendChat');
     
     Route::get('/virtual-showroom', [ProductController::class, 'showVirtualShowroom'])->name('products.showVirtualShowroom');
     Route::get('/header-search', [ProductController::class, 'headerSearch'])->name('header.search');

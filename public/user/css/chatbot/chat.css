@@ -58,6 +58,13 @@
     background: orange;
     max-width: 60.6%;
     width: fit-content;
+    overflow-wrap: break-word;
+}
+
+.messages__item img {
+    max-width: 100%;
+    height: auto;
+    display: block; /* This will ensure that the image doesn't have extra space around it */
 }
 
 .messages__item--visitor {

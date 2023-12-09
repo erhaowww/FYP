@@ -123,6 +123,14 @@ hr {
   border-radius: 9px;
   position: relative;
   animation: fadeIn 1s ease-in;
+  max-width: 80%;
+  overflow-wrap: break-word;
+}
+
+.chat-bubble img {
+  max-width: 100%;
+  height: auto;
+  display: block; /* This will ensure that the image doesn't have extra space around it */
 }
 
 .chat-bubble:after {

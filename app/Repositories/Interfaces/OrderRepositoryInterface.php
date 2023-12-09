@@ -3,6 +3,7 @@ namespace App\Repositories\Interfaces;
 interface OrderRepositoryInterface
 {
     public function create(array $data);
+    public function getOrdersByUserIdWithCartItemsAndProducts($userId);
     public function getOrderById($orderId);
     public function updateStatus($orderId,$status);
     public function getAllOrdersWithDeliveries();
