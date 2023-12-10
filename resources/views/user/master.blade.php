@@ -220,6 +220,23 @@
                             </div>
                         </div>
                     </div>
+                    <!-- New Product Recommendations container -->
+                    @if($newProductRecommendations && $newProductRecommendations->isNotEmpty())
+                        <div class="personalized-suggestions">
+                            <div class="suggestions-heading">New Product(s):</div>
+                            <div class="suggestions-list">
+                                @foreach($newProductRecommendations as $newProduct)
+                                    <a href="{{ $newProduct->path }}" class="suggestion-item" target="_blank">
+                                        <img src="{{asset('user/images/product/'.$newProduct->image)}}" alt="{{ $newProduct->productName }}" class="product-image">
+                                        <div class="product-details">
+                                            <div class="product-name">{{ $newProduct->productName }}</div>
+                                            <div class="product-price">RM{{ number_format($newProduct->price, 2) }}</div>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                     <!-- Personalized suggestions container -->
                     @if($personalizedProducts && $personalizedProducts->isNotEmpty())
                         <div class="personalized-suggestions">

@@ -95,10 +95,16 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::composer('user/master', function ($view) use ($notificationRepository) {
+            $newProductRecommendations = $notificationRepository->findNewProductRecommendationsForUser();
+            $view->with('newProductRecommendations', $newProductRecommendations);
+        });
+
+        View::composer('user/master', function ($view) use ($notificationRepository) {
+            $personalizedProducts = '';
             if (Auth::check()) {
                 $personalizedProducts = $notificationRepository->findTodaysProductSuggestionsForUser(auth()->user()->id);
-                $view->with('personalizedProducts', $personalizedProducts);
             }
+            $view->with('personalizedProducts', $personalizedProducts);
         });
     }
 }

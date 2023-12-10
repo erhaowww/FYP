@@ -24,6 +24,20 @@ class NotificationRepository implements NotificationRepositoryInterface
         return Notification::where('deleted_at', 0)->find($id);
     }
 
+    public function findNewProductRecommendationsForUser()
+    {
+        $recentlyAddedDays = 7; // Define the number of days to consider for new products
+        $today = now()->startOfDay();
+
+        return Notification::where('notifications.deleted_at', 0)
+            ->join('product', 'notifications.related_id', '=', 'product.id')
+            ->whereNull('notifications.user_id')
+            ->where('notifications.type', 'new_product')
+            ->whereDate('notifications.created_at', '>=', $today->subDays($recentlyAddedDays))
+            ->orderBy('notifications.id', 'desc')
+            ->get(['product.productName', 'product.price', 'notifications.*']);
+    }
+
     public function findTodaysProductSuggestionsForUser($user_id)
     {
         $today = now()->startOfDay(); // Get the start of today
@@ -50,6 +64,7 @@ class NotificationRepository implements NotificationRepositoryInterface
     {
         return Notification::where('deleted_at', 0)
         ->where('user_id', $user_id)
+        ->where('type', '!=', 'product_suggestion')
         ->whereNull('read_at')
         ->count();
     }

@@ -275,7 +275,20 @@ class ProductController extends Controller
             'productTryOnQR' => $qrFileName,
             'deleted'=>0,
         ];
-        $this->productRepository->create($productData);
+        $newProduct = $this->productRepository->create($productData);
+        $images = explode('|', $newProduct->productImgObj);
+        $firstImage = $images[0];
+
+        $notificationData = [
+            'related_id' => $newProduct->id,
+            'type' => 'new_product',
+            'title' => 'New Product Alert',
+            'body' => "We have a new product: {$newProduct->productName}! Check it out now!",
+            'image' => $firstImage,
+        ];
+        // Store the notification
+        $this->notificationRepository->storeNotification($notificationData);
+
         return redirect()->route('all-products')->with('success', 'Product processed successfully.');
     }
 
