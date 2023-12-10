@@ -24,10 +24,24 @@ class NotificationRepository implements NotificationRepositoryInterface
         return Notification::where('deleted_at', 0)->find($id);
     }
 
+    public function findTodaysProductSuggestionsForUser($user_id)
+    {
+        $today = now()->startOfDay(); // Get the start of today
+
+        return Notification::where('notifications.deleted_at', 0)
+            ->join('product', 'notifications.related_id', '=', 'product.id')
+            ->where('notifications.user_id', $user_id)
+            ->where('notifications.type', 'product_suggestion')
+            ->whereDate('notifications.created_at', $today)
+            ->orderBy('notifications.id', 'desc')
+            ->get(['product.productName', 'product.price', 'notifications.*']);
+    }
+
     public function findSpecificNotification($user_id)
     {
         return Notification::where('deleted_at', 0)
         ->where('user_id', $user_id)
+        ->where('type', '!=', 'product_suggestion')
         ->orderBy('id', 'desc')
         ->get();
     }

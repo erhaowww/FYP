@@ -28,6 +28,7 @@ class Notification extends Model
                 return route('trackingOrder', $this->related_id);
             case 'comment_add':
             case 'admin_reply':
+            case 'product_suggestion':
                 return route('product.detail', $this->related_id);
             case 'product_restock':
             case 'price_drop':

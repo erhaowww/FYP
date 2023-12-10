@@ -220,6 +220,23 @@
                             </div>
                         </div>
                     </div>
+                    <!-- Personalized suggestions container -->
+                    @if($personalizedProducts && $personalizedProducts->isNotEmpty())
+                        <div class="personalized-suggestions">
+                            <div class="suggestions-heading">Guess You Like...</div>
+                            <div class="suggestions-list">
+                                @foreach($personalizedProducts as $product)
+                                    <a href="{{ $product->path }}" class="suggestion-item" target="_blank">
+                                        <img src="{{asset('user/images/product/'.$product->image)}}" alt="{{ $product->productName }}" class="product-image">
+                                        <div class="product-details">
+                                            <div class="product-name">{{ $product->productName }}</div>
+                                            <div class="product-price">RM{{ number_format($product->price, 2) }}</div>
+                                        </div>
+                                    </a>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
                 <div class="chatbox__footer">
                     <div class="emoji-picker-container" style="position: relative;">

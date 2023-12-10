@@ -14,9 +14,12 @@ use App\Repositories\Interfaces\CartItemRepositoryInterface;
 use App\Repositories\Interfaces\ProductRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use App\Repositories\Interfaces\MembershipRepositoryInterface;
+use App\Repositories\Interfaces\NotificationRepositoryInterface;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\PaymentReceiptMail;
 use Session;
+use App\Models\CartItem;
+use App\Models\Product;
 
 class OrderController extends Controller
 {
@@ -27,6 +30,7 @@ class OrderController extends Controller
     private $userRepository;
     private $membershipRepository;
     protected $productRepository;
+    protected $notificationRepository;
 
     public function __construct(
         UserRepositoryInterface $userRepository,
@@ -35,7 +39,8 @@ class OrderController extends Controller
         PaymentRepositoryInterface $paymentRepository,
         CartItemRepositoryInterface $cartItemRepository,
         ProductRepositoryInterface $productRepository,
-        MembershipRepositoryInterface $membershipRepository
+        MembershipRepositoryInterface $membershipRepository,
+        NotificationRepositoryInterface $notificationRepository
     ) {
         $this->orderRepository = $orderRepository;
         $this->deliveryRepository = $deliveryRepository;
@@ -44,6 +49,7 @@ class OrderController extends Controller
         $this->userRepository = $userRepository;
         $this->membershipRepository = $membershipRepository;
         $this->productRepository = $productRepository;
+        $this->notificationRepository = $notificationRepository;
     }
 
     public function store(Request $request, PaymentController $paymentController)
@@ -108,6 +114,48 @@ class OrderController extends Controller
             $eReceiptDetails = $this->prepareReceiptDetails($order, $paymentData, $cartItemIds);
             Mail::to(Auth::user()->email)->queue(new \App\Mail\PaymentReceipt($eReceiptDetails));
             $this->userRepository->updateUserTotalSpent($request->input('totalPrice'), auth()->user()->id);
+
+            // Get details of products from the current order
+            $purchasedProducts = CartItem::whereIn('id', explode('|', $request->input('cartItemIds')))
+            ->with('product')
+            ->get();
+
+            // Extract categories and product types
+            $productDetails = $purchasedProducts->map(function ($cartItem) {
+                return [
+                    'category' => $cartItem->product->category,
+                    'productType' => $cartItem->product->productType
+                ];
+            });
+
+            // Get unique categories and product types
+            $uniqueCategories = $productDetails->pluck('category')->unique();
+            $uniqueProductTypes = $productDetails->pluck('productType')->unique();
+
+            // Generate product suggestions based on these categories and product types
+            $suggestedProducts = Product::where('deleted', 0)
+            ->whereIn('category', $uniqueCategories)
+            ->whereIn('productType', $uniqueProductTypes)
+            ->whereNotIn('id', $purchasedProducts->pluck('product.id')) // Exclude already purchased products
+            ->take(3) // Limit the number of suggestions
+            ->get();
+
+            // Store each suggested product in the notifications table
+            foreach ($suggestedProducts as $product) {
+                // Assume the first image is the primary image
+                $imageFiles = explode('|', $product->productImgObj);
+                $primaryImage = $imageFiles[0];
+
+                $notificationData = [
+                    'user_id' => $validatedData['userId'],
+                    'related_id' => $product->id,
+                    'type' => 'product_suggestion',
+                    'title' => 'Product Suggestion',
+                    'body' => "Based on your recent purchase, you might like the {$product->productName}. Check it out!",
+                    'image' => $primaryImage,
+                ];
+                $this->notificationRepository->storeNotification($notificationData);
+            }
             
             return response()->json([
                 'success' => true,

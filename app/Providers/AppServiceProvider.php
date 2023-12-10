@@ -93,5 +93,12 @@ class AppServiceProvider extends ServiceProvider
             $faqs = $chatbotRepository->allFAQ();
             $view->with('faqs', $faqs);
         });
+
+        View::composer('user/master', function ($view) use ($notificationRepository) {
+            if (Auth::check()) {
+                $personalizedProducts = $notificationRepository->findTodaysProductSuggestionsForUser(auth()->user()->id);
+                $view->with('personalizedProducts', $personalizedProducts);
+            }
+        });
     }
 }
