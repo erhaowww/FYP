@@ -36,7 +36,7 @@ class DeliveryController extends Controller
 
         $allGroupedCartItems = collect();
     
-        $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::purchased);
+        $cartItems = $this->cartItemRepository->getByIds($cartItemIds, CartItemStatus::purchased->value);
         $groupedCartItems = $cartItems->groupBy('productId');
         $allGroupedCartItems[$ordersWithDelivery->id] = $groupedCartItems;
             

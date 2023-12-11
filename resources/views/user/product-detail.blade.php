@@ -376,13 +376,18 @@
 					<div class="tab-content p-t-43">
 						<!-- - -->
 						<div class="tab-pane fade show active" id="description" role="tabpanel">
-							<div class="how-pos2 p-lr-15-md">
-								<p class="stext-102 cl6">
-								{{ $mainProduct->productDesc}}
-								</p>
+							<div class="row">
+								<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+									<ul class="p-lr-28 p-lr-15-sm">
+										<li class="flex-w flex-t p-b-7">
+											<span class="stext-102 cl3 size-205">
+												{{ $mainProduct->productDesc}}
+											</span>
+										</li>
+									</ul>
+								</div>
 							</div>
 						</div>
-
 						<!-- - -->
 						
 						<div class="tab-pane fade" id="information" role="tabpanel">
@@ -545,7 +550,7 @@
 						<!-- Block2 -->
 						
 						<div class="block2">
-							<div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;">
+							<div class="block2-pic hov-img0" style="display: flex; align-items: center; justify-content: center; height: 340px;background-color:#d3d3d3;">
 								<img src="{{ asset('user/images/product/' . explode('|', $product->productImgObj)[0]) }}" alt="{{ $product->productImgObj }}">
 							</div>
 

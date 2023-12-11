@@ -829,7 +829,7 @@
 <script src="https://js.braintreegateway.com/web/3.76.0/js/hosted-fields.min.js"></script>
 		<script>
 			var totalPrice = parseFloat("{{ $finalTotalPrice }}".replace(/,/g, ''));
-			var cartItemIds = {{ $cartItemIds }};
+			var cartItemIds = document.getElementById('cartItemIds').value;
 		new Vue({
 		  el: "#app",
           delimiters: ['${', '}'],
