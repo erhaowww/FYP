@@ -128,7 +128,7 @@
                             <label for="productType">Product Type*</label>
                             <select class="form-select" name="productType" id="productType">
                                 @foreach($productTypes as $type)
-                                    <option value="{{ $type->value }}" {{ $product->type == $type->value ? 'selected' : '' }}>
+                                    <option value="{{ $type->value }}" {{ $product->productType->value == $type->value ? 'selected' : '' }}>
                                         {{ $type->name }}
                                     </option>
                                 @endforeach
@@ -140,7 +140,7 @@
                             <label for="category">Product Categories*</label>
                             <select class="form-select" name="category" id="category">
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->value }}" {{ $product->category == $category->value ? 'selected' : '' }}>
+                                    <option value="{{ $category->value }}" {{ $product->category->value == $category->value ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
                                 @endforeach
@@ -520,9 +520,9 @@ var maxColors = parseInt({{ count($colors) }})-1;
                 });
             }
 
-            if (modelFileCount === 0 && existingModelBaseName && !imageBaseNames.has(existingModelBaseName)) {
-        errors.push("A product image with the same base name as the existing model file (" + existingModelBaseName + ") is required.");
-    }
+            if (modelFileCount === 0 && existingModelBaseName && !imageBaseNames.has(existingModelBaseName) && !productImages) {
+                errors.push("A product image with the same base name as the existing model file (" + existingModelBaseName + ") is required.");
+            }
 
 
             if (virtualTryOnQRPond) {

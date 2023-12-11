@@ -91,7 +91,7 @@ use App\Enums\OrderStatus;
                                 <figcaption class="info align-self-center">
                                     <p class="title">{{ $cartItem->product->productName }}</p>
                                     <span class="text-muted">{{ $cartItem->color }},{{ $cartItem->size }} {{ $cartItem->quantity }}</span><br>
-                                    <span class="text-muted">${{ $cartItem->product->price }}</span>
+                                    <span class="text-muted">RM {{ $cartItem->product->price }}</span>
                                 </figcaption>
                             </figure>
                         </li>

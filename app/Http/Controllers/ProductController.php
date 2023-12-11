@@ -118,8 +118,7 @@ class ProductController extends Controller
     public function checkStock(Request $request) {
         Log::info('Checking stock with request data:', $request->all());
     
-        // Split cartItemIds string into an array
-        $cartItemIds = explode('|', $request->input('cartItemIds', ''));
+        $cartItemIds = explode('|', $request->input('cartItemIds',''));
         $isInStock = true;
     
         // Retrieve cart items including associated products
@@ -388,6 +387,7 @@ class ProductController extends Controller
         $qrFileName  = '';
         $images = array();
 $newModel = false;
+$newImage = false;
 $product_image = $product->productImgObj;
 $existingModelName = ''; 
 $existingFiles = explode('|', $product_image);
@@ -411,6 +411,7 @@ if ($modelFile = $request->input('productModel')) {
 
 // Handle image uploads
 if ($files = $request->input('filepond')) {
+    $newImage = true;
     $existingFiles = explode('|', $product_image);
     $modelTimestampMap = [];
 
@@ -443,12 +444,17 @@ if ($files = $request->input('filepond')) {
     }
 }
 if ($newModel) {
+    Log::info('new model');
     $images[] = $modelName;
 }else if(!empty($existingModelName)){
+    Log::info('exist model');
     $images[] = $existingModelName;
 }
 if (!empty($images)) {
     $product_image = implode("|", $images); // Append new images
+}
+if(!$newImage){
+    $product_image = $product->productImgObj;
 }
 
         if ($qrFile = $request->input('virtualTryOnQR')) {

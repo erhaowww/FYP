@@ -26,7 +26,7 @@
                             <label for="productType">Product Type:</label>
                             <select class="form-select" name="productType" id="productType" disabled>
                                 @foreach($productTypes as $type)
-                                    <option value="{{ $type->value }}" {{ $product->type == $type->value ? 'selected' : '' }}>
+                                    <option value="{{ $type->value }}" {{ $product->productType->value == $type->value ? 'selected' : '' }}>
                                         {{ $type->name }}
                                     </option>
                                 @endforeach
@@ -38,7 +38,7 @@
                             <label for="category">Product Categories:</label>
                             <select class="form-select" name="category" id="category" disabled>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->value }}" {{ $product->category == $category->value ? 'selected' : '' }}>
+                                    <option value="{{ $category->value }}" {{ $product->category->value == $category->value ? 'selected' : '' }}>
                                         {{ $category->name }}
                                     </option>
                                 @endforeach

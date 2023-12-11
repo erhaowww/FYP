@@ -103,7 +103,7 @@ class PaymentController extends Controller
         foreach ($payments as $payment) {
             if ($payment->order) {
                 $ids = explode('|', $payment->order->cartItemIds);
-                $cartItems = $this->cartItemRepository->getByIds($ids, CartItemStatus::purchased);
+                $cartItems = $this->cartItemRepository->getByIds($ids, CartItemStatus::purchased->value);
                 $groupedCartItems = $cartItems->groupBy('productId');
                 $allGroupedCartItems[$payment->order->id] = $groupedCartItems;
             }
