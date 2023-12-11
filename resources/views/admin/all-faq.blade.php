@@ -23,6 +23,14 @@
   user-select: none;
 }
 
+td.answer {
+    white-space: pre-wrap;  
+}
+
+td.question {
+    white-space: pre-wrap;  
+}
+
 </style>
 
 <h2>FAQ Page</h2><br>
@@ -32,37 +40,41 @@
     </div><br>
 @endif
 
-<table id="example" class="table table-hover" style="width:100%">
-    <thead>
-        <tr>
-            <th>
-                <a href="{{route('faqs.create')}}" class="btn btn-primary" title="Add">Add<i class="mdi mdi-plus-circle-outline"></i></a>
-            </th>
-        </tr>
-        <tr>
-            <th>Question</th>
-            <th>Answer</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($faqs as $faq)
-            <tr>
-            <td>{{$faq->question}}</td>
-            <td>{{$faq->answer}}</td>
-            <td> 
-                <a href="{{route('faqs.edit', ['id' => $faq->id])}}" class="btn btn-success btn-edit" title="Edit"><i class="mdi mdi-square-edit-outline"></i></a>
-                <form action="{{ route('faqs.destroy', ['id' => $faq->id]) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-danger delete_button btn-delete" title="Delete">
-                        <i class="mdi mdi-delete-outline"></i>
-                    </button>
-                </form>
-            </td>
-        </tr>
-        @endforeach
-    </tbody>
-</table>
+<div class="container-fluid">
+    <div class="table-responsive">
+        <table id="example" class="table table-hover" style="width:100%">
+            <thead>
+                <tr>
+                    <th>
+                        <a href="{{route('faqs.create')}}" class="btn btn-primary" title="Add">Add<i class="mdi mdi-plus-circle-outline"></i></a>
+                    </th>
+                </tr>
+                <tr>
+                    <th>Question</th>
+                    <th>Answer</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($faqs as $faq)
+                    <tr>
+                    <td class="question">{{$faq->question}}</td>
+                    <td class="answer">{{$faq->answer}}</td>
+                    <td> 
+                        <a href="{{route('faqs.edit', ['id' => $faq->id])}}" class="btn btn-success btn-edit" title="Edit"><i class="mdi mdi-square-edit-outline"></i></a>
+                        <form action="{{ route('faqs.destroy', ['id' => $faq->id]) }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-danger delete_button btn-delete" title="Delete">
+                                <i class="mdi mdi-delete-outline"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <script>
         $(document).ready(function () {

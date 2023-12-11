@@ -23,6 +23,10 @@
   user-select: none;
 }
 
+td.address {
+    white-space: pre-wrap;  
+}
+
 </style>
 
 <h2>Staff Page</h2><br>
@@ -53,7 +57,7 @@
             <tr>
             <td>
                 <div class="d-flex align-items-center">
-                  <div class="avatar mr-3" style="background-image: url({{asset('user/img/profile/'.$staff->image)}})"></div>
+                  <div class="avatar mr-3" style="background-image: url({{asset('user/images/profile_image/'.$staff->image)}})"></div>
 
                   <div class="">
                     <p class="font-weight-bold mb-0">{{$staff->name}}</p>
@@ -68,13 +72,7 @@
                 -
                 @endif
             </td>
-            <td>
-                @if($staff->address)
-                {{$staff->address}}
-                @else
-                -
-                @endif
-            </td>
+            <td class="address">@if($staff->address){{$staff->address}}@else-@endif</td>
             <td>
                 @if($staff->phoneNum)
                 {{$staff->phoneNum}}

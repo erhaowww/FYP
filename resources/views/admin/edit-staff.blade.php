@@ -119,7 +119,7 @@
           <div class="form-group">
             <label for="">Profile picture</label>
             <div class="pic bs-md">
-              <img src="{{asset('user/img/profile/'.$user->image)}}" id="profile-image" alt="" width="4024" height="6048" loading="lazy">
+              <img src="{{asset('user/images/profile_image/'.$user->image)}}" id="profile-image" alt="" width="4024" height="6048" loading="lazy">
               <a id="change-avatar" class="lx-btn"><i class="fas fa-camera-retro"></i>&nbsp;&nbsp;Change your profile picture.</a>
             </div>
           </div>

@@ -35,7 +35,7 @@ use Illuminate\Foundation\Auth;
             <a class="dropdown-item" href="/">
               <i class="mdi mdi-cached me-2 text-success"></i> Back to Website </a>
             <div class="dropdown-divider"></div>
-            <a class="dropdown-item" href="/logout">
+            <a class="dropdown-item" href="/user/logout">
               <i class="mdi mdi-logout me-2 text-primary"></i> Signout </a>
           </div>
         </li>

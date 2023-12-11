@@ -23,6 +23,10 @@
   user-select: none;
 }
 
+td.address {
+    white-space: pre-wrap;  
+}
+
 </style>
 
 <h2>Customer Page</h2><br>
@@ -70,13 +74,7 @@
                         -
                         @endif
                     </td>
-                    <td>
-                        @if($user->address)
-                        {{$user->address}}
-                        @else
-                        -
-                        @endif
-                    </td>
+                    <td class="address">@if($user->address){{$user->address}}@else-@endif</td>
                     <td>
                         @if($user->phone_number)
                         {{$user->phone_number}}
