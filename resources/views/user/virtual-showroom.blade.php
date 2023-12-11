@@ -62,6 +62,8 @@
     <div id="icon-container"></div>
 
     <div id="crosshair"></div>
+    <audio id="background-music" loop></audio>
+
     <script src="https://cdn.jsdelivr.net/npm/three/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/controls/PointerLockControls.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three/examples/js/loaders/GLTFLoader.js"></script>
@@ -70,6 +72,7 @@
     var products = @json($products);
     </script>
     <script>
+
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -129,6 +132,25 @@
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('keyup', onKeyUp);
 
+        const songs = [
+            '/user/music/We Wish You a Merry Christmas.mp3',
+            '/user/music/Jingle Bells.mp3',
+            '/user/music/Last Christmas.mp3'
+        ];
+        let currentSongIndex = 1;
+
+        const backgroundMusic = document.getElementById('background-music');
+
+        function playSong(index) {
+            backgroundMusic.src = songs[index];
+            let playPromise = backgroundMusic.play();
+        }
+
+        backgroundMusic.addEventListener('ended', function() {
+            currentSongIndex = (currentSongIndex + 1) % songs.length;
+            playSong(currentSongIndex);
+        });
+
         // Load GLB model
         const loader = new THREE.GLTFLoader();
         loader.load('user/images/virtual-showroom.glb', function (gltf) {
@@ -144,6 +166,18 @@
         let buttonMeshes = [];
         let searchIcons = new Map();
         let buttonCounter = 0;
+        const bounds = {
+            minX: -200,
+            maxX: 200,
+            minZ: -150,
+            maxZ: 150
+        };
+
+        function checkBounds() {
+            camera.position.x = Math.max(bounds.minX, Math.min(bounds.maxX, camera.position.x));
+            camera.position.z = Math.max(bounds.minZ, Math.min(bounds.maxZ, camera.position.z));
+        }
+
         function animate() {
             requestAnimationFrame(animate);
 
@@ -162,6 +196,7 @@
                 controls.moveRight(-velocity.x * delta);
                 controls.moveForward(-velocity.z * delta);
             }
+            checkBounds();
             checkButtonVisibility();
             renderer.render(scene, camera);
         }
@@ -224,12 +259,14 @@
         });
         document.getElementById('instructions').addEventListener('click', () => {
             controls.lock();
+            playSong(currentSongIndex);
         });
         controls.addEventListener('lock', function () {
             instructions.style.display = 'none';
         });
         controls.addEventListener('unlock', function () {
             instructions.style.display = 'block';
+            document.getElementById('background-music').pause();
         });
         const instructions = document.getElementById('instructions');
         instructions.style.display = 'block';
@@ -279,7 +316,6 @@
             const buttonMesh = new THREE.Mesh(buttonGeometry, buttonMaterial);
             buttonMesh.position.copy(position);
 
-            // Apply rotation if provided
             if (rotation) {
                 buttonMesh.rotation.x = rotation.x;
                 buttonMesh.rotation.y = rotation.y;
@@ -298,6 +334,10 @@
         let buttonMesh2 = createButtonForProduct(2, new THREE.Vector3(110.77511599564004, -10.958077154131513, 28.405015434525666));
         scene.add(buttonMesh2);
         buttonMeshes.push(buttonMesh2);
+        const rotationY = -90 * (Math.PI / 180);
+        let buttonMesh3 = createButtonForProduct(3, new THREE.Vector3(108.08246052220028, -12.955793754787527, -52.11963048990131), { x: 0, y: rotationY, z: 0 });
+        scene.add(buttonMesh3);
+        buttonMeshes.push(buttonMesh3);
 
         // let buttonMesh4 = createButtonForProduct(3, new THREE.Vector3(-2, -5, 10));
         // scene.add(buttonMesh4);

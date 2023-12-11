@@ -483,12 +483,14 @@ var maxColors = parseInt({{ count($colors) }})-1;
             var allowedModelExtensions = [".gltf", "glb"];
             var modelFileCount = 0;
             var imageBaseNames = new Set();
+            var newProductImage = false;
             var existingModelFullName = "{{ $modelFile }}";
             var existingModelBaseName = existingModelFullName ? existingModelFullName.split('_').slice(1).join('_').split('.').slice(0, -1).join('.') : '';
             var productImages = productImagesPond.getFiles();
             if (productImages)
             {
                 productImages.forEach(function(fileItem) {
+                    newProductImage = true;
                     var fileExtension = fileItem.file.name.split('.').pop().toLowerCase();
                     var fullExtension = "." + fileExtension;
                     var baseName = fileItem.file.name.split('.').slice(0, -1).join('.');
@@ -520,9 +522,12 @@ var maxColors = parseInt({{ count($colors) }})-1;
                 });
             }
 
-            if (modelFileCount === 0 && existingModelBaseName && !imageBaseNames.has(existingModelBaseName) && !productImages) {
-                errors.push("A product image with the same base name as the existing model file (" + existingModelBaseName + ") is required.");
+            if(newProductImage){
+                if (modelFileCount === 0 && existingModelBaseName && !imageBaseNames.has(existingModelBaseName)) {
+                    errors.push("A product image with the same base name as the existing model file (" + existingModelBaseName + ") is required.");
+                }
             }
+            
 
 
             if (virtualTryOnQRPond) {
