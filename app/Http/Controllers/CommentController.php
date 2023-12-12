@@ -136,7 +136,7 @@ class CommentController extends Controller
             $this->notificationRepository->storeNotification($notificationData);
         }
 
-        return redirect('comments')->with('success', 'Information has been updated');
+        return redirect('admin/comments')->with('success', 'Information has been updated');
     }
 
     /**
@@ -145,7 +145,7 @@ class CommentController extends Controller
     public function destroy(string $id)
     {
         $this->commentRepository->destroyComment($id);
-        return redirect('comments')->with('success', 'Information has been deleted');
+        return redirect('admin/comments')->with('success', 'Information has been deleted');
     }
 
     public function like($comment_id){

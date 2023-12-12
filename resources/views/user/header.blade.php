@@ -230,9 +230,9 @@
                     <div class="icon">
                         <a href="/auth/google"><img src="{{asset('user/images/search.svg')}}" alt="" /></a>
                     </div>
-                    <div class="icon">
+                    {{-- <div class="icon">
                         <a href=""><img src="{{asset('user/images/facebook.svg')}}" alt="" /></a>
-                    </div>
+                    </div> --}}
                   </div>
                 </div>
               </form>
@@ -275,9 +275,9 @@
                     <div class="icon">
                         <a href="/auth/google"><img src="{{asset('user/images/search.svg')}}" alt="" /></a>
                     </div>
-                    <div class="icon">
+                    {{-- <div class="icon">
                       <a href=""><img src="{{asset('user/images/facebook.svg')}}" alt="" /></a>
-                    </div>
+                    </div> --}}
                   </div>
                 </div>
               </form>
@@ -613,19 +613,6 @@
                                 li.style.margin = "5px 0";
                                 li.style.paddingLeft = "20px";
                                 li.style.position = "relative";
-
-                                var span = document.createElement("span");
-                                span.style.width = "6px";
-                                span.style.height = "6px";
-                                span.style.backgroundColor = "black";
-                                span.style.borderRadius = "50%";
-                                span.style.display = "inline-block";
-                                span.style.position = "absolute";
-                                span.style.left = "5px";
-                                span.style.top = "50%";
-                                span.style.transform = "translateY(-50%)";
-
-                                li.appendChild(span);
                                 li.appendChild(document.createTextNode(value)); // Append the text node to the li
                                 errorMessageElement.appendChild(li); // Append the li to the ul
                             });
@@ -635,19 +622,6 @@
                         li.style.margin = "5px 0";
                         li.style.paddingLeft = "20px";
                         li.style.position = "relative";
-
-                        var span = document.createElement("span");
-                        span.style.width = "6px";
-                        span.style.height = "6px";
-                        span.style.backgroundColor = "black";
-                        span.style.borderRadius = "50%";
-                        span.style.display = "inline-block";
-                        span.style.position = "absolute";
-                        span.style.left = "5px";
-                        span.style.top = "50%";
-                        span.style.transform = "translateY(-50%)";
-
-                        li.appendChild(span);
                         li.appendChild(document.createTextNode(xhr.statusText));
                         errorMessageElement.appendChild(li);
                     }
