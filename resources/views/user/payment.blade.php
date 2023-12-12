@@ -993,6 +993,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             var cardYear = document.getElementById('cardYear').value;
 
                             // Validation
+							if (cardName === '') errors.push("Name is required.");
                             if (!cardName.match(/^[a-zA-Z\s]*$/)) errors.push("Name must be alphabetic.");
                             if (!cardNumber.match(/^\d{15,16}$/)) errors.push("Card number must be 15 or 16 digits.");
                             if (!cardCvv.match(/^\d{3,4}$/)) errors.push("CVV must be 3 or 4 digits.");
